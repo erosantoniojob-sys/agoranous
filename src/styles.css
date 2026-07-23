@@ -1,0 +1,72 @@
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+@theme {
+  --color-bg-base: #0B1420;
+  --color-bg-surface: #132231;
+  --color-bg-elevated: #1D2E3F;
+  --color-bg-main: #0B1420;
+  --color-bg-card: #132231;
+  --color-accent-gold: #D4AF37;
+  --color-accent-gold-bright: #E5C158;
+  --color-text-primary: #F2F4F7;
+  --color-text-secondary: #8A93A3;
+
+  /* Low saturation Dark Academia trail icon background colors */
+  --color-trilha-blue: #16283D;
+  --color-trilha-blue-gradient-start: #1A324B;
+  --color-trilha-blue-gradient-end: #111F30;
+  --color-trilha-green: #182E23;
+  --color-trilha-green-gradient-start: #1E3A2B;
+  --color-trilha-green-gradient-end: #11221B;
+  --color-trilha-purple: #261B33;
+  --color-trilha-purple-gradient-start: #2F2042;
+  --color-trilha-purple-gradient-end: #1D1428;
+  --color-trilha-orange: #332018;
+  --color-trilha-orange-gradient-start: #3F281E;
+  --color-trilha-orange-gradient-end: #271710;
+
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-sans: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  
+  body {
+    background-color: #0B1420;
+    color: #F2F4F7;
+    background-image: 
+      radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.08), transparent 50%),
+      linear-gradient(rgba(242, 244, 247, 0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(242, 244, 247, 0.015) 1px, transparent 1px);
+    background-size: 100% 100%, 36px 36px, 36px 36px;
+    min-height: 100vh;
+  }
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0B1420;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #132231;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 55, 0.4);
+}
