@@ -26,16 +26,12 @@ export const LoginView: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-bg-base text-text-primary flex items-center justify-center p-4 relative overflow-hidden font-sans">
-      {/* Background Subtle Gradient Blobs & Classical Grid Pattern */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-accent-gold/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-10 right-10 w-80 h-80 bg-amber-900/10 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Main Login Card */}
       <div className="relative w-full max-w-md bg-bg-surface border border-text-primary/15 rounded-3xl p-8 shadow-2xl space-y-6 backdrop-blur-md">
-        {/* Header Branding with Classical Arch Logo & Exact Official Slogan */}
         <ClassicArchLogo size="md" showSlogan={true} titleGraveAccent={true} />
 
-        {/* Error Alert */}
         {error && (
           <div className="p-3 bg-red-950/40 border border-red-500/30 rounded-xl text-red-200 text-xs flex items-start gap-2 animate-fadeIn">
             <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
@@ -43,7 +39,6 @@ export const LoginView: React.FC = () => {
           </div>
         )}
 
-        {/* Auth Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {isRegisterMode && (
             <div className="space-y-1.5">
@@ -107,14 +102,13 @@ export const LoginView: React.FC = () => {
               <span>Autenticando...</span>
             ) : (
               <>
-                <span>{isRegisterMode ? 'Criar Conta Netlify' : 'Entrar na Ágora'}</span>
+                <span>{isRegisterMode ? 'Criar Nova Conta' : 'Entrar na Ágora'}</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}
           </button>
         </form>
 
-        {/* Toggle Mode & Visitor Action Button */}
         <div className="pt-2 border-t border-text-primary/10 space-y-3 text-center">
           <button
             type="button"
@@ -126,7 +120,7 @@ export const LoginView: React.FC = () => {
           >
             {isRegisterMode
               ? 'Já possui uma conta? Faça Login'
-              : 'Ainda não tem conta? Registrar-se via Netlify Identity'}
+              : 'Ainda não tem conta? Criar nova conta'}
           </button>
 
           <div className="relative flex py-1 items-center">
