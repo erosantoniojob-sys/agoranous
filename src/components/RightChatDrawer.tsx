@@ -1,126 +1,110 @@
-import React, { useState, useRef, useEffect } from 'react'
-import { X, Send, Bot, Terminal, BookOpen, Sparkles } from 'lucide-react'
+import React from 'react'
+import { ArrowRight, BookOpen, Compass, Map, Sparkles, Target, Timer, X } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
 
-export const RightChatDrawer: React.FC = () => {
-  const { isRightChatOpen, setIsRightChatOpen, chatMessages, sendChatMessage, userProfile } = useAgoraStore()
-  const [input, setInput] = useState('')
-  const [isSending, setIsSending] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+type GuideAction = {
+  title: string
+  description: string
+  icon: React.ElementType
+  action: () => void
+  actionLabel: string
+}
 
-  useEffect(() => {
-    if (isRightChatOpen) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-    }
-  }, [chatMessages, isRightChatOpen])
+export const RightChatDrawer: React.FC = () => {
+  const {
+    isRightChatOpen,
+    setIsRightChatOpen,
+    setActiveTab,
+    mediaItems,
+    customTrails,
+    getEstatisticas,
+  } = useAgoraStore()
 
   if (!isRightChatOpen) return null
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!input.trim() || isSending) return
+  const stats = getEstatisticas()
+  const currentWork = mediaItems.find((item) => ['Lendo', 'Assistindo', 'Jogando'].includes(item.status))
+  const actions: GuideAction[] = [
+    currentWork
+      ? {
+          title: `Retome “${currentWork.titulo}”`,
+          description: `${currentWork.progresso_percentual || 0}% concluído. Uma sessão curta já mantém o fio da obra.`,
+          icon: BookOpen,
+          action: () => setActiveTab('inicio'),
+          actionLabel: 'Ver acervo',
+        }
+      : {
+          title: 'Escolha uma obra para começar',
+          description: 'Seu acervo está pronto para receber uma nova jornada de estudo.',
+          icon: BookOpen,
+          action: () => setActiveTab('explorar'),
+          actionLabel: 'Explorar acervo',
+        },
+    {
+      title: 'Faça uma sessão de foco',
+      description: 'Abra a Scholé, defina uma tarefa e avance sem distrações por um ciclo.',
+      icon: Timer,
+      action: () => setActiveTab('schole'),
+      actionLabel: 'Abrir Scholé',
+    },
+    customTrails.length
+      ? {
+          title: 'Revise suas trilhas',
+          description: `Você tem ${customTrails.length} ${customTrails.length === 1 ? 'trilha ativa' : 'trilhas ativas'} para organizar e aprofundar.`,
+          icon: Map,
+          action: () => setActiveTab('trilhas'),
+          actionLabel: 'Ver trilhas',
+        }
+      : {
+          title: 'Crie sua primeira trilha',
+          description: 'Conecte obras e temas em uma jornada que tenha um propósito claro.',
+          icon: Map,
+          action: () => setActiveTab('trilhas'),
+          actionLabel: 'Criar trilha',
+        },
+    {
+      title: 'Cuide da constância',
+      description: `${stats.totalItens} ${stats.totalItens === 1 ? 'obra catalogada' : 'obras catalogadas'} — organize uma prática pequena para hoje.`,
+      icon: Target,
+      action: () => setActiveTab('rotina'),
+      actionLabel: 'Ver virtudes',
+    },
+  ]
 
-    const messageText = input
-    setInput('')
-    setIsSending(true)
-
-    await sendChatMessage(messageText)
-
-    setIsSending(false)
+  const navigate = (action: () => void) => {
+    action()
+    setIsRightChatOpen(false)
   }
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
-      {/* Backdrop */}
-      <div
-        onClick={() => setIsRightChatOpen(false)}
-        className="fixed inset-0 bg-bg-base/80 backdrop-blur-sm animate-fadeIn"
-      />
-
-      {/* Right Drawer Panel */}
-      <div className="relative w-96 max-w-[90vw] bg-bg-surface border-l border-text-primary/15 h-full z-10 flex flex-col justify-between shadow-2xl animate-slideLeft">
-        {/* Header */}
-        <div className="p-4 bg-bg-elevated/80 border-b border-text-primary/10 flex items-center justify-between">
+      <button type="button" onClick={() => setIsRightChatOpen(false)} className="fixed inset-0 cursor-default bg-bg-base/80 backdrop-blur-sm animate-fadeIn" aria-label="Fechar guia" />
+      <aside className="relative z-10 flex h-full w-96 max-w-[90vw] flex-col border-l border-text-primary/15 bg-bg-surface shadow-2xl animate-slideLeft">
+        <header className="flex items-center justify-between border-b border-text-primary/10 bg-bg-elevated/80 p-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-bg-base border border-accent-gold/40 flex items-center justify-center">
-              <Terminal className="w-5 h-5 text-accent-gold" />
-            </div>
-            <div>
-              <h3 className="font-serif font-bold text-sm text-text-primary flex items-center gap-1.5">
-                <span>Mentor Oráculo</span>
-                <Sparkles className="w-3.5 h-3.5 text-accent-gold" />
-              </h3>
-              <p className="text-[10px] text-text-secondary">
-                Consultor do Segundo Cérebro • ABNT
-              </p>
-            </div>
+            <div className="grid h-9 w-9 place-items-center rounded-xl border border-accent-gold/40 bg-bg-base text-accent-gold"><Compass className="h-5 w-5" /></div>
+            <div><h3 className="flex items-center gap-1.5 font-serif text-sm font-bold text-text-primary">Guia da Ágora <Sparkles className="h-3.5 w-3.5 text-accent-gold" /></h3><p className="text-[10px] text-text-secondary">Orientação local · sem IA ou token</p></div>
           </div>
+          <button type="button" onClick={() => setIsRightChatOpen(false)} className="rounded-lg p-1.5 text-text-secondary hover:bg-bg-base hover:text-text-primary" aria-label="Fechar"><X className="h-5 w-5" /></button>
+        </header>
 
-          <button
-            onClick={() => setIsRightChatOpen(false)}
-            className="p-1.5 text-text-secondary hover:text-text-primary rounded-lg hover:bg-bg-base transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+        <div className="flex-1 overflow-y-auto p-4">
+          <section className="rounded-2xl border border-accent-gold/20 bg-gradient-to-br from-accent-gold/10 to-transparent p-4">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent-gold">Próximo passo</p>
+            <h4 className="mt-2 font-serif text-xl font-bold text-text-primary">Uma direção por vez.</h4>
+            <p className="mt-2 text-xs leading-relaxed text-text-secondary">O Guia organiza o que já está no seu acervo e sugere uma ação concreta. Nenhuma informação sai do seu navegador.</p>
+          </section>
+
+          <section className="mt-5 space-y-2" aria-label="Sugestões do Guia">
+            {actions.map((item) => {
+              const Icon = item.icon
+              return <article key={item.title} className="rounded-xl border border-text-primary/10 bg-bg-elevated/45 p-3.5 transition-colors hover:border-accent-gold/30"><div className="flex gap-3"><div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-bg-base text-accent-gold"><Icon className="h-4 w-4" /></div><div className="min-w-0"><h5 className="text-xs font-semibold text-text-primary">{item.title}</h5><p className="mt-1 text-[11px] leading-relaxed text-text-secondary">{item.description}</p><button type="button" onClick={() => navigate(item.action)} className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-accent-gold hover:text-accent-gold-bright">{item.actionLabel}<ArrowRight className="h-3.5 w-3.5" /></button></div></div></article>
+            })}
+          </section>
         </div>
 
-        {/* Terminal Messages Area */}
-        <div className="flex-1 p-4 overflow-y-auto space-y-4 font-sans text-xs">
-          {chatMessages.map((msg) => {
-            const isUser = msg.sender === 'user'
-            return (
-              <div
-                key={msg.id}
-                className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} space-y-1`}
-              >
-                <div className="flex items-center gap-1.5 px-1 text-[10px] text-text-secondary">
-                  <span>{isUser ? (userProfile.nome || 'Convidado') : 'Oráculo IA'}</span>
-                  <span>•</span>
-                  <span>{msg.timestamp}</span>
-                </div>
-
-                <div
-                  className={`p-3.5 rounded-2xl max-w-[92%] whitespace-pre-wrap leading-relaxed border ${
-                    isUser
-                      ? 'bg-accent-gold/15 text-text-primary border-accent-gold/30 rounded-tr-none'
-                      : 'bg-bg-elevated text-text-primary border-text-primary/10 rounded-tl-none font-mono text-[11px]'
-                  }`}
-                >
-                  {msg.text}
-                </div>
-              </div>
-            )
-          })}
-
-          {isSending && (
-            <div className="flex items-center gap-2 text-text-secondary text-xs italic p-2 bg-bg-elevated/40 rounded-xl">
-              <div className="w-2 h-2 rounded-full bg-accent-gold animate-ping" />
-              <span>Sintetizando consulta em formato ABNT...</span>
-            </div>
-          )}
-
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* Footer Input */}
-        <form onSubmit={handleSubmit} className="p-3 bg-bg-elevated/90 border-t border-text-primary/10 flex gap-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Perguntar ao Mentor Oráculo..."
-            className="flex-1 px-3 py-2 bg-bg-base text-text-primary placeholder:text-text-secondary/50 rounded-xl border border-text-primary/15 focus:border-accent-gold focus:outline-none text-xs"
-          />
-
-          <button
-            type="submit"
-            disabled={!input.trim() || isSending}
-            className="px-3.5 py-2 bg-accent-gold hover:bg-accent-gold-bright text-bg-base font-bold rounded-xl disabled:opacity-50 transition-all flex items-center justify-center cursor-pointer"
-          >
-            <Send className="w-4 h-4" />
-          </button>
-        </form>
-      </div>
+        <footer className="border-t border-text-primary/10 bg-bg-elevated/60 p-4 text-center text-[10px] text-text-secondary">Guia local — suas escolhas continuam sob seu controle.</footer>
+      </aside>
     </div>
   )
 }

@@ -625,7 +625,14 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const endpoints = ['/.netlify/functions/getRecommendations', '/api/getRecommendations'];
       for (const ep of endpoints) {
         try {
-          const res = await fetch(ep);
+          const res = await fetch(ep, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              tags: userProfile.tags_interesses || [],
+              existingTitles: mediaItems.map((item) => item.titulo),
+            }),
+          });
           if (res.ok) {
             const data = await res.json();
             if (Array.isArray(data.recommendations) && data.recommendations.length > 0) {
@@ -640,7 +647,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       // fallback
     }
     return FALLBACK_RECOMMENDATIONS;
-  }, []);
+  }, [mediaItems, userProfile.tags_interesses]);
 
   const getEstatisticas = useCallback((): Statistics => {
     const totalItens = mediaItems.length;

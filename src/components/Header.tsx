@@ -1,5 +1,5 @@
 import React from 'react'
-import { Menu, Search, Terminal, LogOut } from 'lucide-react'
+import { Menu, Search, Compass, LogOut } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
 import { useAuth } from '../context/AuthContext'
 import { ClassicArchLogoIcon } from './ClassicArchLogo'
@@ -67,10 +67,10 @@ export const Header: React.FC = () => {
           <div className="flex items-center gap-2 md:hidden">
             <button
               onClick={() => setIsRightChatOpen(true)}
-              title="Mentor Oráculo AI"
+              title="Abrir Guia da Ágora"
               className="p-2 text-bg-base bg-accent-gold hover:bg-accent-gold-bright rounded-xl transition-all shadow-md flex items-center gap-1 cursor-pointer font-bold text-xs"
             >
-              <Terminal className="w-4 h-4" />
+              <Compass className="w-4 h-4" />
             </button>
             <button
               onClick={() => logout()}
@@ -95,14 +95,14 @@ export const Header: React.FC = () => {
             </button>
           </div>
 
-          {/* Mentor AI Chat Button */}
+          {/* Local guide button */}
           <button
             type="button"
             onClick={() => setIsRightChatOpen(true)}
             className="hidden md:flex items-center gap-2 px-4 py-2 bg-accent-gold hover:bg-accent-gold-bright text-bg-base font-bold text-xs rounded-full shadow-lg shadow-accent-gold/20 transition-all cursor-pointer whitespace-nowrap"
           >
-            <Terminal className="w-4 h-4" />
-            <span>Mentor Oráculo (IA)</span>
+            <Compass className="w-4 h-4" />
+            <span>Guia da Ágora</span>
           </button>
 
           <button

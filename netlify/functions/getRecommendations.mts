@@ -17,90 +17,91 @@ type RecommendationItem = {
   motivoRecomendacao: string
 }
 
-const RECOMMENDATIONS: RecommendationItem[] = [
-  {
-    id: 'rec_platao',
-    titulo: 'A República',
-    tipo: 'Livro',
-    autor_criador: 'Platão',
-    ano: -375,
-    data_lancamento_oficial: '0375-01-01 a.C.',
-    sinopse: 'Diálogo clássico fundacional da filosofia ocidental. Investiga a justiça na alma e no Estado, a Teoria das Idéias e a lendária Caverna de Platão.',
-    generos: ['Filosofia', 'Clássico Grego', 'Ética'],
-    url_capa_oficial: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=800&auto=format&fit=crop',
-    url_capa: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=800&auto=format&fit=crop',
-    fonte: 'Recomendado pelo Perfil de Filosofia',
-    motivoRecomendacao: 'Essencial para aprofundar sua coleção de pensamento político e teoria do conhecimento.',
-  },
-  {
-    id: 'rec_nietzsche',
-    titulo: 'Assim Falou Zaratustra',
-    tipo: 'Livro',
-    autor_criador: 'Friedrich Nietzsche',
-    ano: 1883,
-    data_lancamento_oficial: '1883-05-15',
-    sinopse: 'Poema filosófico denso no qual Zaratustra desce da montanha para anunciar o Übermensch (Além-do-Homem), o eterno retorno e a superação moral.',
-    generos: ['Filosofia Existencial', 'Literatura Alemã'],
-    url_capa_oficial: 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?q=80&w=800&auto=format&fit=crop',
-    url_capa: 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?q=80&w=800&auto=format&fit=crop',
-    fonte: 'Recomendado pelo Perfil de Filosofia',
-    motivoRecomendacao: 'Obras-primas do existencialismo indicadas para expandir sua trilha de reflexões morais.',
-  },
-  {
-    id: 'rec_dostoievski',
-    titulo: 'Crime e Castigo',
-    tipo: 'Livro',
-    autor_criador: 'Fiódor Dostoiévski',
-    ano: 1866,
-    data_lancamento_oficial: '1866-01-01',
-    sinopse: 'A profunda jornada psicológica do jovem Raskólnikov em São Petersburgo, confrontando culpa, redenção e os limites do utilitarismo moral.',
-    generos: ['Literatura Clássica', 'Romance Psicológico'],
-    url_capa_oficial: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=800&auto=format&fit=crop',
-    url_capa: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=800&auto=format&fit=crop',
-    fonte: 'Acervo de Literatura Clássica',
-    motivoRecomendacao: 'Acompanhamento ideal para quem aprecia "Os Irmãos Karamázov".',
-  },
-  {
-    id: 'rec_fifa',
-    titulo: 'EA Sports FC 24 (FIFA)',
-    tipo: 'Jogo',
-    autor_criador: 'EA Vancouver / EA Sports',
-    ano: 2023,
-    data_lancamento_oficial: '2023-09-29',
-    sinopse: 'Simulador esportivo de futebol mundial com o motor de física HyperMotionV, PlayStyles e mais de 19.000 atletas licenciados.',
-    generos: ['Esporte', 'Simulação Competitiva'],
-    url_capa_oficial: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=800&auto=format&fit=crop',
-    url_capa: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=800&auto=format&fit=crop',
-    fonte: 'Recomendado pelo Perfil de Jogos',
-    motivoRecomendacao: 'Destaque no gênero esportivo e estratégia tática para momentos de lazer e maestria digital.',
-  },
-  {
-    id: 'rec_bergman',
-    titulo: 'O Sétimo Selo',
-    tipo: 'Filme',
-    autor_criador: 'Ingmar Bergman',
-    ano: 1957,
-    data_lancamento_oficial: '1957-02-16',
-    sinopse: 'Marco do cinema mundial que explora a angústia existencial, a fé e o silêncio divino através de uma lendária partida de xadrez com a Morte.',
-    generos: ['Cinema Clássico', 'Filosofia'],
-    url_capa_oficial: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=800&auto=format&fit=crop',
-    url_capa: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=800&auto=format&fit=crop',
-    fonte: 'Cinemateca de Filosofia',
-    motivoRecomendacao: 'Aclamado pelo equilíbrio estético e diálogos filosóficos marcantes.',
-  },
+type Candidate = { title: string; author: string; theme: string; reason: string }
+type OpenLibraryDoc = { title?: string; author_name?: string[]; first_publish_year?: number; cover_i?: number; key?: string; subject?: string[] }
+
+const cache = new Map<string, { expiresAt: number; recommendations: RecommendationItem[] }>()
+
+const CANDIDATES: Candidate[] = [
+  { title: 'The Symposium', author: 'Plato', theme: 'Filosofia Grega', reason: 'Amplia sua trilha de filosofia grega com uma investigação clássica sobre amor, beleza e formação da alma.' },
+  { title: 'Nicomachean Ethics', author: 'Aristotle', theme: 'Virtudes', reason: 'Um fundamento direto para refletir sobre hábitos, virtudes e a vida boa.' },
+  { title: 'The Brothers Karamazov', author: 'Fyodor Dostoyevsky', theme: 'Literatura Russa', reason: 'Uma escolha central para quem deseja aprofundar fé, liberdade e responsabilidade moral.' },
+  { title: 'Notes from Underground', author: 'Fyodor Dostoyevsky', theme: 'Literatura Russa', reason: 'Curta, intensa e ideal para acompanhar seus estudos sobre consciência, liberdade e niilismo.' },
+  { title: 'Confessions', author: 'Augustine of Hippo', theme: 'Teologia', reason: 'Une filosofia, memória, interioridade e teologia em uma obra formadora.' },
+  { title: 'Orthodoxy', author: 'G. K. Chesterton', theme: 'Teologia', reason: 'Oferece uma defesa literária e acessível da cosmovisão cristã.' },
+  { title: 'The Abolition of Man', author: 'C. S. Lewis', theme: 'Cosmovisão', reason: 'Aprofunda ética, educação e a formação do humano — assuntos alinhados às suas trilhas.' },
+  { title: 'The Republic', author: 'Plato', theme: 'Filosofia', reason: 'Uma base para justiça, educação e a célebre alegoria da caverna.' },
 ]
+
+function selectCandidates(tags: string[], existingTitles: string[]) {
+  const profile = tags.join(' ').toLocaleLowerCase('pt-BR')
+  const available = CANDIDATES.filter((candidate) => !existingTitles.some((title) => title.toLocaleLowerCase('pt-BR') === candidate.title.toLocaleLowerCase('pt-BR')))
+  const scored = available.map((candidate) => {
+    const theme = candidate.theme.toLocaleLowerCase('pt-BR')
+    const score = profile.includes('russa') && theme.includes('russa') ? 4
+      : profile.includes('filosofia') && (theme.includes('filosofia') || theme.includes('virtudes')) ? 4
+      : profile.includes('teologia') && (theme.includes('teologia') || theme.includes('cosmovisão')) ? 4
+      : profile.includes('cosmovisão') && theme.includes('cosmovisão') ? 4
+      : 1
+    return { candidate, score }
+  })
+  return scored.sort((a, b) => b.score - a.score).slice(0, 4).map(({ candidate }) => candidate)
+}
+
+async function fetchBook(candidate: Candidate): Promise<RecommendationItem | null> {
+  const query = new URLSearchParams({
+    title: candidate.title,
+    author: candidate.author,
+    limit: '1',
+    fields: 'title,author_name,first_publish_year,cover_i,key,subject',
+  })
+  const response = await fetch(`https://openlibrary.org/search.json?${query.toString()}`, {
+    headers: { 'User-Agent': 'Agora/1.0 (personal study catalog)' },
+  })
+  if (!response.ok) return null
+  const data = await response.json() as { docs?: OpenLibraryDoc[] }
+  const result = data.docs?.[0]
+  if (!result?.title || !result.cover_i) return null
+
+  const author = result.author_name?.[0] || candidate.author
+  const year = result.first_publish_year || 0
+  const cover = `https://covers.openlibrary.org/b/id/${result.cover_i}-L.jpg`
+  return {
+    id: `openlibrary-${result.key?.replace(/\W/g, '-') || result.cover_i}`,
+    titulo: result.title,
+    tipo: 'Livro',
+    autor_criador: author,
+    ano: year,
+    data_lancamento_oficial: year ? `${year}-01-01` : '',
+    sinopse: `Edição catalogada pela Open Library, selecionada para a trilha de ${candidate.theme}.`,
+    generos: [candidate.theme, ...(result.subject || []).slice(0, 2)],
+    url_capa_oficial: cover,
+    url_capa: cover,
+    fonte: 'Open Library · capa do catálogo',
+    motivoRecomendacao: candidate.reason,
+  }
+}
 
 export default async (request: Request) => {
   try {
-    return Response.json({
-      timestamp: new Date().toISOString(),
-      perfil: 'Dark Academia / Filosofia & Cultura',
-      total: RECOMMENDATIONS.length,
-      recommendations: RECOMMENDATIONS,
-    })
+    const body = request.method === 'POST' ? await request.json().catch(() => ({})) as { tags?: string[]; existingTitles?: string[] } : {}
+    const tags = Array.isArray(body.tags) ? body.tags.slice(0, 12) : ['Filosofia', 'Literatura Clássica', 'Teologia']
+    const existingTitles = Array.isArray(body.existingTitles) ? body.existingTitles.slice(0, 100) : []
+    const cacheKey = JSON.stringify({ tags, existingTitles })
+    const cached = cache.get(cacheKey)
+    if (cached && cached.expiresAt > Date.now()) return Response.json({ recommendations: cached.recommendations, source: 'cache' })
+
+    const recommendations: RecommendationItem[] = []
+    for (const candidate of selectCandidates(tags, existingTitles)) {
+      const item = await fetchBook(candidate)
+      if (item) recommendations.push(item)
+    }
+
+    cache.set(cacheKey, { recommendations, expiresAt: Date.now() + 6 * 60 * 60 * 1000 })
+    return Response.json({ timestamp: new Date().toISOString(), profileTags: tags, total: recommendations.length, source: 'Open Library', recommendations })
   } catch (error) {
     console.error('getRecommendations function error:', error)
-    return Response.json({ error: 'Erro ao carregar recomendações.' }, { status: 500 })
+    return Response.json({ error: 'Erro ao consultar recomendações.' }, { status: 500 })
   }
 }
 

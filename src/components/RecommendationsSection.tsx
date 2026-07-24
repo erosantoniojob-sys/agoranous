@@ -59,7 +59,7 @@ export const RecommendationsSection: React.FC = () => {
         <div className="flex items-center gap-2 text-text-secondary">
           <Compass className="w-4 h-4 text-accent-gold animate-spin" />
           <span className="text-xs font-semibold uppercase tracking-wider">
-            Consultando Recomendações Netlify...
+            Consultando o catálogo bibliográfico...
           </span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -83,11 +83,11 @@ export const RecommendationsSection: React.FC = () => {
             Recomendações do seu Perfil
           </h3>
           <p className="text-xs text-text-secondary">
-            Sugestões em filosofia, literatura clássica e jogos via Netlify Functions
+            Selecionadas pelos seus interesses, com capas reais do catálogo Open Library
           </p>
         </div>
         <span className="text-[10px] font-semibold text-accent-gold uppercase tracking-widest bg-accent-gold/10 px-2.5 py-1 rounded-full border border-accent-gold/20">
-          Curadoria Ativa
+          Curadoria do Perfil
         </span>
       </div>
 
