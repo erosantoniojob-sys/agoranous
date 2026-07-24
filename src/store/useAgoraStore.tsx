@@ -249,8 +249,8 @@ interface AgoraStoreContextType {
   customTrails: CustomTrail[];
   customCategories: Category[];
   knowledgeNodes: KnowledgeNode[];
-  activeTab: 'inicio' | 'explorar' | 'memoria' | 'trilhas' | 'perfil' | 'schole';
-  setActiveTab: (tab: 'inicio' | 'explorar' | 'memoria' | 'trilhas' | 'perfil' | 'schole') => void;
+  activeTab: 'inicio' | 'explorar' | 'memoria' | 'trilhas' | 'perfil' | 'schole' | 'rotina';
+  setActiveTab: (tab: 'inicio' | 'explorar' | 'memoria' | 'trilhas' | 'perfil' | 'schole' | 'rotina') => void;
   selectedFilter: string;
   setSelectedFilter: (filter: string) => void;
   selectedMedia: MediaItem | null;
@@ -367,7 +367,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const storedChat = localStorage.getItem(keyPrefix + 'chat');
     setChatMessages(storedChat ? JSON.parse(storedChat) : isVisitor ? VISITOR_CHAT : SEED_CHAT);
 
-    const storedProfile = localStorage.getItem(keyPrefix + 'profile');
+    const storedProfile = isVisitor ? null : localStorage.getItem(keyPrefix + 'profile');
     setUserProfile(storedProfile ? JSON.parse(storedProfile) : isVisitor ? VISITOR_PROFILE : MOCK_MAIN_PROFILE);
 
     const storedTrails = localStorage.getItem(keyPrefix + 'trails');
@@ -377,7 +377,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setHasCompletedOnboarding(storedOnboarding !== null ? JSON.parse(storedOnboarding) : false);
   }, [isVisitor, user?.id]);
 
-  const [activeTab, setActiveTab] = useState<'inicio' | 'explorar' | 'memoria' | 'trilhas' | 'perfil' | 'schole'>('inicio');
+  const [activeTab, setActiveTab] = useState<'inicio' | 'explorar' | 'memoria' | 'trilhas' | 'perfil' | 'schole' | 'rotina'>('inicio');
   const [selectedFilter, setSelectedFilter] = useState<string>('Todos');
   const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
@@ -398,8 +398,8 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [chatMessages, storagePrefix]);
 
   useEffect(() => {
-    localStorage.setItem(storagePrefix + 'profile', JSON.stringify(userProfile));
-  }, [userProfile, storagePrefix]);
+    if (!isVisitor) localStorage.setItem(storagePrefix + 'profile', JSON.stringify(userProfile));
+  }, [userProfile, storagePrefix, isVisitor]);
 
   useEffect(() => {
     localStorage.setItem(storagePrefix + 'trails', JSON.stringify(customTrails));

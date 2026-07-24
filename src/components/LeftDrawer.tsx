@@ -1,9 +1,9 @@
 import React from 'react'
-import { X, Calendar, PenTool, Music, Sliders, Database, Sparkles, CheckSquare, Layers, Hourglass } from 'lucide-react'
+import { X, Calendar, Sliders, Database, Sparkles, Hourglass, Dumbbell, Lightbulb, PenTool, Music } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
 
 export const LeftDrawer: React.FC = () => {
-  const { isLeftDrawerOpen, setIsLeftDrawerOpen, setActiveTab, userProfile } = useAgoraStore()
+  const { isLeftDrawerOpen, setIsLeftDrawerOpen, setActiveTab, userProfile, isVisitor } = useAgoraStore()
 
   if (!isLeftDrawerOpen) return null
 
@@ -53,7 +53,12 @@ export const LeftDrawer: React.FC = () => {
           </div>
 
           {/* User Persona Quick Info */}
-          <div className="p-3 bg-bg-elevated/60 rounded-xl border border-text-primary/10 flex items-center gap-3">
+          {isVisitor ? (
+            <div className="p-3 bg-bg-elevated/60 rounded-xl border border-text-primary/10 flex items-start gap-3">
+              <Lightbulb className="w-5 h-5 mt-0.5 shrink-0 text-accent-gold" />
+              <div><h3 className="font-serif font-bold text-sm text-text-primary">Explore sem compromissos</h3><p className="text-[11px] text-text-secondary mt-1">Use a Scholé, experimente hábitos e crie um ritmo que faça sentido para você.</p></div>
+            </div>
+          ) : <div className="p-3 bg-bg-elevated/60 rounded-xl border border-text-primary/10 flex items-center gap-3">
             {userProfile.avatar_url ? (
               <img
                 src={userProfile.avatar_url}
@@ -73,7 +78,7 @@ export const LeftDrawer: React.FC = () => {
                 {userProfile.biografia || 'Sem biografia informada'}
               </p>
             </div>
-          </div>
+          </div>}
 
           {/* Navigation Links */}
           <nav className="space-y-1 pt-2">
@@ -94,36 +99,22 @@ export const LeftDrawer: React.FC = () => {
 
             <button
               onClick={() => {
-                alert('Módulo Rotina & Hábitos: 100% integrado ao perfil.')
+                setActiveTab('rotina')
                 setIsLeftDrawerOpen(false)
               }}
               className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold text-text-primary hover:text-accent-gold hover:bg-bg-elevated/80 rounded-xl transition-all"
             >
-              <CheckSquare className="w-4 h-4 text-accent-gold" />
-              <span>Rotina & Hábitos (Dieta & Treino)</span>
+              <Dumbbell className="w-4 h-4 text-accent-gold" />
+              <span>Rotina, Hábitos & Treinos</span>
             </button>
 
-            <button
-              onClick={() => {
-                alert('Módulo Escrita Criativa & Roteiros ativado no Segundo Cérebro.')
-                setIsLeftDrawerOpen(false)
-              }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold text-text-primary hover:text-accent-gold hover:bg-bg-elevated/80 rounded-xl transition-all"
-            >
-              <PenTool className="w-4 h-4 text-accent-gold" />
-              <span>Escrita Criativa & Roteiros</span>
-            </button>
-
-            <button
-              onClick={() => {
-                alert('Módulo Projetos Musicais sincronizado.')
-                setIsLeftDrawerOpen(false)
-              }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold text-text-primary hover:text-accent-gold hover:bg-bg-elevated/80 rounded-xl transition-all"
-            >
-              <Music className="w-4 h-4 text-accent-gold" />
-              <span>Projetos Musicais</span>
-            </button>
+            <div className="mt-4 border-t border-text-primary/10 pt-4">
+              <p className="px-2 text-[10px] font-semibold uppercase tracking-wider text-text-secondary">Próximos espaços</p>
+              <div className="mt-2 space-y-2 px-3 text-xs text-text-secondary">
+                <p className="flex items-center gap-3"><PenTool className="w-4 h-4 text-accent-gold/70" />Escrita & roteiros <span className="ml-auto text-[10px]">em breve</span></p>
+                <p className="flex items-center gap-3"><Music className="w-4 h-4 text-accent-gold/70" />Projetos musicais <span className="ml-auto text-[10px]">em breve</span></p>
+              </div>
+            </div>
           </nav>
 
           {/* System Settings & Backup */}

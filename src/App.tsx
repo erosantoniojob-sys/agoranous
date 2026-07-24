@@ -15,10 +15,11 @@ import { LoginView } from './views/LoginView'
 import { Trilhas } from './components/Trilhas'
 import { Onboarding } from './components/Onboarding'
 import { ScholeView } from './views/ScholeView'
+import { RoutineView } from './views/RoutineView'
 
 const MainContent: React.FC = () => {
   const { user, isLoading } = useAuth()
-  const { activeTab, hasCompletedOnboarding } = useAgoraStore()
+  const { activeTab, hasCompletedOnboarding, isVisitor } = useAgoraStore()
 
   if (isLoading) {
     return (
@@ -37,12 +38,16 @@ const MainContent: React.FC = () => {
   }
 
   // Route Guard: force onboarding if user hasn't completed onboarding yet
-  if (!hasCompletedOnboarding) {
+  if (!hasCompletedOnboarding && !isVisitor) {
     return <Onboarding />
   }
 
   if (activeTab === 'schole') {
     return <ScholeView />
+  }
+
+  if (activeTab === 'rotina') {
+    return <RoutineView />
   }
 
   const renderActiveView = () => {
