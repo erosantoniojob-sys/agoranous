@@ -6,77 +6,77 @@ export const TabBar: React.FC = () => {
   const { activeTab, setActiveTab, setIsSearchOpen } = useAgoraStore()
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 bg-bg-surface/95 backdrop-blur-lg border-t border-text-primary/10 py-2 px-4 shadow-2xl">
-      <div className="max-w-lg mx-auto flex items-center justify-between gap-1 relative">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-text-primary/10 bg-bg-surface/95 px-3 py-2 shadow-2xl backdrop-blur-lg md:bottom-5 md:left-1/2 md:right-auto md:w-[min(720px,calc(100%-2rem))] md:-translate-x-1/2 md:rounded-2xl md:border" aria-label="Navegação principal">
+      <div className="mx-auto flex w-full max-w-[680px] items-center justify-between gap-1">
         {/* 1. Início */}
         <button
           onClick={() => setActiveTab('inicio')}
-          className={`flex flex-col items-center gap-0.5 transition-colors py-1 px-1.5 sm:px-3 cursor-pointer ${
+          className={`flex min-w-0 flex-1 flex-col items-center gap-1 rounded-lg py-1.5 text-[10px] transition-colors sm:text-xs ${
             activeTab === 'inicio' ? 'text-accent-gold' : 'text-text-secondary hover:text-text-primary'
           }`}
         >
-          <Home className="w-5 h-5 stroke-[1.8]" />
-          <span className="text-[10px] font-semibold tracking-wider">Início</span>
+          <Home className="h-5 w-5 stroke-[1.8]" />
+          <span className="font-semibold tracking-wide">Início</span>
         </button>
 
         {/* 2. Explorar */}
         <button
           onClick={() => setActiveTab('explorar')}
-          className={`flex flex-col items-center gap-0.5 transition-colors py-1 px-1.5 sm:px-3 cursor-pointer ${
+          className={`flex min-w-0 flex-1 flex-col items-center gap-1 rounded-lg py-1.5 text-[10px] transition-colors sm:text-xs ${
             activeTab === 'explorar' ? 'text-accent-gold' : 'text-text-secondary hover:text-text-primary'
           }`}
         >
-          <Compass className="w-5 h-5 stroke-[1.8]" />
-          <span className="text-[10px] font-semibold tracking-wider">Explorar</span>
+          <Compass className="h-5 w-5 stroke-[1.8]" />
+          <span className="font-semibold tracking-wide">Explorar</span>
         </button>
 
         {/* 3. Scholé */}
         <button
           onClick={() => setActiveTab('schole')}
-          className={`flex flex-col items-center gap-0.5 transition-colors py-1 px-1.5 sm:px-3 cursor-pointer ${
+          className={`flex min-w-0 flex-1 flex-col items-center gap-1 rounded-lg py-1.5 text-[10px] transition-colors sm:text-xs ${
             activeTab === 'schole' ? 'text-accent-gold' : 'text-text-secondary hover:text-text-primary'
           }`}
         >
-          <Hourglass className="w-5 h-5 stroke-[1.8]" />
-          <span className="text-[10px] font-semibold tracking-wider">Scholé</span>
+          <Hourglass className="h-5 w-5 stroke-[1.8]" />
+          <span className="font-semibold tracking-wide">Scholé</span>
         </button>
 
         {/* 4. Central Add Button */}
-        <div className="relative -top-6 flex items-center justify-center">
+        <div className="relative -top-4 flex min-w-0 flex-1 flex-col items-center justify-center">
           <button
             onClick={() => setIsSearchOpen(true)}
-            className="w-14 h-13 rounded-full bg-gradient-to-b from-[#F7E7AD] via-[#D4AF37] to-[#A38222] text-bg-base shadow-[0_12px_28px_rgba(0,0,0,0.8),0_0_20px_rgba(212,175,55,0.4)] flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 border-2 border-accent-gold-bright/60 p-2.5 cursor-pointer relative overflow-hidden group"
+            className="group relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-accent-gold-bright/60 bg-gradient-to-b from-[#F7E7AD] via-[#D4AF37] to-[#A38222] p-2 text-bg-base shadow-[0_8px_18px_rgba(0,0,0,0.45),0_0_14px_rgba(212,175,55,0.28)] transition-all duration-300 hover:scale-105 active:scale-95"
             aria-label="Adicionar nova obra ao catálogo"
           >
             {/* Top inner golden highlight reflection */}
             <div className="absolute inset-x-0 top-0 h-1.5 bg-white/40 blur-[1px] rounded-t-full pointer-events-none" />
-            <Plus className="w-7 h-7 stroke-[2.8] text-bg-base drop-shadow-md relative z-10 group-hover:rotate-90 transition-transform duration-300" />
+            <Plus className="relative z-10 h-6 w-6 stroke-[2.8] text-bg-base transition-transform duration-300 group-hover:rotate-90" />
           </button>
-          <span className="absolute -bottom-4 text-[10px] font-semibold tracking-wider text-accent-gold">Adicionar</span>
+          <span className="absolute -bottom-5 whitespace-nowrap text-[10px] font-semibold tracking-wide text-accent-gold">Adicionar</span>
         </div>
 
         {/* 5. Memória (Mapa do Conhecimento & Dossiê) */}
         <button
           onClick={() => setActiveTab('memoria')}
-          className={`flex flex-col items-center gap-0.5 transition-colors py-1 px-1.5 sm:px-3 cursor-pointer ${
+          className={`flex min-w-0 flex-1 flex-col items-center gap-1 rounded-lg py-1.5 text-[10px] transition-colors sm:text-xs ${
             activeTab === 'memoria' || activeTab === 'trilhas' ? 'text-accent-gold' : 'text-text-secondary hover:text-text-primary'
           }`}
         >
-          <Bookmark className="w-5 h-5 stroke-[1.8]" />
-          <span className="text-[10px] font-semibold tracking-wider">Memória</span>
+          <Bookmark className="h-5 w-5 stroke-[1.8]" />
+          <span className="font-semibold tracking-wide">Memória</span>
         </button>
 
         {/* 6. Perfil */}
         <button
           onClick={() => setActiveTab('perfil')}
-          className={`flex flex-col items-center gap-0.5 transition-colors py-1 px-1.5 sm:px-3 cursor-pointer ${
+          className={`flex min-w-0 flex-1 flex-col items-center gap-1 rounded-lg py-1.5 text-[10px] transition-colors sm:text-xs ${
             activeTab === 'perfil' ? 'text-accent-gold' : 'text-text-secondary hover:text-text-primary'
           }`}
         >
-          <User className="w-5 h-5 stroke-[1.8]" />
-          <span className="text-[10px] font-semibold tracking-wider">Perfil</span>
+          <User className="h-5 w-5 stroke-[1.8]" />
+          <span className="font-semibold tracking-wide">Perfil</span>
         </button>
       </div>
-    </div>
+    </nav>
   )
 }
