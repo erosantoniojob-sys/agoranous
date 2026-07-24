@@ -36,8 +36,9 @@ function getYouTubeEmbedUrl(sourceUrl: string, autoplay = false) {
     const videoId = url.hostname.endsWith('youtu.be') ? url.pathname.slice(1) : url.searchParams.get('v')
     const params = new URLSearchParams({ rel: '0', modestbranding: '1', playsinline: '1' })
     if (autoplay) params.set('autoplay', '1')
-    if (playlistId) return `https://www.youtube-nocookie.com/embed/videoseries?list=${encodeURIComponent(playlistId)}&${params.toString()}`
-    if (videoId) return `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?${params.toString()}`
+    const embeddedVideoId = url.pathname.match(/\/embed\/([^/?]+)/)?.[1]
+    if (playlistId) return `https://www.youtube.com/embed/videoseries?list=${encodeURIComponent(playlistId)}&${params.toString()}`
+    if (videoId || embeddedVideoId) return `https://www.youtube.com/embed/${encodeURIComponent(videoId || embeddedVideoId)}?${params.toString()}`
     return null
   } catch {
     return null
@@ -64,6 +65,7 @@ export const ScholeView: React.FC = () => {
   const [musicName, setMusicName] = useState('')
   const [musicUrl, setMusicUrl] = useState('')
   const [musicError, setMusicError] = useState('')
+  const [editingSourceId, setEditingSourceId] = useState<string | null>(null)
 
   useEffect(() => writeScholeValue('tasks', tasks), [tasks])
   useEffect(() => writeScholeValue('active-task', activeTaskId), [activeTaskId])
@@ -142,21 +144,39 @@ export const ScholeView: React.FC = () => {
     setSelectedSourceId(source.id)
     setIsMusicPlaying(Boolean(getYouTubeEmbedUrl(source.url)))
   }
-  const addMusicSource = (event: React.FormEvent) => {
+  const openMusicEditor = (source?: MusicSource) => {
+    setEditingSourceId(source?.id ?? null)
+    setMusicName(source?.name ?? '')
+    setMusicUrl(source?.url ?? '')
+    setMusicError('')
+    setIsMusicEditorOpen(true)
+  }
+  const saveMusicSource = (event: React.FormEvent) => {
     event.preventDefault()
     const url = musicUrl.trim()
     if (!getYouTubeEmbedUrl(url)) {
       setMusicError('Cole um link de vídeo ou playlist do YouTube válido.')
       return
     }
-    const source = { id: makeId(), name: musicName.trim() || 'Nova playlist', url }
-    setSources((current) => [...current, source])
+    const source = { id: editingSourceId ?? makeId(), name: musicName.trim() || 'Nova playlist', url }
+    setSources((current) => editingSourceId ? current.map((item) => item.id === editingSourceId ? source : item) : [...current, source])
     setSelectedSourceId(source.id)
     setIsMusicPlaying(true)
     setMusicName('')
     setMusicUrl('')
     setMusicError('')
+    setEditingSourceId(null)
     setIsMusicEditorOpen(false)
+  }
+  const deleteMusicSource = (id: string) => {
+    setSources((current) => {
+      const remaining = current.filter((source) => source.id !== id)
+      if (id === selectedSourceId) {
+        setSelectedSourceId(remaining[0]?.id ?? '')
+        setIsMusicPlaying(false)
+      }
+      return remaining
+    })
   }
 
   return (
@@ -198,8 +218,8 @@ export const ScholeView: React.FC = () => {
         </section>
 
         <footer className={`rounded-2xl border border-text-primary/10 bg-bg-surface/45 px-4 py-3.5 backdrop-blur-sm transition-opacity duration-500 sm:px-5 ${focusDim}`}>
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"><div className="flex min-w-0 items-center gap-3"><div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-accent-gold/25 bg-bg-elevated text-accent-gold"><Music2 className="h-4 w-4" /></div><div className="min-w-0"><p className="truncate text-xs font-semibold text-text-primary">{selectedSource?.name || 'Escolha uma playlist'}</p><p className="truncate text-[11px] text-text-secondary">YouTube · playlists e vídeos adicionados por você</p></div><button type="button" disabled={!embedUrl} onClick={() => setIsMusicPlaying((playing) => !playing)} className="ml-1 text-accent-gold hover:text-accent-gold-bright disabled:opacity-40" aria-label={isMusicPlaying ? 'Parar música' : 'Tocar música'}>{isMusicPlaying ? <Pause className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current" />}</button><Volume2 className="hidden h-4 w-4 text-text-secondary sm:block" /></div><div className="flex flex-wrap gap-2">{sources.map((source) => <button key={source.id} type="button" onClick={() => selectSource(source)} className={`rounded-full border px-3 py-1.5 text-[10px] font-medium transition-colors ${selectedSourceId === source.id ? 'border-accent-gold text-accent-gold' : 'border-text-primary/20 text-text-secondary hover:border-text-primary/45 hover:text-text-primary'}`}>{source.name}</button>)}<button type="button" onClick={() => setIsMusicEditorOpen((open) => !open)} className="rounded-full border border-accent-gold/50 px-3 py-1.5 text-[10px] font-medium text-accent-gold hover:bg-accent-gold/10"><Plus className="mr-1 inline h-3 w-3" />Playlist</button></div></div>
-          {isMusicEditorOpen && <form onSubmit={addMusicSource} className="mt-4 grid gap-2 border-t border-text-primary/10 pt-3 sm:grid-cols-[0.75fr_1.5fr_auto]"><input value={musicName} onChange={(event) => setMusicName(event.target.value)} placeholder="Nome da playlist" className="rounded-lg border border-text-primary/15 bg-bg-base px-3 py-2 text-xs outline-none focus:border-accent-gold" /><input value={musicUrl} onChange={(event) => { setMusicUrl(event.target.value); setMusicError('') }} placeholder="Cole o link do YouTube ou YouTube Music" className="rounded-lg border border-text-primary/15 bg-bg-base px-3 py-2 text-xs outline-none focus:border-accent-gold" /><button className="rounded-lg bg-accent-gold px-4 py-2 text-xs font-bold text-bg-base">Adicionar</button>{musicError && <p className="sm:col-span-3 text-xs text-red-300">{musicError}</p>}<p className="sm:col-span-3 text-[10px] text-text-secondary">Aceita links de vídeos e playlists. Depois de adicionar, o player real do YouTube aparece abaixo.</p></form>}
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"><div className="flex min-w-0 items-center gap-3"><div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-accent-gold/25 bg-bg-elevated text-accent-gold"><Music2 className="h-4 w-4" /></div><div className="min-w-0"><p className="truncate text-xs font-semibold text-text-primary">{selectedSource?.name || 'Escolha uma playlist'}</p><p className="truncate text-[11px] text-text-secondary">YouTube · playlists e vídeos adicionados por você</p></div><button type="button" disabled={!embedUrl} onClick={() => setIsMusicPlaying((playing) => !playing)} className="ml-1 text-accent-gold hover:text-accent-gold-bright disabled:opacity-40" aria-label={isMusicPlaying ? 'Parar música' : 'Tocar música'}>{isMusicPlaying ? <Pause className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current" />}</button><Volume2 className="hidden h-4 w-4 text-text-secondary sm:block" /></div><div className="flex flex-wrap gap-2">{sources.map((source) => <button key={source.id} type="button" onClick={() => selectSource(source)} className={`rounded-full border px-3 py-1.5 text-[10px] font-medium transition-colors ${selectedSourceId === source.id ? 'border-accent-gold text-accent-gold' : 'border-text-primary/20 text-text-secondary hover:border-text-primary/45 hover:text-text-primary'}`}>{source.name}</button>)}<button type="button" onClick={() => openMusicEditor()} className="rounded-full border border-accent-gold/50 px-3 py-1.5 text-[10px] font-medium text-accent-gold hover:bg-accent-gold/10"><Plus className="mr-1 inline h-3 w-3" />Playlist</button></div></div>
+          {isMusicEditorOpen && <div className="mt-4 border-t border-text-primary/10 pt-3"><form onSubmit={saveMusicSource} className="grid gap-2 sm:grid-cols-[0.75fr_1.5fr_auto]"><input value={musicName} onChange={(event) => setMusicName(event.target.value)} placeholder="Nome da playlist" className="rounded-lg border border-text-primary/15 bg-bg-base px-3 py-2 text-xs outline-none focus:border-accent-gold" /><input value={musicUrl} onChange={(event) => { setMusicUrl(event.target.value); setMusicError('') }} placeholder="Cole o link do YouTube ou YouTube Music" className="rounded-lg border border-text-primary/15 bg-bg-base px-3 py-2 text-xs outline-none focus:border-accent-gold" /><button className="rounded-lg bg-accent-gold px-4 py-2 text-xs font-bold text-bg-base">{editingSourceId ? 'Salvar' : 'Adicionar'}</button>{musicError && <p className="sm:col-span-3 text-xs text-red-300">{musicError}</p>}<p className="sm:col-span-3 text-[10px] text-text-secondary">Aceita links de vídeos e playlists. O botão de tocar abre o player real abaixo.</p></form><div className="mt-3 space-y-1">{sources.map((source) => <div key={source.id} className="flex items-center gap-2 rounded-lg bg-bg-base/50 px-3 py-2 text-xs"><span className="min-w-0 flex-1 truncate text-text-secondary">{source.name} {source.url ? '· configurada' : '· sem link'}</span><button type="button" onClick={() => openMusicEditor(source)} className="text-accent-gold hover:text-accent-gold-bright">Editar</button><button type="button" onClick={() => deleteMusicSource(source.id)} className="text-text-secondary hover:text-red-400">Excluir</button></div>)}</div></div>}
           {isMusicPlaying && embedUrl && <div className="mt-4 overflow-hidden rounded-xl border border-text-primary/10 bg-black"><iframe key={embedUrl} title={`YouTube: ${selectedSource.name}`} src={embedUrl} className="h-44 w-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen /><p className="px-3 py-2 text-[10px] text-text-secondary">Se o navegador bloquear o início automático, clique em reproduzir dentro do player do YouTube.</p></div>}
           {selectedSource && !embedUrl && <p className="mt-3 text-xs text-text-secondary">Esta opção ainda não tem um link configurado. Clique em “Playlist” e cole uma URL do YouTube.</p>}
         </footer>
