@@ -80,6 +80,18 @@ export const LeftDrawer: React.FC = () => {
             </div>
           </div>}
 
+          {!isVisitor && (
+            <button
+              onClick={() => {
+                setActiveTab('perfil')
+                setIsLeftDrawerOpen(false)
+              }}
+              className="w-full -mt-3 flex items-center justify-center gap-2 rounded-xl border border-text-primary/10 px-3 py-2 text-xs font-semibold text-text-secondary transition-colors hover:border-accent-gold/40 hover:text-accent-gold"
+            >
+              Editar meu perfil
+            </button>
+          )}
+
           {/* Navigation Links */}
           <nav className="space-y-1 pt-2">
             <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider block px-2 mb-2">

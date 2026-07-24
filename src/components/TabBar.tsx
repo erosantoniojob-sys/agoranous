@@ -1,5 +1,5 @@
 import React from 'react'
-import { Home, Compass, Hourglass, Plus, Bookmark, User } from 'lucide-react'
+import { Home, Compass, Hourglass, Plus, Bookmark, Map } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
 
 export const TabBar: React.FC = () => {
@@ -55,26 +55,26 @@ export const TabBar: React.FC = () => {
           <span className="absolute -bottom-5 whitespace-nowrap text-[10px] font-semibold tracking-wide text-accent-gold">Adicionar</span>
         </div>
 
-        {/* 5. Memória (Mapa do Conhecimento & Dossiê) */}
+        {/* 5. Trilhas */}
+        <button
+          onClick={() => setActiveTab('trilhas')}
+          className={`flex min-w-0 flex-1 flex-col items-center gap-1 rounded-lg py-1.5 text-[10px] transition-colors sm:text-xs ${
+            activeTab === 'trilhas' ? 'text-accent-gold' : 'text-text-secondary hover:text-text-primary'
+          }`}
+        >
+          <Map className="h-5 w-5 stroke-[1.8]" />
+          <span className="font-semibold tracking-wide">Trilhas</span>
+        </button>
+
+        {/* 6. Memória */}
         <button
           onClick={() => setActiveTab('memoria')}
           className={`flex min-w-0 flex-1 flex-col items-center gap-1 rounded-lg py-1.5 text-[10px] transition-colors sm:text-xs ${
-            activeTab === 'memoria' || activeTab === 'trilhas' ? 'text-accent-gold' : 'text-text-secondary hover:text-text-primary'
+            activeTab === 'memoria' ? 'text-accent-gold' : 'text-text-secondary hover:text-text-primary'
           }`}
         >
           <Bookmark className="h-5 w-5 stroke-[1.8]" />
           <span className="font-semibold tracking-wide">Memória</span>
-        </button>
-
-        {/* 6. Perfil */}
-        <button
-          onClick={() => setActiveTab('perfil')}
-          className={`flex min-w-0 flex-1 flex-col items-center gap-1 rounded-lg py-1.5 text-[10px] transition-colors sm:text-xs ${
-            activeTab === 'perfil' ? 'text-accent-gold' : 'text-text-secondary hover:text-text-primary'
-          }`}
-        >
-          <User className="h-5 w-5 stroke-[1.8]" />
-          <span className="font-semibold tracking-wide">Perfil</span>
         </button>
       </div>
     </nav>
