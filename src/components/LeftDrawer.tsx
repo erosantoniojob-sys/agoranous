@@ -1,9 +1,9 @@
 import React from 'react'
-import { X, Calendar, PenTool, Music, Sliders, Database, Sparkles, CheckSquare, Layers } from 'lucide-react'
+import { X, Calendar, PenTool, Music, Sliders, Database, Sparkles, CheckSquare, Layers, Hourglass } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
 
 export const LeftDrawer: React.FC = () => {
-  const { isLeftDrawerOpen, setIsLeftDrawerOpen, userProfile } = useAgoraStore()
+  const { isLeftDrawerOpen, setIsLeftDrawerOpen, setActiveTab, userProfile } = useAgoraStore()
 
   if (!isLeftDrawerOpen) return null
 
@@ -80,6 +80,17 @@ export const LeftDrawer: React.FC = () => {
             <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider block px-2 mb-2">
               Seções de Estilo de Vida
             </span>
+
+            <button
+              onClick={() => {
+                setActiveTab('schole')
+                setIsLeftDrawerOpen(false)
+              }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold text-text-primary hover:text-accent-gold hover:bg-bg-elevated/80 rounded-xl transition-all"
+            >
+              <Hourglass className="w-4 h-4 text-accent-gold" />
+              <span>Scholé · Modo Caverna</span>
+            </button>
 
             <button
               onClick={() => {

@@ -249,8 +249,8 @@ interface AgoraStoreContextType {
   customTrails: CustomTrail[];
   customCategories: Category[];
   knowledgeNodes: KnowledgeNode[];
-  activeTab: 'inicio' | 'explorar' | 'memoria' | 'trilhas' | 'perfil';
-  setActiveTab: (tab: 'inicio' | 'explorar' | 'memoria' | 'trilhas' | 'perfil') => void;
+  activeTab: 'inicio' | 'explorar' | 'memoria' | 'trilhas' | 'perfil' | 'schole';
+  setActiveTab: (tab: 'inicio' | 'explorar' | 'memoria' | 'trilhas' | 'perfil' | 'schole') => void;
   selectedFilter: string;
   setSelectedFilter: (filter: string) => void;
   selectedMedia: MediaItem | null;
@@ -377,7 +377,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setHasCompletedOnboarding(storedOnboarding !== null ? JSON.parse(storedOnboarding) : false);
   }, [isVisitor, user?.id]);
 
-  const [activeTab, setActiveTab] = useState<'inicio' | 'explorar' | 'memoria' | 'trilhas' | 'perfil'>('inicio');
+  const [activeTab, setActiveTab] = useState<'inicio' | 'explorar' | 'memoria' | 'trilhas' | 'perfil' | 'schole'>('inicio');
   const [selectedFilter, setSelectedFilter] = useState<string>('Todos');
   const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);

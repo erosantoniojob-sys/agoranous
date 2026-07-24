@@ -14,6 +14,7 @@ import { ProfileView } from './views/ProfileView'
 import { LoginView } from './views/LoginView'
 import { Trilhas } from './components/Trilhas'
 import { Onboarding } from './components/Onboarding'
+import { ScholeView } from './views/ScholeView'
 
 const MainContent: React.FC = () => {
   const { user, isLoading } = useAuth()
@@ -38,6 +39,10 @@ const MainContent: React.FC = () => {
   // Route Guard: force onboarding if user hasn't completed onboarding yet
   if (!hasCompletedOnboarding) {
     return <Onboarding />
+  }
+
+  if (activeTab === 'schole') {
+    return <ScholeView />
   }
 
   const renderActiveView = () => {
