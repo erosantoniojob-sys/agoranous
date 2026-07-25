@@ -29,54 +29,9 @@ export interface Recommendation {
   motivoRecomendacao: string;
 }
 
-const FALLBACK_RECOMMENDATIONS: Recommendation[] = [
-  {
-    id: 'rec_platao',
-    titulo: 'A República',
-    tipo: 'Livro',
-    autor_criador: 'Platão',
-    ano: -375,
-    data_lancamento_oficial: '0375-01-01 a.C.',
-    sinopse: 'Diálogo clássico fundacional da filosofia ocidental. Investiga a justiça na alma e no Estado, a Teoria das Idéias e a lendária Caverna de Platão.',
-    generos: ['Filosofia', 'Clássico Grego', 'Ética'],
-    url_capa: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=800&auto=format&fit=crop',
-    url_capa_oficial: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=800&auto=format&fit=crop',
-    fonte: 'Recomendado pelo Perfil de Filosofia',
-    motivoRecomendacao: 'Essencial para aprofundar sua coleção de pensamento político e teoria do conhecimento.',
-  },
-  {
-    id: 'rec_nietzsche',
-    titulo: 'Assim Falou Zaratustra',
-    tipo: 'Livro',
-    autor_criador: 'Friedrich Nietzsche',
-    ano: 1883,
-    data_lancamento_oficial: '1883-05-15',
-    sinopse: 'Poema filosófico denso no qual Zaratustra desce da montanha para anunciar o Übermensch, o eterno retorno e a superação moral.',
-    generos: ['Filosofia Existencial', 'Literatura Alemã'],
-    url_capa: 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?q=80&w=800&auto=format&fit=crop',
-    url_capa_oficial: 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?q=80&w=800&auto=format&fit=crop',
-    fonte: 'Recomendado pelo Perfil de Filosofia',
-    motivoRecomendacao: 'Obras-primas do existencialismo indicadas para expandir sua trilha de reflexões morais.',
-  },
-  {
-    id: 'rec_fifa',
-    titulo: 'EA Sports FC 24 (FIFA)',
-    tipo: 'Jogo',
-    autor_criador: 'EA Vancouver / EA Sports',
-    ano: 2023,
-    data_lancamento_oficial: '2023-09-29',
-    sinopse: 'Simulador esportivo de futebol mundial com o motor de física HyperMotionV, PlayStyles e licenciamento oficial de clubes globais.',
-    generos: ['Esporte', 'Simulação Competitiva'],
-    url_capa: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=800&auto=format&fit=crop',
-    url_capa_oficial: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=800&auto=format&fit=crop',
-    fonte: 'Recomendado pelo Perfil de Jogos',
-    motivoRecomendacao: 'Destaque no gênero esportivo e estratégia tática para momentos de lazer e maestria digital.',
-  },
-];
-
 const MOCK_MAIN_PROFILE: UserProfile = {
   nome: 'Visitante',
-  biografia: '',
+  biografia: 'Tradutor e músico (Banda Pioneiros)',
   avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800&auto=format&fit=crop',
   capa_url: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=1200&auto=format&fit=crop',
   tags_interesses: [
@@ -205,7 +160,7 @@ const SEED_CHAT: ChatMessage[] = [
   {
     id: 'c1',
     sender: 'mentor',
-    text: 'Saudações, Eros Antônio. Sou o Mentor Oráculo da Ágora. Como posso auxiliar seus estudos e sínteses de conhecimento hoje?',
+    text: 'Saudações. Sou o Mentor Oráculo da Ágora. Como posso auxiliar seus estudos e sínteses de conhecimento hoje?',
     timestamp: '14:30',
   },
 ];
@@ -291,11 +246,10 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const isVisitor = Boolean(user && (user.id === 'guest_user' || user.id.startsWith('guest_')));
   const storagePrefix = isVisitor ? 'agora_guest_v5_' : 'agora_user_v5_';
 
-  // 1. LIMPEZA RÍGOROSA PARA CONVIDADOS
+  // LIMPEZA RÍGOROSA PARA CONVIDADOS
   useEffect(() => {
     if (isVisitor) {
       localStorage.removeItem(storagePrefix + 'profile');
-      // Destruindo possíveis caches antigos de outros convidados
       localStorage.removeItem(storagePrefix + 'media');
       localStorage.removeItem(storagePrefix + 'learnings');
       localStorage.removeItem(storagePrefix + 'trails');
@@ -356,14 +310,13 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } catch { return false; }
   });
 
-  // 2. BUSCA DA NUVEM AO LOGAR (Re-sync inteligente)
+  // BUSCA DA NUVEM AO LOGAR (Re-sync inteligente usando API da Vercel)
   useEffect(() => {
     const keyPrefix = isVisitor ? 'agora_guest_v5_' : 'agora_user_v5_';
 
     async function loadCloudData() {
       if (!isVisitor && user?.id) {
         try {
-          // Busca os dados reais vinculados ao ID do usuário
           const res = await fetch(`/api/getUserData?userId=${user.id}`);
           if (res.ok) {
             const cloudData = await res.json();
@@ -373,7 +326,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             if (cloudData.profile) setUserProfile(cloudData.profile);
             if (cloudData.trails) setCustomTrails(cloudData.trails);
             if (cloudData.chat) setChatMessages(cloudData.chat);
-            return; // Sai sem usar o fallback local se a nuvem responder
+            return; 
           }
         } catch (error) {
           console.error("Erro ao buscar da nuvem. Usando cache local.", error);
@@ -403,7 +356,6 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     loadCloudData();
   }, [isVisitor, user?.id]);
 
-
   const [activeTab, setActiveTab] = useState<'inicio' | 'explorar' | 'memoria' | 'trilhas' | 'perfil' | 'schole' | 'rotina'>('inicio');
   const [selectedFilter, setSelectedFilter] = useState<string>('Todos');
   const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
@@ -411,7 +363,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isLeftDrawerOpen, setIsLeftDrawerOpen] = useState<boolean>(false);
   const [isRightChatOpen, setIsRightChatOpen] = useState<boolean>(false);
 
-  // 3. FUNÇÃO UTILITÁRIA PARA SALVAR NA NUVEM
+  // FUNÇÃO UTILITÁRIA PARA SALVAR NA NUVEM (Usando API da Vercel)
   const syncToCloud = useCallback(async (collection: string, data: any) => {
     if (!isVisitor && user?.id) {
       try {
@@ -430,7 +382,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [isVisitor, user?.id]);
 
-  // EFEITOS DE PERSISTÊNCIA (Local + Nuvem)
+  // EFEITOS DE PERSISTÊNCIA
   useEffect(() => {
     localStorage.setItem(storagePrefix + 'media', JSON.stringify(mediaItems));
     syncToCloud('media', mediaItems);
@@ -460,7 +412,6 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   useEffect(() => {
     localStorage.setItem(storagePrefix + 'has_completed_onboarding', JSON.stringify(hasCompletedOnboarding));
-    // Opcional: pode sincronizar o onboarding se quiser
     syncToCloud('onboarding', hasCompletedOnboarding);
   }, [hasCompletedOnboarding, storagePrefix, syncToCloud]);
 
@@ -595,26 +546,22 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setChatMessages((prev) => [...prev, userMsg]);
 
       try {
-        const endpoints = ['/.netlify/functions/chatMentor', '/api/chatMentor'];
         let replyText = '';
-
-        for (const ep of endpoints) {
-          try {
-            const res = await fetch(ep, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ messages: [...chatMessages, userMsg] }),
-            });
-            if (res.ok) {
-              const data = await res.json();
-              if (data?.reply) {
-                replyText = data.reply;
-                break;
-              }
+        
+        try {
+          const res = await fetch('/api/chatMentor', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messages: [...chatMessages, userMsg] }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data?.reply) {
+              replyText = data.reply;
             }
-          } catch {
-            // try next
           }
+        } catch {
+          // fallback
         }
 
         if (!replyText) {
@@ -675,34 +622,87 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const updateUserProfile = updateProfile;
 
+  // NOVA FUNÇÃO INTELIGENTE DE RECOMENDAÇÕES
   const fetchRecommendations = useCallback(async (): Promise<Recommendation[]> => {
+    const interesses = userProfile.tags_interesses && userProfile.tags_interesses.length > 0 
+      ? userProfile.tags_interesses 
+      : ['Filosofia', 'Ficção Clássica']; 
+
+    const termosBusca = interesses.sort(() => 0.5 - Math.random()).slice(0, 2);
+    const recomendacoesDinamicas: Recommendation[] = [];
+
     try {
-      const endpoints = ['/.netlify/functions/getRecommendations', '/api/getRecommendations'];
-      for (const ep of endpoints) {
-        try {
-          const res = await fetch(ep, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              tags: userProfile.tags_interesses || [],
-              existingTitles: mediaItems.map((item) => item.titulo),
-            }),
-          });
-          if (res.ok) {
-            const data = await res.json();
-            if (Array.isArray(data.recommendations) && data.recommendations.length > 0) {
-              return data.recommendations;
-            }
+      for (const termo of termosBusca) {
+        const queryLimpa = termo.split(' ')[0].toLowerCase();
+        
+        const res = await fetch(`https://openlibrary.org/search.json?q=${queryLimpa}&limit=2&language=por`);
+        if (res.ok) {
+          const data = await res.json();
+          
+          if (data.docs && data.docs.length > 0) {
+            data.docs.forEach((doc: any) => {
+              const jaTem = mediaItems.some(m => m.titulo.toLowerCase() === doc.title?.toLowerCase());
+              
+              if (!jaTem && doc.title) {
+                const coverUrl = doc.cover_i 
+                  ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`
+                  : 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=800&auto=format&fit=crop'; 
+
+                recomendacoesDinamicas.push({
+                  id: `rec_dinamico_${doc.key || Date.now()}_${Math.random()}`,
+                  titulo: doc.title,
+                  tipo: 'Livro',
+                  autor_criador: doc.author_name ? doc.author_name.join(', ') : 'Autor Desconhecido',
+                  ano: doc.first_publish_year || new Date().getFullYear(),
+                  sinopse: `Obra recomendada com base no seu interesse em: ${termo}. (Dados via OpenLibrary).`,
+                  generos: [termo, 'Recomendação Dinâmica'],
+                  url_capa: coverUrl,
+                  url_capa_oficial: coverUrl,
+                  fonte: 'OpenLibrary API',
+                  motivoRecomendacao: `Selecionado pelo Algoritmo Ágora por sua afinidade com ${termo}.`
+                });
+              }
+            });
           }
-        } catch {
-          // try next
         }
       }
-    } catch {
-      // fallback
+
+      if (recomendacoesDinamicas.length > 0) {
+        return recomendacoesDinamicas.slice(0, 3);
+      }
+
+    } catch (error) {
+      console.error("Erro ao buscar recomendações na internet:", error);
     }
-    return FALLBACK_RECOMMENDATIONS;
-  }, [mediaItems, userProfile.tags_interesses]);
+
+    // Fallback Inteligente baseado em literatura clássica e filosofia reformada
+    return [
+      {
+        id: `rec_fallback_${Date.now()}`,
+        titulo: 'O Morro dos Ventos Uivantes',
+        tipo: 'Livro',
+        autor_criador: 'Emily Brontë',
+        ano: 1847,
+        sinopse: 'Um clássico da literatura que examina a paixão, a vingança e as fronteiras da moralidade na propriedade de Wuthering Heights.',
+        generos: ['Literatura Clássica', 'Romance'],
+        url_capa: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=800&auto=format&fit=crop',
+        fonte: 'Recomendação Curada Ágora',
+        motivoRecomendacao: 'Selecionado em função do seu foco recorrente em literatura clássica.'
+      },
+      {
+        id: `rec_fallback_${Date.now() + 1}`,
+        titulo: 'Confissões',
+        tipo: 'Livro',
+        autor_criador: 'Santo Agostinho',
+        ano: 397,
+        sinopse: 'Autobiografia espiritual e filosófica que investiga profundamente a natureza de Deus, a queda do homem e a redenção da alma.',
+        generos: ['Filosofia Cristã', 'Teologia'],
+        url_capa: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=800&auto=format&fit=crop',
+        fonte: 'Recomendação Curada Ágora',
+        motivoRecomendacao: 'Uma leitura fundamental que dialoga com seu aprofundamento em teologia e na tradição filosófica.'
+      }
+    ];
+  }, [userProfile.tags_interesses, mediaItems]);
 
   const getEstatisticas = useCallback((): Statistics => {
     const totalItens = mediaItems.length;
@@ -751,36 +751,33 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const fetchInteligente = useCallback(
     async (query: string, tipo: MediaType): Promise<Omit<MediaItem, 'id' | 'criadoEm' | 'status' | 'avaliacao_numerica'>> => {
-      const endpoints = ['/.netlify/functions/searchMedia', '/api/searchMedia'];
-      for (const ep of endpoints) {
-        try {
-          const res = await fetch(ep, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query, tipo }),
-          });
-          if (res.ok) {
-            const data = await res.json();
-            if (data?.titulo) {
-              const coverUrl = data.url_capa_oficial || data.url_capa || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=800&auto=format&fit=crop';
-              return {
-                titulo: data.titulo,
-                tipo: data.tipo || tipo,
-                url_capa: coverUrl,
-                capa_oficial: coverUrl,
-                url_capa_oficial: coverUrl,
-                autor_criador: data.autor_criador || 'Criador Oficial',
-                ano: data.ano || new Date().getFullYear(),
-                data_lancamento_oficial: data.data_lancamento_oficial || `${data.ano || new Date().getFullYear()}-01-01`,
-                sinopse: data.sinopse || 'Detalhes oficiais da obra.',
-                generos: data.generos || [tipo],
-                fonte: data.fonte || 'Netlify Serverless API',
-              };
-            }
+      try {
+        const res = await fetch('/api/searchMedia', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query, tipo }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.titulo) {
+            const coverUrl = data.url_capa_oficial || data.url_capa || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=800&auto=format&fit=crop';
+            return {
+              titulo: data.titulo,
+              tipo: data.tipo || tipo,
+              url_capa: coverUrl,
+              capa_oficial: coverUrl,
+              url_capa_oficial: coverUrl,
+              autor_criador: data.autor_criador || 'Criador Oficial',
+              ano: data.ano || new Date().getFullYear(),
+              data_lancamento_oficial: data.data_lancamento_oficial || `${data.ano || new Date().getFullYear()}-01-01`,
+              sinopse: data.sinopse || 'Detalhes oficiais da obra.',
+              generos: data.generos || [tipo],
+              fonte: data.fonte || 'Vercel Serverless API',
+            };
           }
-        } catch {
-          // try next
         }
+      } catch {
+        // try next
       }
 
       await new Promise((r) => setTimeout(r, 600));

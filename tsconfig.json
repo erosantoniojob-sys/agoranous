@@ -23,5 +23,6 @@
     /* Tipagens para o backend (Node) */
     "types": ["node"]
   },
-  "include": ["src", "netlify"]
+  "include": ["src", "api", "api/syncUserData.mts", "api/getUserData.mts"]
+
 }
