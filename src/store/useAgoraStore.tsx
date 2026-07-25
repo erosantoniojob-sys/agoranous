@@ -75,8 +75,8 @@ const FALLBACK_RECOMMENDATIONS: Recommendation[] = [
 ];
 
 const MOCK_MAIN_PROFILE: UserProfile = {
-  nome: 'Eros Antônio',
-  biografia: 'Tradutor e músico (Banda Pioneiros)',
+  nome: 'Visitante',
+  biografia: '',
   avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800&auto=format&fit=crop',
   capa_url: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=1200&auto=format&fit=crop',
   tags_interesses: [
@@ -289,17 +289,26 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const { user } = useAuth();
 
   const isVisitor = Boolean(user && (user.id === 'guest_user' || user.id.startsWith('guest_')));
-
   const storagePrefix = isVisitor ? 'agora_guest_v5_' : 'agora_user_v5_';
+
+  // 1. LIMPEZA RÍGOROSA PARA CONVIDADOS
+  useEffect(() => {
+    if (isVisitor) {
+      localStorage.removeItem(storagePrefix + 'profile');
+      // Destruindo possíveis caches antigos de outros convidados
+      localStorage.removeItem(storagePrefix + 'media');
+      localStorage.removeItem(storagePrefix + 'learnings');
+      localStorage.removeItem(storagePrefix + 'trails');
+      localStorage.removeItem(storagePrefix + 'chat');
+    }
+  }, [isVisitor, storagePrefix]);
 
   const [mediaItems, setMediaItems] = useState<MediaItem[]>(() => {
     try {
       const stored = localStorage.getItem(storagePrefix + 'media');
       if (stored) return JSON.parse(stored);
       return [];
-    } catch {
-      return [];
-    }
+    } catch { return []; }
   });
 
   const [aprendizados, setAprendizados] = useState<Aprendizado[]>(() => {
@@ -307,9 +316,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const stored = localStorage.getItem(storagePrefix + 'learnings');
       if (stored) return JSON.parse(stored);
       return [];
-    } catch {
-      return [];
-    }
+    } catch { return []; }
   });
 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>(() => {
@@ -337,45 +344,65 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const stored = localStorage.getItem(storagePrefix + 'trails');
       if (stored) return JSON.parse(stored);
       return [];
-    } catch {
-      return [];
-    }
+    } catch { return []; }
   });
 
   const [customCategories, setCustomCategories] = useState<Category[]>([]);
-
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean>(() => {
     try {
       const stored = localStorage.getItem(storagePrefix + 'has_completed_onboarding');
       if (stored !== null) return JSON.parse(stored);
       return false;
-    } catch {
-      return false;
-    }
+    } catch { return false; }
   });
 
-  // Re-sync when switching session mode (visitor vs logged in)
+  // 2. BUSCA DA NUVEM AO LOGAR (Re-sync inteligente)
   useEffect(() => {
     const keyPrefix = isVisitor ? 'agora_guest_v5_' : 'agora_user_v5_';
 
-    const storedMedia = localStorage.getItem(keyPrefix + 'media');
-    setMediaItems(storedMedia ? JSON.parse(storedMedia) : []);
+    async function loadCloudData() {
+      if (!isVisitor && user?.id) {
+        try {
+          // Busca os dados reais vinculados ao ID do usuário
+          const res = await fetch(`/api/getUserData?userId=${user.id}`);
+          if (res.ok) {
+            const cloudData = await res.json();
+            
+            if (cloudData.media) setMediaItems(cloudData.media);
+            if (cloudData.learnings) setAprendizados(cloudData.learnings);
+            if (cloudData.profile) setUserProfile(cloudData.profile);
+            if (cloudData.trails) setCustomTrails(cloudData.trails);
+            if (cloudData.chat) setChatMessages(cloudData.chat);
+            return; // Sai sem usar o fallback local se a nuvem responder
+          }
+        } catch (error) {
+          console.error("Erro ao buscar da nuvem. Usando cache local.", error);
+        }
+      }
 
-    const storedLearnings = localStorage.getItem(keyPrefix + 'learnings');
-    setAprendizados(storedLearnings ? JSON.parse(storedLearnings) : []);
+      // Fallback local se for visitante ou falha de rede
+      const storedMedia = localStorage.getItem(keyPrefix + 'media');
+      setMediaItems(storedMedia ? JSON.parse(storedMedia) : []);
 
-    const storedChat = localStorage.getItem(keyPrefix + 'chat');
-    setChatMessages(storedChat ? JSON.parse(storedChat) : isVisitor ? VISITOR_CHAT : SEED_CHAT);
+      const storedLearnings = localStorage.getItem(keyPrefix + 'learnings');
+      setAprendizados(storedLearnings ? JSON.parse(storedLearnings) : []);
 
-    const storedProfile = isVisitor ? null : localStorage.getItem(keyPrefix + 'profile');
-    setUserProfile(storedProfile ? JSON.parse(storedProfile) : isVisitor ? VISITOR_PROFILE : MOCK_MAIN_PROFILE);
+      const storedChat = localStorage.getItem(keyPrefix + 'chat');
+      setChatMessages(storedChat ? JSON.parse(storedChat) : isVisitor ? VISITOR_CHAT : SEED_CHAT);
 
-    const storedTrails = localStorage.getItem(keyPrefix + 'trails');
-    setCustomTrails(storedTrails ? JSON.parse(storedTrails) : []);
+      const storedProfile = isVisitor ? null : localStorage.getItem(keyPrefix + 'profile');
+      setUserProfile(storedProfile ? JSON.parse(storedProfile) : isVisitor ? VISITOR_PROFILE : MOCK_MAIN_PROFILE);
 
-    const storedOnboarding = localStorage.getItem(keyPrefix + 'has_completed_onboarding');
-    setHasCompletedOnboarding(storedOnboarding !== null ? JSON.parse(storedOnboarding) : false);
+      const storedTrails = localStorage.getItem(keyPrefix + 'trails');
+      setCustomTrails(storedTrails ? JSON.parse(storedTrails) : []);
+
+      const storedOnboarding = localStorage.getItem(keyPrefix + 'has_completed_onboarding');
+      setHasCompletedOnboarding(storedOnboarding !== null ? JSON.parse(storedOnboarding) : false);
+    }
+
+    loadCloudData();
   }, [isVisitor, user?.id]);
+
 
   const [activeTab, setActiveTab] = useState<'inicio' | 'explorar' | 'memoria' | 'trilhas' | 'perfil' | 'schole' | 'rotina'>('inicio');
   const [selectedFilter, setSelectedFilter] = useState<string>('Todos');
@@ -384,30 +411,58 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isLeftDrawerOpen, setIsLeftDrawerOpen] = useState<boolean>(false);
   const [isRightChatOpen, setIsRightChatOpen] = useState<boolean>(false);
 
-  // Persistence side effects
+  // 3. FUNÇÃO UTILITÁRIA PARA SALVAR NA NUVEM
+  const syncToCloud = useCallback(async (collection: string, data: any) => {
+    if (!isVisitor && user?.id) {
+      try {
+        await fetch('/api/syncUserData', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: user.id,
+            collection,
+            data
+          })
+        });
+      } catch (err) {
+        console.error(`Erro ao sincronizar ${collection}:`, err);
+      }
+    }
+  }, [isVisitor, user?.id]);
+
+  // EFEITOS DE PERSISTÊNCIA (Local + Nuvem)
   useEffect(() => {
     localStorage.setItem(storagePrefix + 'media', JSON.stringify(mediaItems));
-  }, [mediaItems, storagePrefix]);
+    syncToCloud('media', mediaItems);
+  }, [mediaItems, storagePrefix, syncToCloud]);
 
   useEffect(() => {
     localStorage.setItem(storagePrefix + 'learnings', JSON.stringify(aprendizados));
-  }, [aprendizados, storagePrefix]);
+    syncToCloud('learnings', aprendizados);
+  }, [aprendizados, storagePrefix, syncToCloud]);
 
   useEffect(() => {
     localStorage.setItem(storagePrefix + 'chat', JSON.stringify(chatMessages));
-  }, [chatMessages, storagePrefix]);
+    syncToCloud('chat', chatMessages);
+  }, [chatMessages, storagePrefix, syncToCloud]);
 
   useEffect(() => {
-    if (!isVisitor) localStorage.setItem(storagePrefix + 'profile', JSON.stringify(userProfile));
-  }, [userProfile, storagePrefix, isVisitor]);
+    if (!isVisitor) {
+      localStorage.setItem(storagePrefix + 'profile', JSON.stringify(userProfile));
+      syncToCloud('profile', userProfile);
+    }
+  }, [userProfile, storagePrefix, isVisitor, syncToCloud]);
 
   useEffect(() => {
     localStorage.setItem(storagePrefix + 'trails', JSON.stringify(customTrails));
-  }, [customTrails, storagePrefix]);
+    syncToCloud('trails', customTrails);
+  }, [customTrails, storagePrefix, syncToCloud]);
 
   useEffect(() => {
     localStorage.setItem(storagePrefix + 'has_completed_onboarding', JSON.stringify(hasCompletedOnboarding));
-  }, [hasCompletedOnboarding, storagePrefix]);
+    // Opcional: pode sincronizar o onboarding se quiser
+    syncToCloud('onboarding', hasCompletedOnboarding);
+  }, [hasCompletedOnboarding, storagePrefix, syncToCloud]);
 
   const completeOnboarding = useCallback((profileData?: Partial<UserProfile>) => {
     if (profileData) {
