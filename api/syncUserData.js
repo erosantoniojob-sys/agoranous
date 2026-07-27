@@ -1,34 +1,44 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+const collections = new Set(['media', 'learnings', 'profile', 'trails', 'chat', 'onboarding'])
+
+function getSupabase() {
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('A sincronização não está configurada no servidor.')
+  }
+
+  return createClient(supabaseUrl, supabaseServiceKey, { auth: { persistSession: false } })
+}
+
+async function getAuthenticatedUser(req, supabase) {
+  const token = req.headers.authorization?.replace(/^Bearer\s+/i, '')
+  if (!token) return null
+
+  const { data, error } = await supabase.auth.getUser(token)
+  return error ? null : data.user
+}
 
 export default async function handler(req, res) {
-  if (req.method !== 'GET') return res.status(405).json({ error: 'Method Not Allowed' });
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' })
 
   try {
-    const { userId } = req.query;
+    const supabase = getSupabase()
+    const user = await getAuthenticatedUser(req, supabase)
+    if (!user) return res.status(401).json({ error: 'Sessão inválida ou expirada.' })
 
-    if (!userId) return res.status(400).json({ error: 'ID não fornecido' });
+    const { collection, data } = req.body || {}
+    if (!collections.has(collection)) return res.status(400).json({ error: 'Coleção inválida.' })
 
-    const { data: rows, error } = await supabase
+    const { error } = await supabase
       .from('user_data')
-      .select('collection, data')
-      .eq('user_id', userId);
+      .upsert({ user_id: user.id, collection, data }, { onConflict: 'user_id,collection' })
 
-    if (error) throw error;
-
-    const cloudData = {};
-    if (rows) {
-      rows.forEach((row) => {
-        cloudData[row.collection] = row.data;
-      });
-    }
-
-    return res.status(200).json(cloudData);
+    if (error) throw error
+    return res.status(200).json({ success: true })
   } catch (error) {
-    console.error("Erro no getUserData:", error);
-    return res.status(500).json({ error: error.message });
+    console.error('Erro ao sincronizar dados:', error)
+    return res.status(500).json({ error: error instanceof Error ? error.message : 'Erro ao sincronizar os dados.' })
   }
 }

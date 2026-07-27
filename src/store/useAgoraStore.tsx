@@ -12,7 +12,7 @@ import {
   UserProfile,
   KnowledgeNode,
 } from '../types/agora';
-import { useAuth } from '../context/AuthContext';
+import { supabase, useAuth } from '../context/AuthContext';
 
 export interface Recommendation {
   id: string;
@@ -244,7 +244,13 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const { user } = useAuth();
 
   const isVisitor = Boolean(user && (user.id === 'guest_user' || user.id.startsWith('guest_')));
-  const storagePrefix = isVisitor ? 'agora_guest_v5_' : 'agora_user_v5_';
+  // O cache local é apenas um fallback. Cada conta precisa de uma chave própria
+  // para que dados de usuários diferentes nunca sejam reaproveitados no mesmo navegador.
+  const storagePrefix = isVisitor
+    ? 'agora_guest_v5_'
+    : `agora_user_v5_${user?.id || 'anonymous'}_`;
+  const [hydratedUserId, setHydratedUserId] = useState<string | null>(null);
+  const isCloudHydrated = Boolean(user?.id && hydratedUserId === user.id);
 
   // LIMPEZA RÍGOROSA PARA CONVIDADOS
   useEffect(() => {
@@ -312,12 +318,18 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // BUSCA DA NUVEM AO LOGAR (Re-sync inteligente usando API da Vercel)
   useEffect(() => {
-    const keyPrefix = isVisitor ? 'agora_guest_v5_' : 'agora_user_v5_';
+    const keyPrefix = storagePrefix;
 
     async function loadCloudData() {
+      setHydratedUserId(null);
       if (!isVisitor && user?.id) {
         try {
-          const res = await fetch(`/api/getUserData?userId=${user.id}`);
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session?.access_token) throw new Error('Sessão não encontrada.');
+
+          const res = await fetch('/api/getUserData', {
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          });
           if (res.ok) {
             const cloudData = await res.json();
             
@@ -326,8 +338,11 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             if (cloudData.profile) setUserProfile(cloudData.profile);
             if (cloudData.trails) setCustomTrails(cloudData.trails);
             if (cloudData.chat) setChatMessages(cloudData.chat);
+            if (typeof cloudData.onboarding === 'boolean') setHasCompletedOnboarding(cloudData.onboarding);
+            setHydratedUserId(user.id);
             return; 
           }
+          throw new Error(`Falha ao buscar dados sincronizados (${res.status}).`);
         } catch (error) {
           console.error("Erro ao buscar da nuvem. Usando cache local.", error);
         }
@@ -351,10 +366,11 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
       const storedOnboarding = localStorage.getItem(keyPrefix + 'has_completed_onboarding');
       setHasCompletedOnboarding(storedOnboarding !== null ? JSON.parse(storedOnboarding) : false);
+      setHydratedUserId(user?.id || null);
     }
 
     loadCloudData();
-  }, [isVisitor, user?.id]);
+  }, [isVisitor, storagePrefix, user?.id]);
 
   const [activeTab, setActiveTab] = useState<'inicio' | 'explorar' | 'memoria' | 'trilhas' | 'perfil' | 'schole' | 'rotina'>('inicio');
   const [selectedFilter, setSelectedFilter] = useState<string>('Todos');
@@ -365,22 +381,32 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // FUNÇÃO UTILITÁRIA PARA SALVAR NA NUVEM (Usando API da Vercel)
   const syncToCloud = useCallback(async (collection: string, data: any) => {
-    if (!isVisitor && user?.id) {
+    if (!isVisitor && user?.id && isCloudHydrated) {
       try {
-        await fetch('/api/syncUserData', {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) throw new Error('Sessão não encontrada.');
+
+        const response = await fetch('/api/syncUserData', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
           body: JSON.stringify({
-            userId: user.id,
             collection,
             data
           })
         });
+
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+          throw new Error(error.error || `Falha ao sincronizar (${response.status}).`);
+        }
       } catch (err) {
         console.error(`Erro ao sincronizar ${collection}:`, err);
       }
     }
-  }, [isVisitor, user?.id]);
+  }, [isCloudHydrated, isVisitor, user?.id]);
 
   // EFEITOS DE PERSISTÊNCIA
   useEffect(() => {
