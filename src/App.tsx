@@ -19,7 +19,7 @@ import { RoutineView } from './views/RoutineView'
 
 const MainContent: React.FC = () => {
   const { user, isLoading } = useAuth()
-  const { activeTab, hasCompletedOnboarding, isVisitor } = useAgoraStore()
+  const { activeTab, hasCompletedOnboarding, isVisitor, isDataReady } = useAgoraStore()
 
   if (isLoading) {
     return (
@@ -35,6 +35,17 @@ const MainContent: React.FC = () => {
 
   if (!user) {
     return <LoginView />
+  }
+
+  if (!isDataReady) {
+    return (
+      <div className="min-h-screen bg-bg-base text-text-primary flex items-center justify-center p-4 font-sans">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <div className="w-12 h-12 rounded-full border-2 border-accent-gold border-t-transparent animate-spin" />
+          <span className="font-serif font-bold text-lg text-text-primary">Carregando seu acervo...</span>
+        </div>
+      </div>
+    )
   }
 
   // Route Guard: force onboarding if user hasn't completed onboarding yet

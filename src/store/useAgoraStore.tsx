@@ -38,6 +38,22 @@ const EMPTY_PROFILE: UserProfile = {
   eventos_regressivos: [],
 };
 
+function hasExistingUserData(data: { media?: unknown; learnings?: unknown; trails?: unknown; profile?: Partial<UserProfile> }) {
+  if (Array.isArray(data.media) && data.media.length > 0) return true
+  if (Array.isArray(data.learnings) && data.learnings.length > 0) return true
+  if (Array.isArray(data.trails) && data.trails.length > 0) return true
+
+  const profile = data.profile
+  return Boolean(
+    profile?.nome?.trim()
+    || profile?.biografia?.trim()
+    || profile?.avatar_url?.trim()
+    || profile?.capa_url?.trim()
+    || profile?.tags_interesses?.length
+    || profile?.eventos_regressivos?.length,
+  )
+}
+
 const SEED_MEDIA: MediaItem[] = [
   {
     id: 'm1',
@@ -214,6 +230,7 @@ interface AgoraStoreContextType {
   fetchRecommendations: () => Promise<Recommendation[]>;
   deleteMediaItem: (id: string) => void;
   isVisitor: boolean;
+  isDataReady: boolean;
   hasCompletedOnboarding: boolean;
   completeOnboarding: (profileData?: Partial<UserProfile>) => void;
   resetOnboarding: () => void;
@@ -232,6 +249,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     : `agora_user_v5_${user?.id || 'anonymous'}_`;
   const [hydratedUserId, setHydratedUserId] = useState<string | null>(null);
   const isCloudHydrated = Boolean(user?.id && hydratedUserId === user.id);
+  const isDataReady = !user || hydratedUserId === user.id;
 
   // LIMPEZA RÍGOROSA PARA CONVIDADOS
   useEffect(() => {
@@ -320,7 +338,11 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setUserProfile(hasCloudValue('profile') ? cloudData.profile : EMPTY_PROFILE);
             setCustomTrails(hasCloudValue('trails') ? cloudData.trails : []);
             setChatMessages(hasCloudValue('chat') ? cloudData.chat : SEED_CHAT);
-            setHasCompletedOnboarding(hasCloudValue('onboarding') ? Boolean(cloudData.onboarding) : false);
+            setHasCompletedOnboarding(
+              hasCloudValue('onboarding')
+                ? Boolean(cloudData.onboarding)
+                : hasExistingUserData(cloudData),
+            );
             setHydratedUserId(user.id);
             return; 
           }
@@ -332,22 +354,30 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
       // Fallback local se for visitante ou falha de rede
       const storedMedia = localStorage.getItem(keyPrefix + 'media');
-      setMediaItems(storedMedia ? JSON.parse(storedMedia) : []);
+      const localMedia = storedMedia ? JSON.parse(storedMedia) : [];
+      setMediaItems(localMedia);
 
       const storedLearnings = localStorage.getItem(keyPrefix + 'learnings');
-      setAprendizados(storedLearnings ? JSON.parse(storedLearnings) : []);
+      const localLearnings = storedLearnings ? JSON.parse(storedLearnings) : [];
+      setAprendizados(localLearnings);
 
       const storedChat = localStorage.getItem(keyPrefix + 'chat');
       setChatMessages(storedChat ? JSON.parse(storedChat) : isVisitor ? VISITOR_CHAT : SEED_CHAT);
 
       const storedProfile = isVisitor ? null : localStorage.getItem(keyPrefix + 'profile');
-      setUserProfile(storedProfile ? JSON.parse(storedProfile) : EMPTY_PROFILE);
+      const localProfile = storedProfile ? JSON.parse(storedProfile) : EMPTY_PROFILE;
+      setUserProfile(localProfile);
 
       const storedTrails = localStorage.getItem(keyPrefix + 'trails');
-      setCustomTrails(storedTrails ? JSON.parse(storedTrails) : []);
+      const localTrails = storedTrails ? JSON.parse(storedTrails) : [];
+      setCustomTrails(localTrails);
 
       const storedOnboarding = localStorage.getItem(keyPrefix + 'has_completed_onboarding');
-      setHasCompletedOnboarding(storedOnboarding !== null ? JSON.parse(storedOnboarding) : false);
+      setHasCompletedOnboarding(
+        storedOnboarding !== null
+          ? JSON.parse(storedOnboarding)
+          : hasExistingUserData({ media: localMedia, learnings: localLearnings, trails: localTrails, profile: localProfile }),
+      );
       setHydratedUserId(user?.id || null);
     }
 
@@ -830,6 +860,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         fetchRecommendations,
         deleteMediaItem,
         isVisitor,
+        isDataReady,
         hasCompletedOnboarding,
         completeOnboarding,
         resetOnboarding,
