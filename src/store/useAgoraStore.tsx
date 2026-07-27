@@ -332,13 +332,14 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           });
           if (res.ok) {
             const cloudData = await res.json();
-            
-            if (cloudData.media) setMediaItems(cloudData.media);
-            if (cloudData.learnings) setAprendizados(cloudData.learnings);
-            if (cloudData.profile) setUserProfile(cloudData.profile);
-            if (cloudData.trails) setCustomTrails(cloudData.trails);
-            if (cloudData.chat) setChatMessages(cloudData.chat);
-            if (typeof cloudData.onboarding === 'boolean') setHasCompletedOnboarding(cloudData.onboarding);
+
+            const hasCloudValue = (collection: string) => Object.hasOwn(cloudData, collection);
+            setMediaItems(hasCloudValue('media') ? cloudData.media : []);
+            setAprendizados(hasCloudValue('learnings') ? cloudData.learnings : []);
+            setUserProfile(hasCloudValue('profile') ? cloudData.profile : MOCK_MAIN_PROFILE);
+            setCustomTrails(hasCloudValue('trails') ? cloudData.trails : []);
+            setChatMessages(hasCloudValue('chat') ? cloudData.chat : SEED_CHAT);
+            setHasCompletedOnboarding(hasCloudValue('onboarding') ? Boolean(cloudData.onboarding) : false);
             setHydratedUserId(user.id);
             return; 
           }
