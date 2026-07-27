@@ -54,6 +54,10 @@ function hasExistingUserData(data: { media?: unknown; learnings?: unknown; trail
   )
 }
 
+function isLegacyDefaultProfile(profile?: Partial<UserProfile>) {
+  return profile?.nome === 'Visitante' && profile.biografia?.includes('Banda Pioneiros')
+}
+
 const SEED_MEDIA: MediaItem[] = [
   {
     id: 'm1',
@@ -339,9 +343,9 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setCustomTrails(hasCloudValue('trails') ? cloudData.trails : []);
             setChatMessages(hasCloudValue('chat') ? cloudData.chat : SEED_CHAT);
             setHasCompletedOnboarding(
-              hasCloudValue('onboarding')
-                ? Boolean(cloudData.onboarding)
-                : hasExistingUserData(cloudData),
+              Boolean(cloudData.onboarding)
+                || (!hasCloudValue('onboarding') && hasExistingUserData(cloudData))
+                || isLegacyDefaultProfile(cloudData.profile),
             );
             setHydratedUserId(user.id);
             return; 
@@ -374,9 +378,9 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
       const storedOnboarding = localStorage.getItem(keyPrefix + 'has_completed_onboarding');
       setHasCompletedOnboarding(
-        storedOnboarding !== null
-          ? JSON.parse(storedOnboarding)
-          : hasExistingUserData({ media: localMedia, learnings: localLearnings, trails: localTrails, profile: localProfile }),
+        Boolean(storedOnboarding && JSON.parse(storedOnboarding))
+          || (storedOnboarding === null && hasExistingUserData({ media: localMedia, learnings: localLearnings, trails: localTrails, profile: localProfile }))
+          || isLegacyDefaultProfile(localProfile),
       );
       setHydratedUserId(user?.id || null);
     }
