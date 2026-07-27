@@ -180,14 +180,14 @@ export const ScholeView: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-bg-base text-text-primary font-sans selection:bg-accent-gold/30">
-      <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-5 py-5 sm:px-10 sm:py-8 lg:px-16">
+    <div className="space-y-8 pb-12 font-sans animate-fadeIn">
+      <main className="flex w-full flex-col">
         <header className="flex items-center justify-between">
-          <button type="button" onClick={() => setActiveTab('inicio')} className="group inline-flex items-center gap-2 rounded-full px-2 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:text-accent-gold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent-gold" aria-label="Sair do modo imersão"><ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />Sair da Scholé</button>
-          <h1 className="font-serif text-2xl font-bold tracking-wide text-text-primary sm:text-3xl">Scholé</h1><div aria-hidden="true" className="w-24" />
+          <button type="button" onClick={() => setActiveTab('inicio')} className="group inline-flex items-center gap-2 rounded-full px-2 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:text-accent-gold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent-gold"><ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />Voltar ao início</button>
+          <div className="text-right"><p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent-gold">Foco e contemplação</p><h1 className="font-serif text-2xl font-bold tracking-wide text-text-primary">Scholé</h1></div>
         </header>
 
-        <section className="grid flex-1 items-center gap-14 py-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)] lg:gap-24 lg:py-16">
+        <section className="grid items-center gap-10 py-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)] lg:gap-16">
           <div>
             <div className={`mb-5 flex items-center justify-between transition-opacity duration-500 ${isRunning ? 'opacity-40' : 'opacity-100'}`}><p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-accent-gold">Intenção desta sessão</p><span className="text-[10px] text-text-secondary">{tasks.filter((task) => task.completed).length}/{tasks.length} concluídas</span></div>
             <div className="mb-5 h-px w-12 bg-accent-gold/70" />

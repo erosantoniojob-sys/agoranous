@@ -138,7 +138,7 @@ export const Onboarding: React.FC = () => {
       nome: nome.trim(),
       biografia: biografia.trim(),
       avatar_url: avatarUrl,
-      capa_url: capaUrl || 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=1200&auto=format&fit=crop',
+      capa_url: capaUrl,
       tags_interesses: tags,
       eventos_regressivos: eventos,
     });

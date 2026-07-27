@@ -11,6 +11,7 @@ export const SearchModal: React.FC = () => {
   const [query, setQuery] = useState('');
   const [tipo, setTipo] = useState<MediaType>('Livro');
   const [loading, setLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [previewResult, setPreviewResult] = useState<Omit<
     MediaItem,
     'id' | 'criadoEm' | 'status' | 'avaliacao_numerica'
@@ -25,12 +26,14 @@ export const SearchModal: React.FC = () => {
     if (!query.trim()) return;
     setLoading(true);
     setPreviewResult(null);
+    setSearchError(null);
 
     try {
       const result = await fetchInteligente(query, tipo);
       setPreviewResult(result);
     } catch (err) {
       console.error('Erro ao buscar obra', err);
+      setSearchError(err instanceof Error ? err.message : 'Não foi possível pesquisar a obra agora.');
     } finally {
       setLoading(false);
     }
@@ -130,6 +133,12 @@ export const SearchModal: React.FC = () => {
             )}
           </button>
         </form>
+
+        {searchError && (
+          <p role="alert" className="rounded-lg border border-red-400/30 bg-red-400/10 px-3 py-2 text-xs text-red-200">
+            {searchError}
+          </p>
+        )}
 
         {/* Preview Section */}
         {previewResult && (

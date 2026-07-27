@@ -42,14 +42,6 @@ const MainContent: React.FC = () => {
     return <Onboarding />
   }
 
-  if (activeTab === 'schole') {
-    return <ScholeView />
-  }
-
-  if (activeTab === 'rotina') {
-    return <RoutineView />
-  }
-
   const renderActiveView = () => {
     switch (activeTab) {
       case 'inicio':
@@ -62,6 +54,10 @@ const MainContent: React.FC = () => {
         return <TimelineView />
       case 'perfil':
         return <ProfileView />
+      case 'schole':
+        return <ScholeView />
+      case 'rotina':
+        return <RoutineView />
       default:
         return <DashboardView />
     }

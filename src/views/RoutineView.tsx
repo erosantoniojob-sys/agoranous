@@ -43,10 +43,10 @@ export const RoutineView: React.FC = () => {
   }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 pb-12">
+    <div className="space-y-8 pb-12 font-sans animate-fadeIn">
       <header className="flex items-center justify-between">
         <button onClick={() => setActiveTab('inicio')} className="inline-flex items-center gap-2 text-xs font-medium text-text-secondary hover:text-accent-gold"><ArrowLeft className="h-4 w-4" />Voltar</button>
-        <div className="text-right"><p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent-gold">Estilo de vida</p><h1 className="font-serif text-2xl font-bold">Rotina & Hábitos</h1></div>
+        <div className="text-right"><p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent-gold">Estilo de vida</p><h1 className="font-serif text-2xl font-bold">Virtudes & Rotina</h1></div>
       </header>
 
       <section className="grid gap-4 sm:grid-cols-[1.5fr_1fr]">

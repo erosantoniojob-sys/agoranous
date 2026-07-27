@@ -29,30 +29,11 @@ export interface Recommendation {
   motivoRecomendacao: string;
 }
 
-const MOCK_MAIN_PROFILE: UserProfile = {
-  nome: 'Visitante',
-  biografia: 'Tradutor e músico (Banda Pioneiros)',
-  avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800&auto=format&fit=crop',
-  capa_url: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=1200&auto=format&fit=crop',
-  tags_interesses: [
-    'Perfumaria Árabe/Turca',
-    'Dieta de Hipertrofia (Aveia, Batata Doce, Whey)',
-    'Literatura Russa',
-    'Filosofia Grega & Existencial',
-    'Teologia & Cosmovisão',
-    'Música Clássica',
-  ],
-  eventos_regressivos: [
-    { id: 'ev1', titulo: 'RDNE CUP (Maio/Junho)', dataAlvo: '2026-05-25' },
-    { id: 'ev2', titulo: 'Grande Dia: 28 de Novembro', dataAlvo: '2026-11-28' },
-  ],
-};
-
-const VISITOR_PROFILE: UserProfile = {
+const EMPTY_PROFILE: UserProfile = {
   nome: '',
   biografia: '',
   avatar_url: '',
-  capa_url: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1200&auto=format&fit=crop',
+  capa_url: '',
   tags_interesses: [],
   eventos_regressivos: [],
 };
@@ -293,9 +274,9 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       const stored = localStorage.getItem(storagePrefix + 'profile');
       if (stored) return JSON.parse(stored);
-      return isVisitor ? VISITOR_PROFILE : MOCK_MAIN_PROFILE;
+      return EMPTY_PROFILE;
     } catch {
-      return isVisitor ? VISITOR_PROFILE : MOCK_MAIN_PROFILE;
+      return EMPTY_PROFILE;
     }
   });
 
@@ -333,17 +314,10 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           if (res.ok) {
             const cloudData = await res.json();
 
-            // Uma conta criada antes da sincronização pode não ter nenhuma
-            // coleção na nuvem ainda. Nesse caso, preservamos o cache local
-            // para enviá-lo depois, em vez de substituí-lo por valores vazios.
-            if (Object.keys(cloudData).length === 0) {
-              throw new Error('Nenhum dado sincronizado encontrado ainda.');
-            }
-
             const hasCloudValue = (collection: string) => Object.hasOwn(cloudData, collection);
             setMediaItems(hasCloudValue('media') ? cloudData.media : []);
             setAprendizados(hasCloudValue('learnings') ? cloudData.learnings : []);
-            setUserProfile(hasCloudValue('profile') ? cloudData.profile : MOCK_MAIN_PROFILE);
+            setUserProfile(hasCloudValue('profile') ? cloudData.profile : EMPTY_PROFILE);
             setCustomTrails(hasCloudValue('trails') ? cloudData.trails : []);
             setChatMessages(hasCloudValue('chat') ? cloudData.chat : SEED_CHAT);
             setHasCompletedOnboarding(hasCloudValue('onboarding') ? Boolean(cloudData.onboarding) : false);
@@ -357,25 +331,22 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
 
       // Fallback local se for visitante ou falha de rede
-      const hasCurrentUserCache = ['media', 'learnings', 'chat', 'profile', 'trails', 'has_completed_onboarding']
-        .some((key) => localStorage.getItem(keyPrefix + key) !== null);
-      const fallbackPrefix = !isVisitor && !hasCurrentUserCache ? 'agora_user_v5_' : keyPrefix;
-      const storedMedia = localStorage.getItem(fallbackPrefix + 'media');
+      const storedMedia = localStorage.getItem(keyPrefix + 'media');
       setMediaItems(storedMedia ? JSON.parse(storedMedia) : []);
 
-      const storedLearnings = localStorage.getItem(fallbackPrefix + 'learnings');
+      const storedLearnings = localStorage.getItem(keyPrefix + 'learnings');
       setAprendizados(storedLearnings ? JSON.parse(storedLearnings) : []);
 
-      const storedChat = localStorage.getItem(fallbackPrefix + 'chat');
+      const storedChat = localStorage.getItem(keyPrefix + 'chat');
       setChatMessages(storedChat ? JSON.parse(storedChat) : isVisitor ? VISITOR_CHAT : SEED_CHAT);
 
-      const storedProfile = isVisitor ? null : localStorage.getItem(fallbackPrefix + 'profile');
-      setUserProfile(storedProfile ? JSON.parse(storedProfile) : isVisitor ? VISITOR_PROFILE : MOCK_MAIN_PROFILE);
+      const storedProfile = isVisitor ? null : localStorage.getItem(keyPrefix + 'profile');
+      setUserProfile(storedProfile ? JSON.parse(storedProfile) : EMPTY_PROFILE);
 
-      const storedTrails = localStorage.getItem(fallbackPrefix + 'trails');
+      const storedTrails = localStorage.getItem(keyPrefix + 'trails');
       setCustomTrails(storedTrails ? JSON.parse(storedTrails) : []);
 
-      const storedOnboarding = localStorage.getItem(fallbackPrefix + 'has_completed_onboarding');
+      const storedOnboarding = localStorage.getItem(keyPrefix + 'has_completed_onboarding');
       setHasCompletedOnboarding(storedOnboarding !== null ? JSON.parse(storedOnboarding) : false);
       setHydratedUserId(user?.id || null);
     }
@@ -794,43 +765,28 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ query, tipo }),
         });
-        if (res.ok) {
-          const data = await res.json();
-          if (data?.titulo) {
-            const coverUrl = data.url_capa_oficial || data.url_capa || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=800&auto=format&fit=crop';
-            return {
-              titulo: data.titulo,
-              tipo: data.tipo || tipo,
-              url_capa: coverUrl,
-              capa_oficial: coverUrl,
-              url_capa_oficial: coverUrl,
-              autor_criador: data.autor_criador || 'Criador Oficial',
-              ano: data.ano || new Date().getFullYear(),
-              data_lancamento_oficial: data.data_lancamento_oficial || `${data.ano || new Date().getFullYear()}-01-01`,
-              sinopse: data.sinopse || 'Detalhes oficiais da obra.',
-              generos: data.generos || [tipo],
-              fonte: data.fonte || 'Vercel Serverless API',
-            };
-          }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Não foi possível pesquisar essa obra.');
+        if (data?.titulo) {
+          const coverUrl = data.url_capa_oficial || data.url_capa || '';
+          return {
+            titulo: data.titulo,
+            tipo: data.tipo || tipo,
+            url_capa: coverUrl,
+            capa_oficial: coverUrl,
+            url_capa_oficial: coverUrl,
+            autor_criador: data.autor_criador || 'Autor ou criador não informado',
+            ano: data.ano || new Date().getFullYear(),
+            data_lancamento_oficial: data.data_lancamento_oficial || '',
+            sinopse: data.sinopse || 'Sinopse não disponível na fonte consultada.',
+            generos: data.generos || [tipo],
+            fonte: data.fonte || 'Consulta pública',
+          };
         }
-      } catch {
-        // try next
+        throw new Error('A fonte não retornou dados para essa obra.');
+      } catch (error) {
+        throw error instanceof Error ? error : new Error('Não foi possível pesquisar essa obra.');
       }
-
-      await new Promise((r) => setTimeout(r, 600));
-      return {
-        titulo: query.charAt(0).toUpperCase() + query.slice(1),
-        tipo,
-        url_capa: 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?q=80&w=800&auto=format&fit=crop',
-        capa_oficial: 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?q=80&w=800&auto=format&fit=crop',
-        url_capa_oficial: 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?q=80&w=800&auto=format&fit=crop',
-        autor_criador: 'Autor / Desenvolvedor Oficial',
-        ano: new Date().getFullYear(),
-        data_lancamento_oficial: `${new Date().getFullYear()}-05-10`,
-        sinopse: `Obra "${query}" catalogada oficialmente na Ágora com data de lançamento e capa oficial.`,
-        generos: [tipo, 'Acervo Ágora'],
-        fonte: 'Oráculo Ágora',
-      };
     },
     []
   );
