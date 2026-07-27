@@ -17,7 +17,7 @@ async function searchBook(query) {
   url.searchParams.set('maxResults', '1')
   url.searchParams.set('printType', 'books')
 
-  const response = await fetch(url, { signal: AbortSignal.timeout(8000) })
+  const response = await fetch(url, { signal: AbortSignal.timeout(4500) })
   if (!response.ok) throw new Error('Google Books indisponível.')
 
   const volume = (await response.json()).items?.[0]?.volumeInfo
@@ -47,7 +47,7 @@ async function searchOpenLibraryBook(query) {
   url.searchParams.set('fields', 'title,author_name,first_publish_year,cover_i,key,subject')
 
   const response = await fetch(url, {
-    signal: AbortSignal.timeout(8000),
+    signal: AbortSignal.timeout(4500),
     headers: { 'User-Agent': 'Agora catalog/1.0' },
   })
   if (!response.ok) throw new Error('Open Library indisponível.')
