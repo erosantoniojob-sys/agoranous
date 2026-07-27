@@ -40,6 +40,36 @@ async function searchBook(query) {
   }
 }
 
+async function searchOpenLibraryBook(query) {
+  const url = new URL('https://openlibrary.org/search.json')
+  url.searchParams.set('title', query)
+  url.searchParams.set('limit', '1')
+  url.searchParams.set('fields', 'title,author_name,first_publish_year,cover_i,key,subject')
+
+  const response = await fetch(url, {
+    signal: AbortSignal.timeout(8000),
+    headers: { 'User-Agent': 'Agora catalog/1.0' },
+  })
+  if (!response.ok) throw new Error('Open Library indisponível.')
+
+  const item = (await response.json()).docs?.[0]
+  if (!item?.title) return null
+
+  const cover = item.cover_i ? `https://covers.openlibrary.org/b/id/${item.cover_i}-L.jpg` : ''
+  return {
+    titulo: item.title,
+    tipo: 'Livro',
+    autor_criador: item.author_name?.join(', ') || 'Autor não informado',
+    ano: item.first_publish_year || null,
+    data_lancamento_oficial: item.first_publish_year ? String(item.first_publish_year) : '',
+    sinopse: 'Sinopse não disponível na fonte consultada.',
+    generos: (item.subject || []).slice(0, 4),
+    url_capa_oficial: cover,
+    url_capa: cover,
+    fonte: 'Open Library',
+  }
+}
+
 async function searchEntertainment(query, tipo) {
   const media = { Filme: 'movie', Série: 'tvShow', Jogo: 'software' }[tipo]
   const url = new URL('https://itunes.apple.com/search')
@@ -79,9 +109,17 @@ export default async function handler(req, res) {
   if (!MEDIA_TYPES.has(tipo)) return res.status(400).json({ error: 'Categoria inválida.' })
 
   try {
-    const result = tipo === 'Livro'
-      ? await searchBook(query)
-      : await searchEntertainment(query, tipo)
+    let result
+    if (tipo === 'Livro') {
+      try {
+        result = await searchBook(query)
+      } catch (googleError) {
+        console.warn('Google Books indisponível; tentando Open Library.', googleError)
+      }
+      result ||= await searchOpenLibraryBook(query)
+    } else {
+      result = await searchEntertainment(query, tipo)
+    }
 
     if (!result) return res.status(404).json({ error: 'Nenhuma obra encontrada para esse título.' })
     return res.status(200).json(result)
