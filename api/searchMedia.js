@@ -21,6 +21,7 @@ async function searchBook(query) {
   url.searchParams.set('q', `intitle:${query}`)
   url.searchParams.set('maxResults', '1')
   url.searchParams.set('printType', 'books')
+  url.searchParams.set('langRestrict', 'pt') // Força prioridade para resultados em português
 
   const response = await fetch(url, {
     signal: AbortSignal.timeout(5000),
@@ -31,8 +32,14 @@ async function searchBook(query) {
   const volume = (await response.json()).items?.[0]?.volumeInfo
   if (!volume) return null
 
-  const cover = volume.imageLinks?.thumbnail?.replace('http://', 'https://')
-    || volume.imageLinks?.smallThumbnail?.replace('http://', 'https://')
+  // Trata e eleva a qualidade da imagem da capa
+  let cover = volume.imageLinks?.thumbnail || volume.imageLinks?.smallThumbnail || ''
+  if (cover) {
+    cover = cover
+      .replace('http://', 'https://')
+      .replace('&edge=curl', '') // Remove o efeito visual de folha dobrada
+      .replace('zoom=1', 'zoom=2') // Aumenta a resolução do thumbnail
+  }
 
   return {
     titulo: volume.title || query,
@@ -42,8 +49,8 @@ async function searchBook(query) {
     data_lancamento_oficial: volume.publishedDate || '',
     sinopse: cleanText(volume.description) || 'Sinopse não disponível na fonte consultada.',
     generos: volume.categories || [],
-    url_capa_oficial: cover || '',
-    url_capa: cover || '',
+    url_capa_oficial: cover,
+    url_capa: cover,
     fonte: 'Google Books',
   }
 }
@@ -55,7 +62,7 @@ async function searchOpenLibraryBook(query) {
   url.searchParams.set('fields', 'title,author_name,first_publish_year,cover_i,key,subject')
 
   const response = await fetch(url, {
-    signal: AbortSignal.timeout(7000), // Open Library costuma demorar mais para responder
+    signal: AbortSignal.timeout(7000),
     headers: DEFAULT_HEADERS,
   })
   if (!response.ok) throw new Error(`Open Library retornou status ${response.status}`)
@@ -85,6 +92,7 @@ async function searchEntertainment(query, tipo) {
   url.searchParams.set('media', media)
   url.searchParams.set('limit', '1')
   url.searchParams.set('country', 'br')
+  url.searchParams.set('lang', 'pt_br')
 
   const response = await fetch(url, {
     signal: AbortSignal.timeout(8000),
@@ -97,6 +105,7 @@ async function searchEntertainment(query, tipo) {
 
   const cover = item.artworkUrl100?.replace(/\d+x\d+bb/, '600x600bb') || ''
   const releaseDate = item.releaseDate?.slice(0, 10) || ''
+
   return {
     titulo: item.trackName || item.collectionName || query,
     tipo,
@@ -116,6 +125,7 @@ export default async function handler(req, res) {
 
   const query = typeof req.body?.query === 'string' ? req.body.query.trim() : ''
   const tipo = req.body?.tipo
+
   if (query.length < 2) return res.status(400).json({ error: 'Informe um título com pelo menos 2 caracteres.' })
   if (!MEDIA_TYPES.has(tipo)) return res.status(400).json({ error: 'Categoria inválida.' })
 
@@ -123,33 +133,32 @@ export default async function handler(req, res) {
     let result = null
 
     if (tipo === 'Livro') {
-      // 1. Tenta Google Books
+      // 1. Tenta buscar no Google Books em Português
       try {
         result = await searchBook(query)
       } catch (googleError) {
-        console.warn('Google Books indisponível ou estourou tempo limite:', googleError.message)
+        console.warn('Google Books indisponível ou tempo limite excedido:', googleError.message)
       }
 
-      // 2. Se Google Books falhar ou não achar nada, tenta Open Library de forma isolada e segura
+      // 2. Se falhar ou não encontrar, usa Open Library como fallback seguro
       if (!result) {
         try {
           result = await searchOpenLibraryBook(query)
         } catch (openLibError) {
-          console.warn('Open Library indisponível ou estourou tempo limite:', openLibError.message)
+          console.warn('Open Library indisponível ou tempo limite excedido:', openLibError.message)
         }
       }
     } else {
       result = await searchEntertainment(query, tipo)
     }
 
-    // Se ambas as fontes falharem ou não acharem a obra, retorna 404 em vez de 502
     if (!result) {
       return res.status(404).json({ error: 'Nenhuma obra encontrada para esse título.' })
     }
 
     return res.status(200).json(result)
   } catch (error) {
-    console.error('Erro genérico na rota /api/searchMedia:', error)
+    console.error('Erro na rota /api/searchMedia:', error)
     return res.status(502).json({ error: 'Não foi possível consultar a fonte agora. Tente novamente.' })
   }
 }
