@@ -11,14 +11,22 @@ function yearFrom(value) {
   return Number.isInteger(year) ? year : null
 }
 
+const DEFAULT_HEADERS = {
+  'User-Agent': 'AgoraCatalog/1.0 (https://seu-app.com; contato@seu-app.com)',
+  'Accept': 'application/json',
+}
+
 async function searchBook(query) {
   const url = new URL('https://www.googleapis.com/books/v1/volumes')
   url.searchParams.set('q', `intitle:${query}`)
   url.searchParams.set('maxResults', '1')
   url.searchParams.set('printType', 'books')
 
-  const response = await fetch(url, { signal: AbortSignal.timeout(4500) })
-  if (!response.ok) throw new Error('Google Books indisponível.')
+  const response = await fetch(url, {
+    signal: AbortSignal.timeout(5000),
+    headers: DEFAULT_HEADERS,
+  })
+  if (!response.ok) throw new Error(`Google Books retornou status ${response.status}`)
 
   const volume = (await response.json()).items?.[0]?.volumeInfo
   if (!volume) return null
@@ -47,10 +55,10 @@ async function searchOpenLibraryBook(query) {
   url.searchParams.set('fields', 'title,author_name,first_publish_year,cover_i,key,subject')
 
   const response = await fetch(url, {
-    signal: AbortSignal.timeout(4500),
-    headers: { 'User-Agent': 'Agora catalog/1.0' },
+    signal: AbortSignal.timeout(7000), // Open Library costuma demorar mais para responder
+    headers: DEFAULT_HEADERS,
   })
-  if (!response.ok) throw new Error('Open Library indisponível.')
+  if (!response.ok) throw new Error(`Open Library retornou status ${response.status}`)
 
   const item = (await response.json()).docs?.[0]
   if (!item?.title) return null
@@ -78,8 +86,11 @@ async function searchEntertainment(query, tipo) {
   url.searchParams.set('limit', '1')
   url.searchParams.set('country', 'br')
 
-  const response = await fetch(url, { signal: AbortSignal.timeout(8000) })
-  if (!response.ok) throw new Error('Catálogo de mídia indisponível.')
+  const response = await fetch(url, {
+    signal: AbortSignal.timeout(8000),
+    headers: DEFAULT_HEADERS,
+  })
+  if (!response.ok) throw new Error(`iTunes Search retornou status ${response.status}`)
 
   const item = (await response.json()).results?.[0]
   if (!item) return null
@@ -109,22 +120,36 @@ export default async function handler(req, res) {
   if (!MEDIA_TYPES.has(tipo)) return res.status(400).json({ error: 'Categoria inválida.' })
 
   try {
-    let result
+    let result = null
+
     if (tipo === 'Livro') {
+      // 1. Tenta Google Books
       try {
         result = await searchBook(query)
       } catch (googleError) {
-        console.warn('Google Books indisponível; tentando Open Library.', googleError)
+        console.warn('Google Books indisponível ou estourou tempo limite:', googleError.message)
       }
-      result ||= await searchOpenLibraryBook(query)
+
+      // 2. Se Google Books falhar ou não achar nada, tenta Open Library de forma isolada e segura
+      if (!result) {
+        try {
+          result = await searchOpenLibraryBook(query)
+        } catch (openLibError) {
+          console.warn('Open Library indisponível ou estourou tempo limite:', openLibError.message)
+        }
+      }
     } else {
       result = await searchEntertainment(query, tipo)
     }
 
-    if (!result) return res.status(404).json({ error: 'Nenhuma obra encontrada para esse título.' })
+    // Se ambas as fontes falharem ou não acharem a obra, retorna 404 em vez de 502
+    if (!result) {
+      return res.status(404).json({ error: 'Nenhuma obra encontrada para esse título.' })
+    }
+
     return res.status(200).json(result)
   } catch (error) {
-    console.error('Erro ao pesquisar mídia:', error)
+    console.error('Erro genérico na rota /api/searchMedia:', error)
     return res.status(502).json({ error: 'Não foi possível consultar a fonte agora. Tente novamente.' })
   }
 }
