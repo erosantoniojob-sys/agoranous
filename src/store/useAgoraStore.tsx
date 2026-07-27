@@ -333,6 +333,13 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           if (res.ok) {
             const cloudData = await res.json();
 
+            // Uma conta criada antes da sincronização pode não ter nenhuma
+            // coleção na nuvem ainda. Nesse caso, preservamos o cache local
+            // para enviá-lo depois, em vez de substituí-lo por valores vazios.
+            if (Object.keys(cloudData).length === 0) {
+              throw new Error('Nenhum dado sincronizado encontrado ainda.');
+            }
+
             const hasCloudValue = (collection: string) => Object.hasOwn(cloudData, collection);
             setMediaItems(hasCloudValue('media') ? cloudData.media : []);
             setAprendizados(hasCloudValue('learnings') ? cloudData.learnings : []);
@@ -350,22 +357,25 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
 
       // Fallback local se for visitante ou falha de rede
-      const storedMedia = localStorage.getItem(keyPrefix + 'media');
+      const hasCurrentUserCache = ['media', 'learnings', 'chat', 'profile', 'trails', 'has_completed_onboarding']
+        .some((key) => localStorage.getItem(keyPrefix + key) !== null);
+      const fallbackPrefix = !isVisitor && !hasCurrentUserCache ? 'agora_user_v5_' : keyPrefix;
+      const storedMedia = localStorage.getItem(fallbackPrefix + 'media');
       setMediaItems(storedMedia ? JSON.parse(storedMedia) : []);
 
-      const storedLearnings = localStorage.getItem(keyPrefix + 'learnings');
+      const storedLearnings = localStorage.getItem(fallbackPrefix + 'learnings');
       setAprendizados(storedLearnings ? JSON.parse(storedLearnings) : []);
 
-      const storedChat = localStorage.getItem(keyPrefix + 'chat');
+      const storedChat = localStorage.getItem(fallbackPrefix + 'chat');
       setChatMessages(storedChat ? JSON.parse(storedChat) : isVisitor ? VISITOR_CHAT : SEED_CHAT);
 
-      const storedProfile = isVisitor ? null : localStorage.getItem(keyPrefix + 'profile');
+      const storedProfile = isVisitor ? null : localStorage.getItem(fallbackPrefix + 'profile');
       setUserProfile(storedProfile ? JSON.parse(storedProfile) : isVisitor ? VISITOR_PROFILE : MOCK_MAIN_PROFILE);
 
-      const storedTrails = localStorage.getItem(keyPrefix + 'trails');
+      const storedTrails = localStorage.getItem(fallbackPrefix + 'trails');
       setCustomTrails(storedTrails ? JSON.parse(storedTrails) : []);
 
-      const storedOnboarding = localStorage.getItem(keyPrefix + 'has_completed_onboarding');
+      const storedOnboarding = localStorage.getItem(fallbackPrefix + 'has_completed_onboarding');
       setHasCompletedOnboarding(storedOnboarding !== null ? JSON.parse(storedOnboarding) : false);
       setHydratedUserId(user?.id || null);
     }
