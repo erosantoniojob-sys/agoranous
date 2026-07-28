@@ -32,3 +32,14 @@ O arquivo `netlify.toml` define:
 - migrações automáticas do Netlify Database em `netlify/database/migrations`
 
 Ao conectar o repositório ao Netlify, essas opções são aplicadas automaticamente.
+
+### Contas e dados em vários dispositivos
+
+Os dados do acervo são associados à conta Supabase autenticada. Para ativar a sincronização entre dispositivos, execute uma vez o script [supabase/user_data.sql](supabase/user_data.sql) no SQL Editor do Supabase e configure na Vercel as variáveis de ambiente abaixo:
+
+- `VITE_SUPABASE_URL`: URL do projeto Supabase;
+- `VITE_SUPABASE_ANON_KEY`: chave pública anônima do Supabase;
+- `SUPABASE_URL`: a mesma URL, usada somente pelas funções do servidor;
+- `SUPABASE_SERVICE_ROLE_KEY`: chave de serviço do Supabase, mantida somente na Vercel e nunca exposta no frontend.
+
+Depois, basta entrar com o mesmo e-mail e senha em cada dispositivo. Contas de visitante permanecem locais por definição.

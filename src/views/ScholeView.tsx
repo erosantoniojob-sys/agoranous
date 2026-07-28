@@ -38,7 +38,8 @@ function getYouTubeEmbedUrl(sourceUrl: string, autoplay = false) {
     if (autoplay) params.set('autoplay', '1')
     const embeddedVideoId = url.pathname.match(/\/embed\/([^/?]+)/)?.[1]
     if (playlistId) return `https://www.youtube.com/embed/videoseries?list=${encodeURIComponent(playlistId)}&${params.toString()}`
-    if (videoId || embeddedVideoId) return `https://www.youtube.com/embed/${encodeURIComponent(videoId || embeddedVideoId)}?${params.toString()}`
+    const playableId = videoId || embeddedVideoId
+    if (playableId) return `https://www.youtube.com/embed/${encodeURIComponent(playableId)}?${params.toString()}`
     return null
   } catch {
     return null

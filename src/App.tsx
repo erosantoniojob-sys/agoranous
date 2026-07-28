@@ -80,7 +80,7 @@ const MainContent: React.FC = () => {
       <Header />
 
       {/* Main Page Shell Content */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-8 pt-6 pb-24">
+      <main className="app-page-shell flex-1 pt-6 pb-24">
         {renderActiveView()}
       </main>
 

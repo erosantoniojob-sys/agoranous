@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Search, Loader2, Check, Sparkles, Edit3 } from 'lucide-react';
+import { X, Search, Loader2, Check, Sparkles, Edit3, Plus } from 'lucide-react';
 import { useAgoraStore } from '../store/useAgoraStore';
 import { CoverImage } from './CoverImage';
 import { MediaType, MediaItem } from '../types/agora';
@@ -12,6 +12,7 @@ export const SearchModal: React.FC = () => {
   const [tipo, setTipo] = useState<MediaType>('Livro');
   const [loading, setLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [isManualEntry, setIsManualEntry] = useState(false);
   const [previewResult, setPreviewResult] = useState<Omit<
     MediaItem,
     'id' | 'criadoEm' | 'status' | 'avaliacao_numerica'
@@ -27,6 +28,7 @@ export const SearchModal: React.FC = () => {
     setLoading(true);
     setPreviewResult(null);
     setSearchError(null);
+    setIsManualEntry(false);
 
     try {
       const result = await fetchInteligente(query, tipo);
@@ -37,6 +39,25 @@ export const SearchModal: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleStartManualEntry = () => {
+    const currentYear = new Date().getFullYear();
+    setPreviewResult({
+      titulo: query.trim(),
+      tipo,
+      autor_criador: '',
+      ano: currentYear,
+      data_lancamento_oficial: '',
+      sinopse: '',
+      generos: [tipo],
+      url_capa: '',
+      url_capa_oficial: '',
+      capa_oficial: '',
+      fonte: 'Cadastro manual',
+    });
+    setIsManualEntry(true);
+    setSearchError(null);
   };
 
   const handleConfirmAdd = () => {
@@ -51,6 +72,7 @@ export const SearchModal: React.FC = () => {
     setIsSearchOpen(false);
     setQuery('');
     setPreviewResult(null);
+    setIsManualEntry(false);
     setSelectedMedia(newItem);
   };
 
@@ -135,9 +157,17 @@ export const SearchModal: React.FC = () => {
         </form>
 
         {searchError && (
-          <p role="alert" className="rounded-lg border border-red-400/30 bg-red-400/10 px-3 py-2 text-xs text-red-200">
-            {searchError}
-          </p>
+          <div role="alert" className="rounded-lg border border-red-400/30 bg-red-400/10 p-3 text-xs text-red-200 space-y-2.5">
+            <p>{searchError}</p>
+            <button
+              type="button"
+              onClick={handleStartManualEntry}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-accent-gold/50 px-2.5 py-1.5 font-semibold uppercase tracking-wider text-accent-gold transition-colors hover:bg-accent-gold/10"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Adicionar manualmente
+            </button>
+          </div>
         )}
 
         {/* Preview Section */}
@@ -146,9 +176,9 @@ export const SearchModal: React.FC = () => {
             <div className="flex items-center justify-between border-b border-text-primary/10 pb-2">
               <span className="text-xs font-bold uppercase text-accent-gold flex items-center gap-1.5">
                 <Edit3 className="w-3.5 h-3.5" />
-                Edição Livre da Ficha Técnica
+                {isManualEntry ? 'Cadastro manual da obra' : 'Edição Livre da Ficha Técnica'}
               </span>
-              <span className="text-[10px] text-text-secondary">Pode alterar sinopse e capa</span>
+              <span className="text-[10px] text-text-secondary">Preencha os dados que tiver</span>
             </div>
 
             <div className="flex gap-4 items-start">
@@ -176,13 +206,29 @@ export const SearchModal: React.FC = () => {
                     className="w-full p-1.5 bg-bg-card text-text-secondary text-xs rounded border border-text-primary/15 focus:border-accent-gold focus:outline-none"
                   />
                 </div>
+
+                <div>
+                  <label className="text-[10px] text-text-secondary uppercase font-semibold block">Ano</label>
+                  <input
+                    type="number"
+                    value={previewResult.ano ?? ''}
+                    onChange={(e) =>
+                      setPreviewResult({
+                        ...previewResult,
+                        ano: e.target.value ? Number(e.target.value) : null,
+                      })
+                    }
+                    placeholder="Ex.: 2024"
+                    className="w-full p-1.5 bg-bg-card text-text-secondary text-xs rounded border border-text-primary/15 focus:border-accent-gold focus:outline-none"
+                  />
+                </div>
               </div>
             </div>
 
             {/* Editable Cover Image URL */}
             <div className="space-y-1">
               <label className="text-[10px] text-accent-gold font-semibold uppercase tracking-wider block">
-                URL da Capa Oficial
+                URL da Capa
               </label>
               <input
                 type="text"
@@ -203,13 +249,13 @@ export const SearchModal: React.FC = () => {
             {/* Editable Synopsis Textarea */}
             <div className="space-y-1">
               <label className="text-[10px] text-accent-gold font-semibold uppercase tracking-wider block">
-                Sinopse (Editável pelo Usuário)
+                Sinopse
               </label>
               <textarea
                 rows={4}
                 value={previewResult.sinopse || ''}
                 onChange={(e) => setPreviewResult({ ...previewResult, sinopse: e.target.value })}
-                placeholder="Apague ou reescreva a sinopse com suas próprias palavras antes de salvar..."
+                placeholder="Adicione uma breve descrição da obra..."
                 className="w-full p-2.5 bg-bg-card text-text-primary text-xs rounded-xl border border-text-primary/20 focus:border-accent-gold focus:outline-none leading-relaxed resize-none font-sans"
               />
             </div>
@@ -254,7 +300,7 @@ export const SearchModal: React.FC = () => {
               className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg cursor-pointer"
             >
               <Check className="w-4 h-4" />
-              Confirmar e Catalogar no Acervo
+              {isManualEntry ? 'Adicionar ao Acervo' : 'Confirmar e Catalogar no Acervo'}
             </button>
           </div>
         )}

@@ -342,11 +342,11 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setUserProfile(hasCloudValue('profile') ? cloudData.profile : EMPTY_PROFILE);
             setCustomTrails(hasCloudValue('trails') ? cloudData.trails : []);
             setChatMessages(hasCloudValue('chat') ? cloudData.chat : SEED_CHAT);
-            setHasCompletedOnboarding(
+            setHasCompletedOnboarding(Boolean(
               Boolean(cloudData.onboarding)
                 || (!hasCloudValue('onboarding') && hasExistingUserData(cloudData))
                 || isLegacyDefaultProfile(cloudData.profile),
-            );
+            ));
             setHydratedUserId(user.id);
             return; 
           }
@@ -377,11 +377,11 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setCustomTrails(localTrails);
 
       const storedOnboarding = localStorage.getItem(keyPrefix + 'has_completed_onboarding');
-      setHasCompletedOnboarding(
+      setHasCompletedOnboarding(Boolean(
         Boolean(storedOnboarding && JSON.parse(storedOnboarding))
           || (storedOnboarding === null && hasExistingUserData({ media: localMedia, learnings: localLearnings, trails: localTrails, profile: localProfile }))
           || isLegacyDefaultProfile(localProfile),
-      );
+      ));
       setHydratedUserId(user?.id || null);
     }
 

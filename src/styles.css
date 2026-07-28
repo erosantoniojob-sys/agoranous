@@ -51,6 +51,20 @@
   }
 }
 
+/* Área de conteúdo única para todas as páginas e o cabeçalho. */
+.app-page-shell {
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+@media (min-width: 640px) {
+  .app-page-shell {
+    padding-inline: 2rem;
+  }
+}
+
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 8px;
