@@ -8,6 +8,10 @@ create table if not exists public.user_data (
   primary key (user_id, collection)
 );
 
+-- O navegador não acessa esta tabela diretamente: somente as funções autenticadas
+-- da Vercel usam a chave secreta do servidor, que ignora as políticas RLS.
+alter table public.user_data enable row level security;
+
 -- Também cobre bancos onde a tabela já existia sem a chave composta.
 create unique index if not exists user_data_user_id_collection_key
 on public.user_data (user_id, collection);
