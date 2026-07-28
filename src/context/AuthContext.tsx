@@ -4,7 +4,22 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+function isValidSupabaseUrl(value: string) {
+  try {
+    const url = new URL(value)
+    return url.protocol === 'https:' || url.protocol === 'http:'
+  } catch {
+    return false
+  }
+}
+
+export const isSupabaseConfigured = isValidSupabaseUrl(supabaseUrl) && Boolean(supabaseAnonKey)
+const safeSupabaseUrl = isSupabaseConfigured ? supabaseUrl : 'https://placeholder.supabase.co'
+const safeSupabaseKey = isSupabaseConfigured ? supabaseAnonKey : 'placeholder-public-key'
+
+// Mantém a tela de login disponível mesmo quando as variáveis da Vercel ainda
+// não foram configuradas corretamente.
+export const supabase = createClient(safeSupabaseUrl, safeSupabaseKey)
 
 export interface AuthUser {
   id: string
@@ -48,6 +63,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
 
+        if (!isSupabaseConfigured) {
+          setError('A conexão com o Supabase não foi configurada. Confira VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY na Vercel.')
+          return
+        }
+
         const { data: { session } } = await supabase.auth.getSession()
         
         if (session?.user && isMounted) {
@@ -65,6 +85,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     initAuth()
+
+    if (!isSupabaseConfigured) {
+      return () => {
+        isMounted = false
+      }
+    }
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
@@ -87,6 +113,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, pass: string): Promise<boolean> => {
     setIsLoading(true)
     setError(null)
+    if (!isSupabaseConfigured) {
+      setError('A conexão com o Supabase não foi configurada. Confira as variáveis de ambiente da Vercel.')
+      setIsLoading(false)
+      return false
+    }
     try {
       const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password: pass })
       if (authError) throw authError
@@ -106,6 +137,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signup = async (email: string, pass: string, name: string): Promise<boolean> => {
     setIsLoading(true)
     setError(null)
+    if (!isSupabaseConfigured) {
+      setError('A conexão com o Supabase não foi configurada. Confira as variáveis de ambiente da Vercel.')
+      setIsLoading(false)
+      return false
+    }
     try {
       const { data, error: authError } = await supabase.auth.signUp({
         email,
