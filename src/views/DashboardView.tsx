@@ -28,6 +28,7 @@ export const DashboardView: React.FC = () => {
     setSelectedMedia,
     getEstatisticas,
     setActiveTab,
+    setIsSearchOpen,
     customCategories,
     addCategory,
     customTrails,
@@ -77,19 +78,31 @@ export const DashboardView: React.FC = () => {
 
       {/* 2. CATEGORIAS DO ACERVO */}
       <section className="space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-text-secondary flex items-center gap-1.5">
             <Flame className="w-4 h-4 text-accent-gold" />
             Categorias do Acervo
           </h3>
 
-          <button
-            onClick={() => setIsAddCategoryOpen(!isAddCategoryOpen)}
-            className="text-xs text-accent-gold hover:underline font-semibold flex items-center gap-1 cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Nova Categoria
-          </button>
+          <div className="ml-auto flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setIsSearchOpen(true)}
+              className="rounded-lg bg-accent-gold px-3 py-1.5 text-xs font-bold text-bg-base shadow-sm transition-colors hover:bg-accent-gold-bright focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-gold"
+            >
+              <span className="flex items-center gap-1.5">
+                <Plus className="h-3.5 w-3.5" />
+                Adicionar obra
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsAddCategoryOpen(!isAddCategoryOpen)}
+              className="text-xs font-semibold text-accent-gold hover:underline"
+            >
+              Nova Categoria
+            </button>
+          </div>
         </div>
 
         {/* Modal/Inline Add Category Box */}

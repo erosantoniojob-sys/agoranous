@@ -38,6 +38,13 @@
   :root {
     color-scheme: dark;
   }
+
+  html,
+  body,
+  #root {
+    max-width: 100%;
+    overflow-x: clip;
+  }
   
   body {
     background-color: #0B1420;
@@ -75,6 +82,8 @@
 
 @media (min-width: 1024px) {
   .app-page-shell {
+    /* A largura anterior de 100% somada à margem esquerda excedia a viewport. */
+    width: auto;
     max-width: none;
     margin-left: 6.25rem;
     margin-right: 0;
