@@ -18,6 +18,7 @@ import { DailyQuoteCard } from '../components/DailyQuoteCard'
 import { NetflixMediaCard } from '../components/NetflixMediaCard'
 import { RecommendationsSection } from '../components/RecommendationsSection'
 import { TrailSelectionModal } from '../components/TrailSelectionModal'
+import dawnLandscape from '../assets/agora-dawn-landscape.jpg'
 
 export const DashboardView: React.FC = () => {
   const {
@@ -209,9 +210,11 @@ export const DashboardView: React.FC = () => {
         {customTrails.length === 0 ? (
           <div
             onClick={() => setIsTrailModalOpen(true)}
-            className="p-5 bg-gradient-to-r from-bg-surface via-[#162738] to-bg-surface border border-accent-gold/30 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-3d-card hover:shadow-3d-gold transition-all cursor-pointer group"
+            className="trail-landscape relative overflow-hidden p-5 border border-accent-gold/30 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-3d-card hover:shadow-3d-gold transition-all cursor-pointer group"
+            style={{ backgroundImage: `url(${dawnLandscape})` }}
           >
-            <div className="space-y-1 text-center sm:text-left">
+            <div className="absolute inset-0 bg-gradient-to-r from-bg-surface via-bg-surface/85 to-bg-base/10" />
+            <div className="relative z-10 space-y-1 text-center sm:text-left">
               <span className="text-[10px] font-bold uppercase tracking-widest text-accent-gold">
                 Inicie sua Primeira Trilha
               </span>
@@ -228,7 +231,7 @@ export const DashboardView: React.FC = () => {
                 e.stopPropagation()
                 setIsTrailModalOpen(true)
               }}
-              className="py-2 px-4 bg-accent-gold text-bg-base font-bold text-xs rounded-xl uppercase tracking-wider transition-all cursor-pointer shadow-md flex items-center gap-1.5 whitespace-nowrap"
+              className="relative z-10 py-2 px-4 bg-accent-gold text-bg-base font-bold text-xs rounded-xl uppercase tracking-wider transition-all cursor-pointer shadow-md flex items-center gap-1.5 whitespace-nowrap"
             >
               <span>+ Criar Trilha</span>
               <ChevronRight className="w-4 h-4" />
