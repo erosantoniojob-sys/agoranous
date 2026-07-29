@@ -65,6 +65,17 @@
   }
 }
 
+@media (max-width: 639px) {
+  .app-page-shell {
+    padding-inline: 0.75rem;
+  }
+
+  /* Prevent long labels and wide content from causing horizontal scrolling. */
+  #root {
+    overflow-x: clip;
+  }
+}
+
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 8px;

@@ -29,7 +29,7 @@ export const LoginView: React.FC = () => {
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-accent-gold/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-10 right-10 w-80 h-80 bg-amber-900/10 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="relative w-full max-w-md bg-bg-surface border border-text-primary/15 rounded-3xl p-8 shadow-2xl space-y-6 backdrop-blur-md">
+      <div className="relative w-full max-w-md bg-bg-surface border border-text-primary/15 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-2xl space-y-5 sm:space-y-6 backdrop-blur-md">
         <ClassicArchLogo size="md" showSlogan={true} titleGraveAccent={true} />
 
         {error && (
