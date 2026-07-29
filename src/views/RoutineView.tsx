@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, Check, ChevronRight, Dumbbell, Flame, Heart, PenLine, Plus, TimerReset } from 'lucide-react'
 import { readScholeValue, writeScholeValue } from '../lib/scholeStorage'
 import { useAgoraStore } from '../store/useAgoraStore'
+import { PhilosopherPortrait } from '../components/PhilosopherPortrait'
 
 type Habit = { id: string; name: string; completed: boolean }
 type Workout = { id: string; name: string; detail: string; duration: number; completed: boolean }
@@ -54,7 +55,7 @@ export const RoutineView: React.FC = () => {
       </header>
 
       <section className="grid gap-4 sm:grid-cols-[1.5fr_1fr]">
-        <div className="rounded-2xl border border-text-primary/10 bg-bg-surface p-6"><div className="flex items-start justify-between"><div><p className="text-xs font-semibold uppercase tracking-wider text-text-secondary">{firstName ? `Constância de ${firstName} hoje` : 'Constância de hoje'}</p><p className="mt-2 font-serif text-4xl font-bold text-accent-gold">{consistency}%</p></div><div className="grid h-11 w-11 place-items-center rounded-xl border border-accent-gold/30 bg-bg-elevated text-accent-gold"><Flame className="h-5 w-5" /></div></div><p className="mt-4 text-sm text-text-secondary">{dailyIntention ? `Seu norte: “${dailyIntention}”` : interests ? `Práticas que sustentam seu percurso em ${interests}.` : 'Pequenas práticas, registradas com honestidade. O objetivo é voltar amanhã.'}</p></div>
+        <div className="modern-surface rounded-2xl border border-text-primary/10 bg-bg-surface p-6"><div className="flex items-start justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-wider text-text-secondary">{firstName ? `Constância de ${firstName} hoje` : 'Constância de hoje'}</p><p className="mt-2 font-serif text-4xl font-bold text-accent-gold">{consistency}%</p></div><PhilosopherPortrait philosopher="marcus-aurelius" className="h-14 w-14 shrink-0 rounded-2xl" /></div><p className="mt-4 text-sm text-text-secondary">{dailyIntention ? `Seu norte: “${dailyIntention}”` : interests ? `Práticas que sustentam seu percurso em ${interests}.` : 'Pequenas práticas, registradas com honestidade. O objetivo é voltar amanhã.'}</p></div>
         <button onClick={() => setActiveTab('schole')} className="group rounded-2xl border border-text-primary/10 bg-bg-surface p-6 text-left transition-colors hover:border-accent-gold/50"><TimerReset className="h-5 w-5 text-accent-gold" /><p className="mt-4 font-serif text-lg font-bold">Preparar foco</p><p className="mt-1 text-xs text-text-secondary">Abra a Scholé para sua próxima sessão.</p><ChevronRight className="mt-3 h-4 w-4 text-text-secondary transition-transform group-hover:translate-x-1 group-hover:text-accent-gold" /></button>
       </section>
 

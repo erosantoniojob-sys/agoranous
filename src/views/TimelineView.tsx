@@ -19,6 +19,7 @@ import {
 import { useAgoraStore } from '../store/useAgoraStore'
 import { CoverImage } from '../components/CoverImage'
 import { Trilhas } from '../components/Trilhas'
+import { PhilosopherPortrait } from '../components/PhilosopherPortrait'
 
 export const TimelineView: React.FC = () => {
   const {
@@ -285,14 +286,10 @@ export const TimelineView: React.FC = () => {
             </p>
           </div>
 
-          {/* Export PDF Action Button */}
-          <button
-            onClick={handleExportDossierPDF}
-            className="py-2.5 px-4 bg-accent-gold hover:bg-accent-gold-bright text-bg-base font-bold text-xs rounded-xl uppercase tracking-wider transition-all flex items-center gap-2 shadow-md cursor-pointer self-start md:self-center whitespace-nowrap"
-          >
-            <Download className="w-4 h-4" />
-            <span>Exportar Dossiê (PDF)</span>
-          </button>
+          <div className="flex items-center gap-3 self-start md:self-center">
+            <PhilosopherPortrait philosopher="simone-de-beauvoir" className="h-14 w-14 rounded-2xl" />
+            <button onClick={handleExportDossierPDF} className="py-2.5 px-4 bg-accent-gold hover:bg-accent-gold-bright text-bg-base font-bold text-xs rounded-xl uppercase tracking-wider transition-all flex items-center gap-2 shadow-md cursor-pointer whitespace-nowrap"><Download className="w-4 h-4" /><span>Exportar Dossiê (PDF)</span></button>
+          </div>
         </div>
 
         {/* Sub-navigation Navigation Tabs */}

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Compass, Search, Star, Sparkles } from 'lucide-react';
 import { useAgoraStore } from '../store/useAgoraStore';
 import { MediaCard } from '../components/MediaCard';
+import { PhilosopherPortrait } from '../components/PhilosopherPortrait';
 
 export const ExploreView: React.FC = () => {
   const { mediaItems, setSelectedMedia, setIsSearchOpen } = useAgoraStore();
@@ -22,12 +23,13 @@ export const ExploreView: React.FC = () => {
   return (
     <div className="space-y-6 pb-12">
       {/* Header */}
-      <div className="bg-bg-card border border-text-primary/10 rounded-2xl p-6 shadow-xl space-y-4">
-        <div className="flex items-center gap-2">
-          <Compass className="w-5 h-5 text-accent-gold" />
-          <h2 className="font-serif font-bold text-2xl text-text-primary">
-            Explorar Acervo
-          </h2>
+      <div className="modern-surface bg-bg-card border border-text-primary/10 rounded-2xl p-5 sm:p-6 space-y-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <Compass className="w-5 h-5 text-accent-gold" />
+            <h2 className="font-serif font-bold text-2xl text-text-primary">Explorar Acervo</h2>
+          </div>
+          <PhilosopherPortrait philosopher="socrates" className="h-16 w-16 shrink-0 rounded-2xl sm:h-20 sm:w-20" />
         </div>
         <p className="text-xs text-text-secondary">
           Pesquise por títulos, autores, palavras-chave da sinopse ou filtre por avaliações mínimas.

@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
 import { TrailDetailModal } from './TrailDetailModal'
+import { PhilosopherPortrait } from './PhilosopherPortrait'
 
 export interface TrilhaData {
   id: string
@@ -179,7 +180,7 @@ export const Trilhas: React.FC = () => {
   return (
     <div className="w-full space-y-6 font-sans">
       {/* Header Title Section */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-text-primary/10">
+      <div className="modern-surface flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-text-primary/10 bg-bg-surface p-5 sm:p-6">
         <div>
           <h2 className="font-serif font-bold text-2xl sm:text-3xl text-text-primary tracking-wide">
             Trilhas de Aprendizado
@@ -190,6 +191,7 @@ export const Trilhas: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
+          <PhilosopherPortrait philosopher="nietzsche" className="h-14 w-14 shrink-0 rounded-2xl" />
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-bg-surface border border-accent-gold/30 text-accent-gold text-xs font-medium">
             <Layers className="w-4 h-4 text-accent-gold" />
             <span>{minhasTrilhasList.length} trilhas ativas</span>
