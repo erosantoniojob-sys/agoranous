@@ -271,12 +271,12 @@ export const DashboardView: React.FC = () => {
         )}
       </section>
 
-      {/* 4. CATÁLOGO DE MÍDIAS (ESTILO NETFLIX COM SNAP-X HORIZONTAL) */}
+      {/* 4. CATÁLOGO DE MÍDIAS */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="font-serif font-bold text-xl text-text-primary">
-              Catálogo do Acervo (Estilo Netflix)
+              Catálogo do Acervo
             </h3>
             <p className="text-xs text-text-secondary">
               Exibindo {filteredMediaItems.length} {filteredMediaItems.length === 1 ? 'obra' : 'obras'} • Role para o lado
@@ -305,7 +305,7 @@ export const DashboardView: React.FC = () => {
         )}
       </section>
 
-      {/* 5. RECOMENDAÇÕES DO PERFIL (MOVIDAS DEFINITIVAMENTE PARA O FINAL) */}
+      {/* 5. RECOMENDAÇÕES DO PERFIL */}
       {selectedFilter === 'Todos' && (
         <section className="pt-6 border-t border-text-primary/10">
           <RecommendationsSection />

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Compass, Plus, Check, Sparkles, Star } from 'lucide-react'
+import { Compass, Plus, Check, Sparkles } from 'lucide-react'
 import { useAgoraStore, Recommendation } from '../store/useAgoraStore'
 import { CoverImage } from './CoverImage'
 
@@ -80,14 +80,14 @@ export const RecommendationsSection: React.FC = () => {
         <div>
           <h3 className="font-serif font-bold text-lg text-text-primary flex items-center gap-2">
             <Compass className="w-4 h-4 text-accent-gold" />
-            Recomendações do seu Perfil
+            Obras para o seu percurso
           </h3>
           <p className="text-xs text-text-secondary">
-            Selecionadas pelos seus interesses, com capas reais do catálogo Open Library
+            Uma curadoria que aproxima seus interesses, seu acervo e as trilhas que você já começou.
           </p>
         </div>
         <span className="text-[10px] font-semibold text-accent-gold uppercase tracking-widest bg-accent-gold/10 px-2.5 py-1 rounded-full border border-accent-gold/20">
-          Curadoria do Perfil
+          Curadoria pessoal
         </span>
       </div>
 
@@ -120,7 +120,7 @@ export const RecommendationsSection: React.FC = () => {
                   </p>
 
                   <p className="text-[10px] text-slate-300/80 line-clamp-2 pt-0.5 italic">
-                    "{rec.motivoRecomendacao}"
+                    {rec.motivoRecomendacao}
                   </p>
                 </div>
               </div>

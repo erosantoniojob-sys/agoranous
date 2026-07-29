@@ -205,8 +205,8 @@ interface AgoraStoreContextType {
   customTrails: CustomTrail[];
   customCategories: Category[];
   knowledgeNodes: KnowledgeNode[];
-  activeTab: 'inicio' | 'explorar' | 'memoria' | 'trilhas' | 'perfil' | 'schole' | 'rotina';
-  setActiveTab: (tab: 'inicio' | 'explorar' | 'memoria' | 'trilhas' | 'perfil' | 'schole' | 'rotina') => void;
+  activeTab: 'inicio' | 'explorar' | 'memoria' | 'trilhas' | 'perfil' | 'schole' | 'rotina' | 'poiesis';
+  setActiveTab: (tab: 'inicio' | 'explorar' | 'memoria' | 'trilhas' | 'perfil' | 'schole' | 'rotina' | 'poiesis') => void;
   selectedFilter: string;
   setSelectedFilter: (filter: string) => void;
   selectedMedia: MediaItem | null;
@@ -388,7 +388,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     loadCloudData();
   }, [isVisitor, storagePrefix, user?.id]);
 
-  const [activeTab, setActiveTab] = useState<'inicio' | 'explorar' | 'memoria' | 'trilhas' | 'perfil' | 'schole' | 'rotina'>('inicio');
+  const [activeTab, setActiveTab] = useState<'inicio' | 'explorar' | 'memoria' | 'trilhas' | 'perfil' | 'schole' | 'rotina' | 'poiesis'>('inicio');
   const [selectedFilter, setSelectedFilter] = useState<string>('Todos');
   const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
@@ -664,60 +664,30 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const updateUserProfile = updateProfile;
 
-  // NOVA FUNÇÃO INTELIGENTE DE RECOMENDAÇÕES
+  // Curadoria baseada no perfil e no acervo, com um repertório confiável como reserva.
   const fetchRecommendations = useCallback(async (): Promise<Recommendation[]> => {
-    const interesses = userProfile.tags_interesses && userProfile.tags_interesses.length > 0 
-      ? userProfile.tags_interesses 
-      : ['Filosofia', 'Ficção Clássica']; 
-
-    const termosBusca = interesses.sort(() => 0.5 - Math.random()).slice(0, 2);
-    const recomendacoesDinamicas: Recommendation[] = [];
+    const interesses = [
+      ...(userProfile.tags_interesses || []),
+      ...mediaItems.flatMap((item) => item.generos || []),
+    ]
+    const tags = [...new Set(interesses.map((tag) => tag.trim()).filter(Boolean))]
+    const existingTitles = mediaItems.map((item) => item.titulo)
 
     try {
-      for (const termo of termosBusca) {
-        const queryLimpa = termo.split(' ')[0].toLowerCase();
-        
-        const res = await fetch(`https://openlibrary.org/search.json?q=${queryLimpa}&limit=2&language=por`);
-        if (res.ok) {
-          const data = await res.json();
-          
-          if (data.docs && data.docs.length > 0) {
-            data.docs.forEach((doc: any) => {
-              const jaTem = mediaItems.some(m => m.titulo.toLowerCase() === doc.title?.toLowerCase());
-              
-              if (!jaTem && doc.title) {
-                const coverUrl = doc.cover_i 
-                  ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`
-                  : 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=800&auto=format&fit=crop'; 
-
-                recomendacoesDinamicas.push({
-                  id: `rec_dinamico_${doc.key || Date.now()}_${Math.random()}`,
-                  titulo: doc.title,
-                  tipo: 'Livro',
-                  autor_criador: doc.author_name ? doc.author_name.join(', ') : 'Autor Desconhecido',
-                  ano: doc.first_publish_year || new Date().getFullYear(),
-                  sinopse: `Obra recomendada com base no seu interesse em: ${termo}. (Dados via OpenLibrary).`,
-                  generos: [termo, 'Recomendação Dinâmica'],
-                  url_capa: coverUrl,
-                  url_capa_oficial: coverUrl,
-                  fonte: 'OpenLibrary API',
-                  motivoRecomendacao: `Selecionado pelo Algoritmo Ágora por sua afinidade com ${termo}.`
-                });
-              }
-            });
-          }
-        }
+      const response = await fetch('/api/getRecommendations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tags, existingTitles }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (response.ok && Array.isArray(data.recommendations) && data.recommendations.length) {
+        return data.recommendations as Recommendation[]
       }
-
-      if (recomendacoesDinamicas.length > 0) {
-        return recomendacoesDinamicas.slice(0, 3);
-      }
-
     } catch (error) {
-      console.error("Erro ao buscar recomendações na internet:", error);
+      console.error('Erro ao buscar a curadoria do perfil:', error)
     }
 
-    // Fallback Inteligente baseado em literatura clássica e filosofia reformada
+    const foco = tags[0] || 'literatura clássica'
     return [
       {
         id: `rec_fallback_${Date.now()}`,
@@ -729,7 +699,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         generos: ['Literatura Clássica', 'Romance'],
         url_capa: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=800&auto=format&fit=crop',
         fonte: 'Recomendação Curada Ágora',
-        motivoRecomendacao: 'Selecionado em função do seu foco recorrente em literatura clássica.'
+        motivoRecomendacao: `Uma leitura de densidade emocional e moral para ampliar seu repertório em ${foco}.`
       },
       {
         id: `rec_fallback_${Date.now() + 1}`,
@@ -741,7 +711,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         generos: ['Filosofia Cristã', 'Teologia'],
         url_capa: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=800&auto=format&fit=crop',
         fonte: 'Recomendação Curada Ágora',
-        motivoRecomendacao: 'Uma leitura fundamental que dialoga com seu aprofundamento em teologia e na tradição filosófica.'
+        motivoRecomendacao: `Uma obra de interioridade que conversa com as perguntas presentes no seu percurso em ${foco}.`
       }
     ];
   }, [userProfile.tags_interesses, mediaItems]);

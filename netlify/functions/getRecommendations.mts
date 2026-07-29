@@ -31,18 +31,24 @@ const CANDIDATES: Candidate[] = [
   { title: 'Orthodoxy', author: 'G. K. Chesterton', theme: 'Teologia', reason: 'Oferece uma defesa literária e acessível da cosmovisão cristã.' },
   { title: 'The Abolition of Man', author: 'C. S. Lewis', theme: 'Cosmovisão', reason: 'Aprofunda ética, educação e a formação do humano — assuntos alinhados às suas trilhas.' },
   { title: 'The Republic', author: 'Plato', theme: 'Filosofia', reason: 'Uma base para justiça, educação e a célebre alegoria da caverna.' },
+  { title: 'The Poetics', author: 'Aristotle', theme: 'Criatividade', reason: 'Uma ponte entre forma, imaginação e criação — indicada para quem quer transformar repertório em expressão.' },
+  { title: 'Letters to a Young Poet', author: 'Rainer Maria Rilke', theme: 'Poesia', reason: 'Uma companhia breve e exigente para nutrir a voz autoral, a observação e a paciência criativa.' },
 ]
 
+const normalise = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR')
+
 function selectCandidates(tags: string[], existingTitles: string[]) {
-  const profile = tags.join(' ').toLocaleLowerCase('pt-BR')
-  const available = CANDIDATES.filter((candidate) => !existingTitles.some((title) => title.toLocaleLowerCase('pt-BR') === candidate.title.toLocaleLowerCase('pt-BR')))
+  const profile = normalise(tags.join(' '))
+  const available = CANDIDATES.filter((candidate) => !existingTitles.some((title) => normalise(title) === normalise(candidate.title)))
   const scored = available.map((candidate) => {
-    const theme = candidate.theme.toLocaleLowerCase('pt-BR')
-    const score = profile.includes('russa') && theme.includes('russa') ? 4
-      : profile.includes('filosofia') && (theme.includes('filosofia') || theme.includes('virtudes')) ? 4
-      : profile.includes('teologia') && (theme.includes('teologia') || theme.includes('cosmovisão')) ? 4
-      : profile.includes('cosmovisão') && theme.includes('cosmovisão') ? 4
-      : 1
+    const theme = normalise(candidate.theme)
+    const score =
+      (profile.includes('russa') && theme.includes('russa') ? 6 : 0) +
+      (profile.includes('filosofia') && (theme.includes('filosofia') || theme.includes('virtudes')) ? 5 : 0) +
+      (profile.includes('teologia') && (theme.includes('teologia') || theme.includes('cosmovisao')) ? 5 : 0) +
+      (profile.includes('cosmovisao') && theme.includes('cosmovisao') ? 5 : 0) +
+      ((profile.includes('poesia') || profile.includes('composicao') || profile.includes('escrita')) && (theme.includes('poesia') || theme.includes('criatividade')) ? 5 : 0) +
+      (profile.includes(theme) ? 3 : 0) + 1
     return { candidate, score }
   })
   return scored.sort((a, b) => b.score - a.score).slice(0, 4).map(({ candidate }) => candidate)

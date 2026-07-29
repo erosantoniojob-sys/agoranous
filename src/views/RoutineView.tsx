@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, Check, ChevronRight, Dumbbell, Flame, Plus, TimerReset } from 'lucide-react'
+import { ArrowLeft, Check, ChevronRight, Dumbbell, Flame, Heart, PenLine, Plus, TimerReset } from 'lucide-react'
 import { readScholeValue, writeScholeValue } from '../lib/scholeStorage'
 import { useAgoraStore } from '../store/useAgoraStore'
 
@@ -19,19 +19,23 @@ const todayKey = new Date().toISOString().slice(0, 10)
 const key = (item: string) => `routine.${todayKey}.${item}`
 
 export const RoutineView: React.FC = () => {
-  const { setActiveTab } = useAgoraStore()
+  const { setActiveTab, userProfile } = useAgoraStore()
   const [habits, setHabits] = useState<Habit[]>(() => readScholeValue(key('habits'), DEFAULT_HABITS))
   const [workouts, setWorkouts] = useState<Workout[]>(() => readScholeValue(key('workouts'), DEFAULT_WORKOUTS))
   const [isCreating, setIsCreating] = useState(false)
   const [workoutName, setWorkoutName] = useState('')
   const [workoutMinutes, setWorkoutMinutes] = useState(30)
+  const [dailyIntention, setDailyIntention] = useState(() => readScholeValue('routine.daily-intention', ''))
 
   useEffect(() => writeScholeValue(key('habits'), habits), [habits])
   useEffect(() => writeScholeValue(key('workouts'), workouts), [workouts])
+  useEffect(() => writeScholeValue('routine.daily-intention', dailyIntention), [dailyIntention])
 
   const completedHabits = habits.filter((habit) => habit.completed).length
   const completedWorkouts = workouts.filter((workout) => workout.completed).length
   const consistency = useMemo(() => Math.round(((completedHabits + completedWorkouts) / Math.max(habits.length + workouts.length, 1)) * 100), [completedHabits, completedWorkouts, habits.length, workouts.length])
+  const firstName = userProfile.nome?.trim().split(' ')[0]
+  const interests = userProfile.tags_interesses?.slice(0, 2).join(' · ')
 
   const addWorkout = (event: React.FormEvent) => {
     event.preventDefault()
@@ -50,11 +54,11 @@ export const RoutineView: React.FC = () => {
       </header>
 
       <section className="grid gap-4 sm:grid-cols-[1.5fr_1fr]">
-        <div className="rounded-2xl border border-text-primary/10 bg-bg-surface p-6"><div className="flex items-start justify-between"><div><p className="text-xs font-semibold uppercase tracking-wider text-text-secondary">Constância de hoje</p><p className="mt-2 font-serif text-4xl font-bold text-accent-gold">{consistency}%</p></div><div className="grid h-11 w-11 place-items-center rounded-xl border border-accent-gold/30 bg-bg-elevated text-accent-gold"><Flame className="h-5 w-5" /></div></div><p className="mt-4 text-sm text-text-secondary">Pequenas práticas, registradas com honestidade. O objetivo é voltar amanhã.</p></div>
+        <div className="rounded-2xl border border-text-primary/10 bg-bg-surface p-6"><div className="flex items-start justify-between"><div><p className="text-xs font-semibold uppercase tracking-wider text-text-secondary">{firstName ? `Constância de ${firstName} hoje` : 'Constância de hoje'}</p><p className="mt-2 font-serif text-4xl font-bold text-accent-gold">{consistency}%</p></div><div className="grid h-11 w-11 place-items-center rounded-xl border border-accent-gold/30 bg-bg-elevated text-accent-gold"><Flame className="h-5 w-5" /></div></div><p className="mt-4 text-sm text-text-secondary">{dailyIntention ? `Seu norte: “${dailyIntention}”` : interests ? `Práticas que sustentam seu percurso em ${interests}.` : 'Pequenas práticas, registradas com honestidade. O objetivo é voltar amanhã.'}</p></div>
         <button onClick={() => setActiveTab('schole')} className="group rounded-2xl border border-text-primary/10 bg-bg-surface p-6 text-left transition-colors hover:border-accent-gold/50"><TimerReset className="h-5 w-5 text-accent-gold" /><p className="mt-4 font-serif text-lg font-bold">Preparar foco</p><p className="mt-1 text-xs text-text-secondary">Abra a Scholé para sua próxima sessão.</p><ChevronRight className="mt-3 h-4 w-4 text-text-secondary transition-transform group-hover:translate-x-1 group-hover:text-accent-gold" /></button>
       </section>
 
-      <section className="rounded-2xl border border-text-primary/10 bg-bg-surface p-5 sm:p-6"><div className="mb-4 flex items-center justify-between"><div><p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent-gold">Práticas diárias</p><h2 className="mt-1 font-serif text-xl font-bold">Hábitos</h2></div><span className="text-xs text-text-secondary">{completedHabits}/{habits.length}</span></div><div className="grid gap-2 sm:grid-cols-3">{habits.map((habit) => <button key={habit.id} onClick={() => setHabits((current) => current.map((item) => item.id === habit.id ? { ...item, completed: !item.completed } : item))} className={`flex items-center gap-3 rounded-xl border p-4 text-left text-sm transition-colors ${habit.completed ? 'border-accent-gold/50 bg-accent-gold/10 text-text-primary' : 'border-text-primary/10 bg-bg-base/40 text-text-secondary hover:border-text-primary/30'}`}><span className={`grid h-5 w-5 place-items-center rounded-md border ${habit.completed ? 'border-accent-gold bg-accent-gold text-bg-base' : 'border-text-secondary/50'}`}>{habit.completed && <Check className="h-3.5 w-3.5 stroke-[3]" />}</span>{habit.name}</button>)}</div></section>
+      <section className="rounded-2xl border border-text-primary/10 bg-bg-surface p-5 sm:p-6"><div className="mb-4 flex items-center justify-between"><div><p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent-gold">Virtudes em prática</p><h2 className="mt-1 flex items-center gap-2 font-serif text-xl font-bold"><Heart className="h-4 w-4 text-accent-gold" />O que você quer cultivar hoje?</h2></div><span className="text-xs text-text-secondary">{completedHabits}/{habits.length}</span></div><label className="mb-4 flex items-center gap-2 rounded-xl border border-accent-gold/20 bg-accent-gold/5 px-3 py-2 text-xs text-text-secondary"><PenLine className="h-3.5 w-3.5 shrink-0 text-accent-gold" /><input value={dailyIntention} onChange={(event) => setDailyIntention(event.target.value)} placeholder="Seu norte de hoje — ex.: presença nas conversas" className="min-w-0 flex-1 bg-transparent text-text-primary outline-none placeholder:text-text-secondary/70" /></label><div className="grid gap-2 sm:grid-cols-3">{habits.map((habit) => <button key={habit.id} onClick={() => setHabits((current) => current.map((item) => item.id === habit.id ? { ...item, completed: !item.completed } : item))} className={`flex items-center gap-3 rounded-xl border p-4 text-left text-sm transition-colors ${habit.completed ? 'border-accent-gold/50 bg-accent-gold/10 text-text-primary' : 'border-text-primary/10 bg-bg-base/40 text-text-secondary hover:border-text-primary/30'}`}><span className={`grid h-5 w-5 place-items-center rounded-md border ${habit.completed ? 'border-accent-gold bg-accent-gold text-bg-base' : 'border-text-secondary/50'}`}>{habit.completed && <Check className="h-3.5 w-3.5 stroke-[3]" />}</span>{habit.name}</button>)}</div></section>
 
       <section className="rounded-2xl border border-text-primary/10 bg-bg-surface p-5 sm:p-6"><div className="mb-4 flex items-center justify-between"><div><p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent-gold">Corpo em movimento</p><h2 className="mt-1 font-serif text-xl font-bold">Sessões de treino</h2></div><button onClick={() => setIsCreating((open) => !open)} className="inline-flex items-center gap-1.5 rounded-full border border-accent-gold/50 px-3 py-1.5 text-xs font-semibold text-accent-gold hover:bg-accent-gold/10"><Plus className="h-3.5 w-3.5" />Sessão</button></div>
         {isCreating && <form onSubmit={addWorkout} className="mb-4 grid gap-2 rounded-xl border border-text-primary/10 bg-bg-base/50 p-3 sm:grid-cols-[1fr_100px_auto]"><input value={workoutName} onChange={(event) => setWorkoutName(event.target.value)} placeholder="Ex.: Treino de superiores" className="rounded-lg border border-text-primary/15 bg-bg-base px-3 py-2 text-sm outline-none focus:border-accent-gold" /><input type="number" min="5" value={workoutMinutes} onChange={(event) => setWorkoutMinutes(Number(event.target.value))} className="rounded-lg border border-text-primary/15 bg-bg-base px-3 py-2 text-sm outline-none focus:border-accent-gold" /><button className="rounded-lg bg-accent-gold px-4 py-2 text-xs font-bold text-bg-base">Criar</button></form>}

@@ -1,18 +1,22 @@
 import React from 'react'
 import { Bookmark, Compass, HeartHandshake, Home, Hourglass, Map, Plus } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
+import { ViewName, preloadView } from '../lib/viewPreload'
 
 type NavItemProps = {
   label: string
   icon: React.ElementType
   active: boolean
   onClick: () => void
+  view: ViewName
 }
 
-const NavItem: React.FC<NavItemProps> = ({ label, icon: Icon, active, onClick }) => (
+const NavItem: React.FC<NavItemProps> = ({ label, icon: Icon, active, onClick, view }) => (
   <button
     type="button"
     onClick={onClick}
+    onPointerEnter={() => preloadView(view)}
+    onFocus={() => preloadView(view)}
     className={`flex min-w-0 flex-col items-center gap-1 rounded-lg px-1 py-1.5 text-[10px] transition-colors sm:text-xs ${
       active ? 'text-accent-gold' : 'text-text-secondary hover:text-text-primary'
     }`}
@@ -33,9 +37,9 @@ export const TabBar: React.FC = () => {
       <div className="grid w-full grid-cols-[minmax(0,1fr)_56px_minmax(0,1fr)] items-end gap-1 sm:grid-cols-[minmax(0,1fr)_64px_minmax(0,1fr)]">
         {/* Descoberta e foco */}
         <div className="grid grid-cols-3">
-          <NavItem label="Início" icon={Home} active={activeTab === 'inicio'} onClick={() => setActiveTab('inicio')} />
-          <NavItem label="Explorar" icon={Compass} active={activeTab === 'explorar'} onClick={() => setActiveTab('explorar')} />
-          <NavItem label="Scholé" icon={Hourglass} active={activeTab === 'schole'} onClick={() => setActiveTab('schole')} />
+          <NavItem label="Início" icon={Home} active={activeTab === 'inicio'} view="inicio" onClick={() => setActiveTab('inicio')} />
+          <NavItem label="Explorar" icon={Compass} active={activeTab === 'explorar'} view="explorar" onClick={() => setActiveTab('explorar')} />
+          <NavItem label="Scholé" icon={Hourglass} active={activeTab === 'schole'} view="schole" onClick={() => setActiveTab('schole')} />
         </div>
 
         {/* Ação primária */}
@@ -54,9 +58,9 @@ export const TabBar: React.FC = () => {
 
         {/* Organização e prática */}
         <div className="grid grid-cols-3">
-          <NavItem label="Trilhas" icon={Map} active={activeTab === 'trilhas'} onClick={() => setActiveTab('trilhas')} />
-          <NavItem label="Memória" icon={Bookmark} active={activeTab === 'memoria'} onClick={() => setActiveTab('memoria')} />
-          <NavItem label="Virtudes" icon={HeartHandshake} active={activeTab === 'rotina'} onClick={() => setActiveTab('rotina')} />
+          <NavItem label="Trilhas" icon={Map} active={activeTab === 'trilhas'} view="trilhas" onClick={() => setActiveTab('trilhas')} />
+          <NavItem label="Memória" icon={Bookmark} active={activeTab === 'memoria'} view="memoria" onClick={() => setActiveTab('memoria')} />
+          <NavItem label="Virtudes" icon={HeartHandshake} active={activeTab === 'rotina'} view="rotina" onClick={() => setActiveTab('rotina')} />
         </div>
       </div>
     </nav>
