@@ -1,0 +1,1 @@
+const a="agora.schole.";function o(e,t){try{const r=localStorage.getItem(a+e);return r?JSON.parse(r):t}catch{return t}}function c(e,t){try{localStorage.setItem(a+e,JSON.stringify(t))}catch{}}export{o as r,c as w};

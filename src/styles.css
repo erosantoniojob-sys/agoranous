@@ -59,6 +59,14 @@
   padding-inline: 1rem;
 }
 
+.app-header-shell {
+  display: flex;
+  width: 100%;
+  max-width: 100rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
 @media (min-width: 640px) {
   .app-page-shell {
     padding-inline: 2rem;
@@ -98,6 +106,37 @@
   z-index: -1;
   pointer-events: none;
   background: linear-gradient(125deg, rgba(212, 175, 55, 0.09), transparent 34%, rgba(255, 255, 255, 0.025));
+}
+
+.quote-landscape {
+  background-position: center;
+  background-size: cover;
+}
+
+.dashboard-category {
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-category::before {
+  position: absolute;
+  inset: 0;
+  content: '';
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(255,255,255,0.045), transparent 45%);
+}
+
+@media (min-width: 1024px) {
+  .app-page-shell {
+    max-width: none;
+    margin-left: 15rem;
+    margin-right: 0;
+    padding-inline: 2.5rem;
+  }
+
+  .app-header-shell {
+    padding-inline: 1.5rem;
+  }
 }
 
 /* Custom Scrollbars */

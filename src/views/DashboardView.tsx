@@ -120,10 +120,10 @@ export const DashboardView: React.FC = () => {
           </form>
         )}
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
           <button
             onClick={() => setSelectedFilter('Todos')}
-            className={`p-3.5 bg-bg-surface hover:bg-bg-elevated border rounded-xl flex flex-col items-center text-center gap-2 transition-all cursor-pointer shadow-3d-card group ${
+            className={`dashboard-category p-3.5 bg-bg-surface hover:bg-bg-elevated border rounded-xl flex flex-col items-center text-center gap-2 transition-all cursor-pointer shadow-3d-card group ${
               selectedFilter === 'Todos' ? 'border-accent-gold bg-bg-elevated/90 shadow-3d-gold' : 'border-white/5 hover:border-accent-gold/40'
             }`}
           >
@@ -147,7 +147,7 @@ export const DashboardView: React.FC = () => {
               <button
                 key={cat.label}
                 onClick={() => setSelectedFilter(cat.label)}
-                className={`p-3.5 bg-bg-surface hover:bg-bg-elevated border rounded-xl flex flex-col items-center text-center gap-2 transition-all cursor-pointer shadow-3d-card group ${
+                className={`dashboard-category p-3.5 bg-bg-surface hover:bg-bg-elevated border rounded-xl flex flex-col items-center text-center gap-2 transition-all cursor-pointer shadow-3d-card group ${
                   selectedFilter === cat.label ? 'border-accent-gold bg-bg-elevated/90 shadow-3d-gold' : 'border-white/5 hover:border-accent-gold/40'
                 }`}
               >
@@ -171,7 +171,7 @@ export const DashboardView: React.FC = () => {
             <button
               key={cat.id}
               onClick={() => setSelectedFilter(cat.label)}
-              className={`p-3.5 bg-bg-surface hover:bg-bg-elevated border rounded-xl flex flex-col items-center text-center gap-2 transition-all cursor-pointer shadow-3d-card group ${
+              className={`dashboard-category p-3.5 bg-bg-surface hover:bg-bg-elevated border rounded-xl flex flex-col items-center text-center gap-2 transition-all cursor-pointer shadow-3d-card group ${
                 selectedFilter === cat.label ? 'border-accent-gold bg-bg-elevated/90 shadow-3d-gold' : 'border-white/5 hover:border-accent-gold/40'
               }`}
             >
