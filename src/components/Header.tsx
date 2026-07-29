@@ -35,7 +35,7 @@ export const Header: React.FC = () => {
 
   return (
     <header className="w-full bg-bg-base/90 backdrop-blur-md sticky top-0 z-30 border-b border-text-primary/10 py-2.5 sm:py-3.5">
-      <div className="app-header-shell flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
+      <div className="app-page-shell flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
         {/* Left Side: Hamburger Drawer Button & Brand */}
         <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
           <div className="flex items-center gap-3">

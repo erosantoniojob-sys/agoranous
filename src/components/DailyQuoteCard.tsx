@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { Quote, RefreshCw, Sparkles, BookOpen } from 'lucide-react'
-import dawnLandscape from '../assets/agora-dawn-landscape.jpg'
 
 interface QuoteData {
   quote: string
@@ -741,8 +740,7 @@ export const DailyQuoteCard: React.FC = () => {
   }
 
   return (
-    <section className="quote-landscape relative overflow-hidden border border-accent-gold/30 rounded-2xl p-6 sm:p-7 shadow-3d-deep transition-all group" style={{ backgroundImage: `url(${dawnLandscape})` }}>
-      <div className="absolute inset-0 bg-gradient-to-r from-[#07131a]/98 via-[#0b1820]/88 to-[#0b1420]/20" />
+    <section className="relative overflow-hidden bg-gradient-to-br from-bg-surface via-[#182a3a] to-bg-surface border border-accent-gold/30 rounded-2xl p-6 sm:p-7 shadow-3d-deep backdrop-blur-md transition-all group">
       {/* Soft golden glow in the background */}
       <div className="absolute -right-12 -top-12 w-56 h-56 bg-accent-gold/10 rounded-full blur-3xl pointer-events-none group-hover:bg-accent-gold/15 transition-all" />
 

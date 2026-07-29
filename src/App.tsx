@@ -90,7 +90,7 @@ const MainContent: React.FC = () => {
       <Header />
 
       {/* Main Page Shell Content */}
-      <main className="app-page-shell flex-1 pt-4 pb-32 sm:pt-6 sm:pb-28 lg:pb-12">
+      <main className="app-page-shell flex-1 pt-4 pb-32 sm:pt-6 sm:pb-28 md:pb-24">
         <Suspense fallback={<ViewLoading />}>{renderActiveView()}</Suspense>
       </main>
 
