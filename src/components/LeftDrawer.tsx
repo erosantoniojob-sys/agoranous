@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { X, Calendar, Sliders, Database, Sparkles, Hourglass, Dumbbell, Lightbulb, PenTool, Music } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
 import { preloadView } from '../lib/viewPreload'
@@ -6,7 +6,14 @@ import { preloadView } from '../lib/viewPreload'
 export const LeftDrawer: React.FC = () => {
   const { isLeftDrawerOpen, setIsLeftDrawerOpen, setActiveTab, userProfile, isVisitor } = useAgoraStore()
 
-  if (!isLeftDrawerOpen) return null
+  useEffect(() => {
+    const closeWithEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsLeftDrawerOpen(false)
+    }
+
+    if (isLeftDrawerOpen) window.addEventListener('keydown', closeWithEscape)
+    return () => window.removeEventListener('keydown', closeWithEscape)
+  }, [isLeftDrawerOpen, setIsLeftDrawerOpen])
 
   const handleBackup = () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(localStorage.getItem('agora_media_items_v3') || '{}')
@@ -19,15 +26,21 @@ export const LeftDrawer: React.FC = () => {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex">
+    <div className="pointer-events-none fixed inset-0 z-50">
       {/* Backdrop */}
       <div
         onClick={() => setIsLeftDrawerOpen(false)}
-        className="fixed inset-0 bg-bg-base/80 backdrop-blur-sm animate-fadeIn"
+        aria-hidden="true"
+        className={`fixed inset-0 bg-bg-base/80 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${isLeftDrawerOpen ? 'pointer-events-auto opacity-100' : 'opacity-0'}`}
       />
 
-      {/* Left Drawer Panel */}
-      <div className="relative w-80 max-w-[85vw] bg-bg-surface border-r border-text-primary/15 h-full z-10 p-6 flex flex-col justify-between shadow-2xl animate-slideRight">
+      {/* The sidebar stays available on larger screens, but starts retracted so the central navigation remains primary. */}
+      <aside
+        id="menu-lateral"
+        aria-label="Menu lateral de estilo de vida"
+        aria-hidden={!isLeftDrawerOpen}
+        className={`pointer-events-auto fixed inset-y-0 left-0 z-10 flex h-full w-80 max-w-[85vw] flex-col justify-between border-r border-text-primary/15 bg-bg-surface p-6 shadow-2xl transition-transform duration-300 ease-out motion-reduce:transition-none ${isLeftDrawerOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      >
         <div className="space-y-6">
           {/* Drawer Header */}
           <div className="flex items-center justify-between border-b border-text-primary/10 pb-4">
@@ -184,7 +197,7 @@ export const LeftDrawer: React.FC = () => {
             Tudo o que você assiste, lê e aprende, em um só lugar.
           </p>
         </div>
-      </div>
+      </aside>
     </div>
   )
 }

@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { ClassicArchLogoIcon } from './ClassicArchLogo'
 
 export const Header: React.FC = () => {
-  const { setIsSearchOpen, setIsLeftDrawerOpen, setIsRightChatOpen, userProfile } = useAgoraStore()
+  const { setIsSearchOpen, isLeftDrawerOpen, setIsLeftDrawerOpen, setIsRightChatOpen, userProfile } = useAgoraStore()
   const { logout } = useAuth()
 
   // Dynamic greeting: Moment of day, day of week, user name
@@ -41,8 +41,12 @@ export const Header: React.FC = () => {
           <div className="flex items-center gap-3">
             {/* Hamburger Button ☰ */}
             <button
-              onClick={() => setIsLeftDrawerOpen(true)}
-              title="Abrir Menu de Estilo de Vida"
+              type="button"
+              onClick={() => setIsLeftDrawerOpen(!isLeftDrawerOpen)}
+              title={isLeftDrawerOpen ? 'Recolher menu lateral' : 'Abrir menu lateral'}
+              aria-label={isLeftDrawerOpen ? 'Recolher menu lateral' : 'Abrir menu lateral'}
+              aria-controls="menu-lateral"
+              aria-expanded={isLeftDrawerOpen}
               className="p-2 text-text-secondary hover:text-accent-gold hover:bg-bg-surface rounded-xl border border-text-primary/10 transition-all cursor-pointer"
             >
               <Menu className="w-5 h-5" />

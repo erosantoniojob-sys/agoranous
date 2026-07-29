@@ -18,12 +18,6 @@ const MobileNavItem: React.FC<NavItemProps> = ({ label, icon: Icon, active, onCl
   </button>
 )
 
-const DesktopRailItem: React.FC<NavItemProps> = ({ label, icon: Icon, active, onClick, view }) => (
-  <button type="button" title={label} aria-label={label} onClick={onClick} onPointerEnter={() => preloadView(view)} onFocus={() => preloadView(view)} className={`grid h-12 w-12 place-items-center rounded-xl transition-all ${active ? 'bg-accent-gold/14 text-accent-gold shadow-[inset_2px_0_0_#D4AF37]' : 'text-text-secondary hover:bg-bg-elevated hover:text-text-primary'}`}>
-    <Icon className="h-5 w-5 stroke-[1.7]" />
-  </button>
-)
-
 const BottomItem: React.FC<NavItemProps> = ({ label, icon: Icon, active, onClick, view }) => (
   <button type="button" onClick={onClick} onPointerEnter={() => preloadView(view)} onFocus={() => preloadView(view)} className={`flex min-w-15 flex-col items-center gap-1 px-2 py-1 text-[10px] font-medium transition-colors ${active ? 'text-accent-gold' : 'text-text-secondary hover:text-text-primary'}`}>
     <Icon className="h-5 w-5 stroke-[1.7]" />
@@ -47,18 +41,6 @@ export const TabBar: React.FC = () => {
         <MobileNavItem label="Memória" icon={Bookmark} active={activeTab === 'memoria'} view="memoria" onClick={() => setActiveTab('memoria')} />
         <MobileNavItem label="Virtudes" icon={HeartHandshake} active={activeTab === 'rotina'} view="rotina" onClick={() => setActiveTab('rotina')} />
       </nav>
-
-      <aside className="fixed left-5 top-28 z-40 hidden w-14 rounded-2xl border border-text-primary/10 bg-bg-surface/80 p-1 shadow-2xl backdrop-blur-xl lg:block" aria-label="Navegação lateral">
-        <div className="flex flex-col items-center gap-1">
-          <DesktopRailItem label="Início" icon={Home} active={activeTab === 'inicio'} view="inicio" onClick={() => setActiveTab('inicio')} />
-          <DesktopRailItem label="Explorar" icon={Compass} active={activeTab === 'explorar'} view="explorar" onClick={() => setActiveTab('explorar')} />
-          <DesktopRailItem label="Scholé" icon={Hourglass} active={activeTab === 'schole'} view="schole" onClick={() => setActiveTab('schole')} />
-          <DesktopRailItem label="Poíesis" icon={Feather} active={activeTab === 'poiesis'} view="poiesis" onClick={() => setActiveTab('poiesis')} />
-          <DesktopRailItem label="Trilhas" icon={Map} active={activeTab === 'trilhas'} view="trilhas" onClick={() => setActiveTab('trilhas')} />
-          <DesktopRailItem label="Memória" icon={Bookmark} active={activeTab === 'memoria'} view="memoria" onClick={() => setActiveTab('memoria')} />
-          <DesktopRailItem label="Virtudes" icon={HeartHandshake} active={activeTab === 'rotina'} view="rotina" onClick={() => setActiveTab('rotina')} />
-        </div>
-      </aside>
 
       <nav className="fixed bottom-3 left-1/2 z-40 hidden -translate-x-1/2 items-end rounded-2xl border border-text-primary/15 bg-bg-surface/95 px-5 py-2 shadow-2xl backdrop-blur-xl lg:flex" aria-label="Ações rápidas">
         <BottomItem label="Início" icon={Home} active={activeTab === 'inicio'} view="inicio" onClick={() => setActiveTab('inicio')} />
