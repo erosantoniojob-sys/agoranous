@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Quote, RefreshCw, Sparkles, BookOpen } from 'lucide-react'
 import dawnLandscape from '../assets/agora-dawn-landscape.jpg'
 
@@ -719,14 +719,147 @@ const CLASSICAL_QUOTES: QuoteData[] = [
     author: 'Friedrich Nietzsche',
     source: 'A Vontade de Poder',
     category: 'Filosofia & Arte',
+  },
+  {
+    quote: 'A felicidade da tua vida depende da qualidade dos teus pensamentos.',
+    author: 'Marco Aurélio',
+    source: 'Meditações',
+    category: 'Filosofia Estoica',
+  },
+  {
+    quote: 'A leitura é para a mente o que o exercício é para o corpo.',
+    author: 'Joseph Addison',
+    source: 'The Spectator',
+    category: 'Leitura & Formação',
+  },
+  {
+    quote: 'A educação é a arma mais poderosa que você pode usar para mudar o mundo.',
+    author: 'Nelson Mandela',
+    source: 'Discursos',
+    category: 'Educação & Transformação',
+  },
+  {
+    quote: 'Não basta adquirir sabedoria; é preciso também saber usá-la.',
+    author: 'Cícero',
+    source: 'De Officiis',
+    category: 'Filosofia Romana',
+  },
+  {
+    quote: 'É nos momentos de decisão que o seu destino é traçado.',
+    author: 'Anthony Robbins',
+    source: 'Poder sem Limites',
+    category: 'Decisão & Propósito',
+  },
+  {
+    quote: 'A simplicidade é o último grau de sofisticação.',
+    author: 'Leonardo da Vinci',
+    source: 'Cadernos',
+    category: 'Arte & Criação',
+  },
+  {
+    quote: 'Aquele que tem um bom amigo não precisa de espelho.',
+    author: 'Rumi',
+    source: 'Poemas',
+    category: 'Amizade & Autoconhecimento',
+  },
+  {
+    quote: 'Não há caminho para a paz; a paz é o caminho.',
+    author: 'Mahatma Gandhi',
+    source: 'Escritos',
+    category: 'Ética & Paz',
+  },
+  {
+    quote: 'O que fazemos em vida ecoa na eternidade.',
+    author: 'Marco Aurélio',
+    source: 'Meditações',
+    category: 'Virtude & Legado',
+  },
+  {
+    quote: 'A esperança é a coisa com penas que pousa na alma.',
+    author: 'Emily Dickinson',
+    source: 'Poemas',
+    category: 'Poesia & Esperança',
+  },
+  {
+    quote: 'Nenhum homem é uma ilha, inteiro em si mesmo.',
+    author: 'John Donne',
+    source: 'Meditações',
+    category: 'Comunidade & Humanidade',
+  },
+  {
+    quote: 'A paciência e a perseverança têm o efeito mágico de fazer as dificuldades desaparecerem.',
+    author: 'John Quincy Adams',
+    source: 'Cartas',
+    category: 'Perseverança',
+  },
+  {
+    quote: 'Tudo aquilo que você pode imaginar é real.',
+    author: 'Pablo Picasso',
+    source: 'Conversas',
+    category: 'Imaginação & Arte',
+  },
+  {
+    quote: 'A grandeza de uma nação pode ser julgada pelo modo como seus animais são tratados.',
+    author: 'Mahatma Gandhi',
+    source: 'Escritos',
+    category: 'Ética & Compaixão',
+  },
+  {
+    quote: 'A vida encolhe ou se expande em proporção à coragem de cada um.',
+    author: 'Anaïs Nin',
+    source: 'Diários',
+    category: 'Coragem & Vida',
+  },
+  {
+    quote: 'O importante não é o que nos acontece, mas o que fazemos com aquilo que nos acontece.',
+    author: 'Jean-Paul Sartre',
+    source: 'Cadernos',
+    category: 'Liberdade & Responsabilidade',
+  },
+  {
+    quote: 'A sabedoria começa na reflexão.',
+    author: 'Sócrates',
+    source: 'Tradição socrática',
+    category: 'Filosofia Grega',
   }
 ]
 
+const getQuoteIndexForNow = (date = new Date()) => {
+  const day = Math.floor(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86_400_000)
+  return Math.abs((day * 8) + Math.floor(date.getHours() / 3)) % CLASSICAL_QUOTES.length
+}
+
+const getPeriodLabel = (hour = new Date().getHours()) => {
+  if (hour < 6) return 'Citação da madrugada'
+  if (hour < 12) return 'Citação da manhã'
+  if (hour < 18) return 'Citação da tarde'
+  return 'Citação da noite'
+}
+
 export const DailyQuoteCard: React.FC = () => {
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const [currentIndex, setCurrentIndex] = useState(getQuoteIndexForNow)
+  const [periodLabel, setPeriodLabel] = useState(getPeriodLabel)
   const [isLoading, setIsLoading] = useState(false)
 
   const currentQuote = CLASSICAL_QUOTES[currentIndex]
+
+  useEffect(() => {
+    const refreshForTime = () => {
+      setCurrentIndex(getQuoteIndexForNow())
+      setPeriodLabel(getPeriodLabel())
+    }
+    const now = new Date()
+    const millisecondsToNextSlot = ((3 - (now.getHours() % 3)) * 60 * 60 * 1000) - (now.getMinutes() * 60 * 1000) - (now.getSeconds() * 1000) - now.getMilliseconds()
+    let interval: number | undefined
+    const timer = window.setTimeout(() => {
+      refreshForTime()
+      interval = window.setInterval(refreshForTime, 3 * 60 * 60 * 1000)
+    }, millisecondsToNextSlot)
+    return () => {
+      window.clearTimeout(timer)
+      if (interval) window.clearInterval(interval)
+    }
+  }, [])
 
   const handleRefreshQuote = async () => {
     setIsLoading(true)
@@ -751,7 +884,7 @@ export const DailyQuoteCard: React.FC = () => {
         <div className="flex items-center justify-between gap-3">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent-gold/15 text-accent-gold text-[11px] font-semibold uppercase tracking-wider border border-accent-gold/30 shadow-inner">
             <Sparkles className="w-3.5 h-3.5 text-accent-gold" />
-            <span>Citação Diária • {currentQuote.category}</span>
+            <span>{periodLabel} • {currentQuote.category}</span>
           </div>
 
           <button

@@ -85,7 +85,7 @@ const MainContent: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-bg-base text-text-primary font-sans flex flex-col selection:bg-accent-gold/30 selection:text-text-primary">
+    <div className="min-h-screen bg-transparent text-text-primary font-sans flex flex-col selection:bg-accent-gold/30 selection:text-text-primary">
       {/* Top Header */}
       <Header />
 

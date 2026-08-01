@@ -45,6 +45,11 @@
     max-width: 100%;
     overflow-x: clip;
   }
+
+  #root {
+    position: relative;
+    isolation: isolate;
+  }
   
   body {
     background-color: #0B1420;
@@ -55,6 +60,61 @@
       linear-gradient(90deg, rgba(242, 244, 247, 0.015) 1px, transparent 1px);
     background-size: 100% 100%, 36px 36px, 36px 36px;
     min-height: 100vh;
+  }
+}
+
+/* Ambiente vivo da Ágora: uma camada lenta de arquitetura, constelações e luz.
+   Todo o conteúdo fica acima dela, preservando contraste e legibilidade. */
+#root::before,
+#root::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+#root::before {
+  background-image:
+    linear-gradient(180deg, rgba(4, 10, 18, 0.5) 0%, rgba(7, 16, 27, 0.82) 54%, #0b1420 100%),
+    radial-gradient(ellipse at 75% 2%, rgba(222, 181, 73, 0.17), transparent 32%),
+    url('./assets/agora-dawn-landscape.jpg');
+  background-position: center, center, center 30%;
+  background-size: cover, cover, 125% auto;
+  filter: saturate(0.72) brightness(0.48) contrast(1.08);
+  opacity: 0.86;
+  transform: scale(1.04);
+  animation: agora-temple-drift 28s ease-in-out infinite alternate;
+}
+
+#root::after {
+  background-image:
+    radial-gradient(circle at 14% 28%, rgba(229, 193, 88, 0.55) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 74% 20%, rgba(248, 226, 163, 0.42) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 88% 47%, rgba(229, 193, 88, 0.4) 0 1px, transparent 1.6px),
+    radial-gradient(ellipse at 20% 6%, rgba(212, 175, 55, 0.12), transparent 28%),
+    radial-gradient(ellipse at 88% 34%, rgba(45, 94, 130, 0.16), transparent 34%),
+    linear-gradient(115deg, rgba(212, 175, 55, 0.025), transparent 30%, rgba(154, 201, 223, 0.035) 58%, transparent 76%);
+  background-size: 220px 190px, 310px 270px, 380px 330px, 100% 100%, 100% 100%, 100% 100%;
+  mix-blend-mode: screen;
+  opacity: 0.68;
+  animation: agora-starlight 16s ease-in-out infinite alternate;
+}
+
+@keyframes agora-temple-drift {
+  from { transform: scale(1.04) translate3d(-0.5%, -0.35%, 0); background-position: center, center, 48% 28%; }
+  to { transform: scale(1.1) translate3d(0.7%, 0.5%, 0); background-position: center, center, 54% 35%; }
+}
+
+@keyframes agora-starlight {
+  from { opacity: 0.4; transform: translate3d(0, 0, 0); }
+  to { opacity: 0.78; transform: translate3d(-0.7%, 0.45%, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #root::before,
+  #root::after {
+    animation: none;
   }
 }
 
