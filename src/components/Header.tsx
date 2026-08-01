@@ -47,7 +47,7 @@ export const Header: React.FC = () => {
               aria-label={isLeftDrawerOpen ? 'Recolher menu lateral' : 'Abrir menu lateral'}
               aria-controls="menu-lateral"
               aria-expanded={isLeftDrawerOpen}
-              className="p-2 text-text-secondary hover:text-accent-gold hover:bg-bg-surface rounded-xl border border-text-primary/10 transition-all cursor-pointer"
+              className="p-2 text-text-secondary hover:text-accent-gold hover:bg-bg-surface rounded-xl border border-text-primary/10 transition-all cursor-pointer md:hidden"
             >
               <Menu className="w-5 h-5" />
             </button>

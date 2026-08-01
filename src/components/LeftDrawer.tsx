@@ -26,7 +26,7 @@ export const LeftDrawer: React.FC = () => {
   }
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-50">
+    <div className="pointer-events-none fixed inset-0 z-50 lg:static lg:inset-auto lg:z-auto lg:pointer-events-none">
       {/* Backdrop */}
       <div
         onClick={() => setIsLeftDrawerOpen(false)}
@@ -39,7 +39,7 @@ export const LeftDrawer: React.FC = () => {
         id="menu-lateral"
         aria-label="Menu lateral de estilo de vida"
         aria-hidden={!isLeftDrawerOpen}
-        className={`pointer-events-auto fixed inset-y-0 left-0 z-10 flex h-full w-80 max-w-[85vw] flex-col justify-between border-r border-text-primary/15 bg-bg-surface p-6 shadow-2xl transition-transform duration-300 ease-out motion-reduce:transition-none ${isLeftDrawerOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`pointer-events-auto fixed inset-y-0 left-0 z-50 flex h-full w-80 max-w-[85vw] flex-col justify-between border-r border-text-primary/15 bg-bg-surface p-6 shadow-2xl transition-transform duration-300 ease-out motion-reduce:transition-none ${isLeftDrawerOpen ? 'translate-x-0' : '-translate-x-full'} lg:static lg:h-screen lg:w-80 lg:shadow-none lg:translate-x-0 lg:max-w-none lg:border-r lg:border-text-primary/15 lg:pointer-events-auto lg:overflow-y-auto`}
       >
         <div className="space-y-6">
           {/* Drawer Header */}
