@@ -87,23 +87,18 @@ const MainContent: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-transparent text-text-primary font-sans selection:bg-accent-gold/30 selection:text-text-primary">
-      <div className="lg:grid lg:grid-cols-[20rem_minmax(0,1fr)]">
-        <LeftDrawer />
+      {/* Top Header */}
+      <Header />
 
-        <div className="flex min-h-screen flex-col">
-          {/* Top Header */}
-          <Header />
-
-          {/* Main Page Shell Content */}
-          <main className="app-page-shell flex-1 pt-4 pb-32 sm:pt-6 sm:pb-28 lg:pb-28">
-            <Suspense fallback={<ViewLoading />}>{renderActiveView()}</Suspense>
-          </main>
-        </div>
-      </div>
+      {/* Main Page Shell Content */}
+      <main className="app-page-shell flex-1 pt-4 pb-32 sm:pt-6 sm:pb-28 lg:pb-28">
+        <Suspense fallback={<ViewLoading />}>{renderActiveView()}</Suspense>
+      </main>
 
       {/* Modals & Drawers */}
       <SearchModal />
       <MediaDetailModal />
+      <LeftDrawer />
       <RightChatDrawer />
       <AmbientSoundControl />
 
