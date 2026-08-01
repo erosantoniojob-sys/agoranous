@@ -9,6 +9,7 @@ import { LeftDrawer } from './components/LeftDrawer'
 import { RightChatDrawer } from './components/RightChatDrawer'
 import { LoginView } from './views/LoginView'
 import { Onboarding } from './components/Onboarding'
+import { AmbientSoundControl } from './components/AmbientSoundControl'
 
 const DashboardView = lazy(() => import('./views/DashboardView').then((module) => ({ default: module.DashboardView })))
 const ExploreView = lazy(() => import('./views/ExploreView').then((module) => ({ default: module.ExploreView })))
@@ -99,6 +100,7 @@ const MainContent: React.FC = () => {
       <MediaDetailModal />
       <LeftDrawer />
       <RightChatDrawer />
+      <AmbientSoundControl />
 
       {/* Bottom Floating Navigation Tab Bar */}
       <TabBar />

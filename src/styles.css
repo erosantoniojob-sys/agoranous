@@ -101,6 +101,21 @@
   animation: agora-starlight 16s ease-in-out infinite alternate;
 }
 
+/* Colunatas sugeridas e névoa azulada aprofundam a sensação de uma ágora noturna. */
+#root > div::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.22;
+  background:
+    linear-gradient(90deg, transparent 0 7%, rgba(226, 210, 162, 0.18) 7.2% 7.8%, transparent 8% 23%, rgba(226, 210, 162, 0.12) 23.2% 23.7%, transparent 24% 76%, rgba(226, 210, 162, 0.12) 76.2% 76.7%, transparent 77% 92%, rgba(226, 210, 162, 0.18) 92.2% 92.8%, transparent 93%),
+    linear-gradient(180deg, rgba(120, 170, 194, 0.07), transparent 38%, rgba(2, 7, 13, 0.32));
+  mask-image: linear-gradient(to bottom, #000, transparent 78%);
+  animation: agora-colonnade-breathe 19s ease-in-out infinite alternate;
+}
+
 @keyframes agora-temple-drift {
   from { transform: scale(1.04) translate3d(-0.5%, -0.35%, 0); background-position: center, center, 48% 28%; }
   to { transform: scale(1.1) translate3d(0.7%, 0.5%, 0); background-position: center, center, 54% 35%; }
@@ -111,11 +126,18 @@
   to { opacity: 0.78; transform: translate3d(-0.7%, 0.45%, 0); }
 }
 
+@keyframes agora-colonnade-breathe {
+  from { opacity: 0.14; transform: scale(1); }
+  to { opacity: 0.28; transform: scale(1.025); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   #root::before,
   #root::after {
     animation: none;
   }
+
+  #root > div::before { animation: none; }
 }
 
 /* Área de conteúdo única para todas as páginas e o cabeçalho. */
