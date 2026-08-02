@@ -1,5 +1,5 @@
 import React from 'react'
-import { Bookmark, Compass, Feather, Home, Map, Plus, Sparkles } from 'lucide-react'
+import { Bookmark, Compass, Dumbbell, Feather, Home, Hourglass, Map, Plus } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
 import { ViewName, preloadView } from '../lib/viewPreload'
 
@@ -38,8 +38,8 @@ export const TabBar: React.FC = () => {
         <button type="button" onClick={openAddMedia} className="nav-pill nav-pill-add flex min-h-11 flex-col items-center justify-center gap-1 rounded-xl bg-accent-gold text-[10px] font-bold text-bg-base shadow-[0_8px_18px_rgba(212,175,55,0.22)] transition-all duration-200 hover:-translate-y-0.5" aria-label="Adicionar obra ao acervo"><Plus className="h-5 w-5" /><span>Nova</span></button>
         <MobileNavItem label="Poíesis" icon={Feather} active={activeTab === 'poiesis'} view="poiesis" onClick={() => setActiveTab('poiesis')} />
         <MobileNavItem label="Memória" icon={Bookmark} active={activeTab === 'memoria'} view="memoria" onClick={() => setActiveTab('memoria')} />
-        <MobileNavItem label="Scholé" icon={Sparkles} active={activeTab === 'schole'} view="schole" onClick={() => setActiveTab('schole')} />
-        <MobileNavItem label="Rotina" icon={Sparkles} active={activeTab === 'rotina'} view="rotina" onClick={() => setActiveTab('rotina')} />
+        <MobileNavItem label="Scholé" icon={Hourglass} active={activeTab === 'schole'} view="schole" onClick={() => setActiveTab('schole')} />
+        <MobileNavItem label="Rotina" icon={Dumbbell} active={activeTab === 'rotina'} view="rotina" onClick={() => setActiveTab('rotina')} />
       </nav>
 
       <nav className="tab-bar-desktop fixed bottom-3 left-1/2 z-40 hidden -translate-x-1/2 items-end rounded-full px-5 py-2 shadow-[0_14px_36px_rgba(0,0,0,0.28)] backdrop-blur-2xl lg:flex" aria-label="Ações rápidas">
@@ -49,8 +49,8 @@ export const TabBar: React.FC = () => {
         <BottomItem label="Poíesis" icon={Feather} active={activeTab === 'poiesis'} view="poiesis" onClick={() => setActiveTab('poiesis')} />
         <button type="button" onClick={openAddMedia} className="-mt-8 mx-2 grid h-15 w-15 place-items-center rounded-full border border-accent-gold-bright/60 bg-gradient-to-b from-[#f7e7ad] via-accent-gold to-[#a38222] text-bg-base shadow-[0_10px_22px_rgba(0,0,0,0.45),0_0_16px_rgba(212,175,55,0.3)] transition-transform duration-200 hover:-translate-y-1 hover:scale-105" aria-label="Adicionar obra ao acervo"><Plus className="h-7 w-7 stroke-[2]" /></button>
         <BottomItem label="Memória" icon={Bookmark} active={activeTab === 'memoria'} view="memoria" onClick={() => setActiveTab('memoria')} />
-        <BottomItem label="Scholé" icon={Sparkles} active={activeTab === 'schole'} view="schole" onClick={() => setActiveTab('schole')} />
-        <BottomItem label="Rotina" icon={Sparkles} active={activeTab === 'rotina'} view="rotina" onClick={() => setActiveTab('rotina')} />
+        <BottomItem label="Scholé" icon={Hourglass} active={activeTab === 'schole'} view="schole" onClick={() => setActiveTab('schole')} />
+        <BottomItem label="Rotina" icon={Dumbbell} active={activeTab === 'rotina'} view="rotina" onClick={() => setActiveTab('rotina')} />
       </nav>
     </>
   )
