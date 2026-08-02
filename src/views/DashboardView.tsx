@@ -127,7 +127,7 @@ export const DashboardView: React.FC = () => {
             {customTrails.slice(0, 2).map((trail) => (
               <div
                 key={trail.id}
-                onClick={() => setActiveTab('memoria')}
+                onClick={() => setActiveTab('trilhas')}
                 className="p-4 bg-gradient-to-r from-bg-surface via-[#182838] to-bg-surface border border-white/5 hover:border-accent-gold/50 rounded-2xl space-y-2 shadow-3d-card hover:shadow-3d-gold transition-all cursor-pointer group"
               >
                 <div className="flex items-center justify-between gap-2">
