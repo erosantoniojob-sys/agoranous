@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { X, Calendar, Sliders, Database, Sparkles, Hourglass, Dumbbell, Lightbulb, PenTool, Music } from 'lucide-react'
+import { X, Sliders, Database, Sparkles, Hourglass, Dumbbell, Lightbulb, PenTool, Music } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
 import { preloadView } from '../lib/viewPreload'
 
@@ -113,7 +113,7 @@ export const LeftDrawer: React.FC = () => {
           {/* Navigation Links */}
           <nav className="space-y-1 pt-2">
             <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider block px-2 mb-2">
-              Seções de Estilo de Vida
+              Espaços principais
             </span>
 
             <button
@@ -124,7 +124,7 @@ export const LeftDrawer: React.FC = () => {
               className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold text-text-primary hover:text-accent-gold hover:bg-bg-elevated/80 rounded-xl transition-all"
             >
               <Hourglass className="w-4 h-4 text-accent-gold" />
-              <span>Scholé · Modo Caverna</span>
+              <span>Scholé</span>
             </button>
 
             <button
@@ -135,27 +135,27 @@ export const LeftDrawer: React.FC = () => {
               className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold text-text-primary hover:text-accent-gold hover:bg-bg-elevated/80 rounded-xl transition-all"
             >
               <Dumbbell className="w-4 h-4 text-accent-gold" />
-              <span>Rotina, Hábitos & Treinos</span>
+              <span>Rotina</span>
+            </button>
+
+            <button
+              type="button"
+              onPointerEnter={() => preloadView('poiesis')}
+              onFocus={() => preloadView('poiesis')}
+              onClick={() => {
+                setActiveTab('poiesis')
+                setIsLeftDrawerOpen(false)
+              }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold text-text-primary hover:text-accent-gold hover:bg-bg-elevated/80 rounded-xl transition-all"
+            >
+              <Sparkles className="w-4 h-4 text-accent-gold" />
+              <span>Poíesis</span>
             </button>
 
             <div className="mt-4 border-t border-text-primary/10 pt-4">
-              <p className="px-2 text-[10px] font-semibold uppercase tracking-wider text-text-secondary">Próximos espaços</p>
+              <p className="px-2 text-[10px] font-semibold uppercase tracking-wider text-text-secondary">Em breve</p>
               <div className="mt-2 space-y-2 px-3 text-xs text-text-secondary">
                 <p className="flex items-center gap-3"><PenTool className="w-4 h-4 text-accent-gold/70" />Escrita & roteiros <span className="ml-auto text-[10px]">em breve</span></p>
-                <button
-                  type="button"
-                  onPointerEnter={() => preloadView('poiesis')}
-                  onFocus={() => preloadView('poiesis')}
-                  onClick={() => {
-                    setActiveTab('poiesis')
-                    setIsLeftDrawerOpen(false)
-                  }}
-                  className="flex w-full items-center gap-3 rounded-lg px-1 py-1.5 text-left font-semibold text-text-primary transition-colors hover:bg-bg-elevated hover:text-accent-gold"
-                >
-                  <Sparkles className="w-4 h-4 text-accent-gold" />
-                  <span>Poíesis</span>
-                  <span className="ml-auto text-[10px] text-accent-gold/80">Poesia, composições</span>
-                </button>
                 <p className="flex items-center gap-3"><Music className="w-4 h-4 text-accent-gold/70" />Projetos musicais <span className="ml-auto text-[10px]">em breve</span></p>
               </div>
             </div>
