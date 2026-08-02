@@ -31,7 +31,7 @@ export interface TrilhaData {
 }
 
 export const Trilhas: React.FC = () => {
-  const { customTrails, mediaItems, aprendizados, addCustomTrail } = useAgoraStore()
+  const { customTrails, mediaItems, aprendizados, addCustomTrail, updateCustomTrail } = useAgoraStore()
   const [activeTab, setActiveTab] = useState<'minhas' | 'descobrir'>('minhas')
   const [selectedTrailId, setSelectedTrailId] = useState<string | null>(null)
   const [isCreatingTrail, setIsCreatingTrail] = useState(false)
@@ -84,55 +84,81 @@ export const Trilhas: React.FC = () => {
   })
 
   // Discover template options that user can copy or start
+  const discoverTrailMediaIds: Record<string, string[]> = {
+    desc_filosofia_grega: ['m2', 'm5'],
+    desc_classicos_literarios: ['m1', 'm9'],
+    desc_espiritualidade_crista: ['m6', 'm7'],
+    desc_puritano: ['m8'],
+  }
+
   const descobrirTrilhasList: TrilhaData[] = [
     {
-      id: 'desc_russa',
-      titulo: 'Literatura Russa e Existência',
+      id: 'desc_filosofia_grega',
+      titulo: 'Trilha de filosofia grega',
+      conteudosCount: 0,
+      notasCount: 0,
+      progressoPercentual: 0,
+      categoria: 'Filosofia',
+      icon: Compass,
+      colorTheme: 'blue',
+      descricao: 'Platão, Sócrates, Aristóteles e os fundamentos da reflexão filosófica ocidental.',
+    },
+    {
+      id: 'desc_classicos_literarios',
+      titulo: 'Trilha de clássicos literários',
       conteudosCount: 0,
       notasCount: 0,
       progressoPercentual: 0,
       categoria: 'Literatura',
       icon: Feather,
-      colorTheme: 'blue',
-      descricao: 'Dostoiévski, Tolstói e Turguênev sob a perspective do amor ativo e redenção.',
+      colorTheme: 'purple',
+      descricao: 'Uma jornada pelos grandes clássicos da literatura e seus temas permanentes.',
     },
     {
-      id: 'desc_cosmovisao',
-      titulo: 'Cosmovisão e Cultura Contemporânea',
+      id: 'desc_espiritualidade_crista',
+      titulo: 'Trilha de clássicos da espiritualidade cristã',
+      conteudosCount: 0,
+      notasCount: 0,
+      categoria: 'Espiritualidade',
+      icon: Church,
+      colorTheme: 'green',
+      descricao: 'Agostinho, Bento, Teresa de Ávila e outras figuras centrais da tradição cristã.',
+    },
+    {
+      id: 'desc_puritano',
+      titulo: 'Trilha de livros puritanos',
       conteudosCount: 0,
       notasCount: 0,
       progressoPercentual: 0,
       categoria: 'Teologia',
-      icon: Compass,
+      icon: BookOpen,
       colorTheme: 'orange',
-      descricao: 'Análise das 6 funções da cosmovisão e diagnóstico das correntes modernas.',
+      descricao: 'Jonathan Edwards, Richard Baxter e os grandes autores da tradição puritana.',
     },
-    {
-      id: 'desc_patristica',
-      titulo: 'Patrística e Filosofia Antiga',
-      conteudosCount: 0,
+  ].map((template) => {
+    const mediaIds = discoverTrailMediaIds[template.id] ?? []
+    const trailMedia = mediaItems.filter((item) => mediaIds.includes(item.id))
+    const progressoPercentual = trailMedia.length > 0
+      ? Math.round(trailMedia.reduce((sum, item) => sum + (item.progresso_percentual ?? 0), 0) / trailMedia.length)
+      : 0
+
+    return {
+      ...template,
+      conteudosCount: trailMedia.length,
       notasCount: 0,
-      progressoPercentual: 0,
-      categoria: 'Filosofia',
-      icon: Church,
-      colorTheme: 'green',
-      descricao: 'Dos Padres Apologistas à Cidade de Deus de Santo Agostinho.',
-    },
-    {
-      id: 'desc_estetica',
-      titulo: 'Estética e Filosofia da Arte',
-      conteudosCount: 0,
-      notasCount: 0,
-      progressoPercentual: 0,
-      categoria: 'Estética',
-      icon: Sparkles,
-      colorTheme: 'purple',
-      descricao: 'O Belo, a contemplação e a transcendência na literatura e na música.',
-    },
-  ]
+      progressoPercentual,
+    }
+  })
 
   const handleStartDiscoverTrail = (template: TrilhaData) => {
-    addCustomTrail(template.titulo, template.descricao || '', [], template.categoria)
+    const mediaIds = discoverTrailMediaIds[template.id] ?? []
+    const trailMedia = mediaItems.filter((item) => mediaIds.includes(item.id))
+    const progressoPercentual = trailMedia.length > 0
+      ? Math.round(trailMedia.reduce((sum, item) => sum + (item.progresso_percentual ?? 0), 0) / trailMedia.length)
+      : 0
+
+    const newTrail = addCustomTrail(template.titulo, template.descricao || '', mediaIds, template.categoria)
+    updateCustomTrail(newTrail.id, { progresso_percentual: progressoPercentual })
     setActiveTab('minhas')
   }
 

@@ -12,6 +12,8 @@ import {
   Trash2,
   Calendar,
   Image as ImageIcon,
+  BookOpen,
+  Compass,
 } from 'lucide-react';
 import { useAgoraStore } from '../store/useAgoraStore';
 import { EventoRegressivo } from '../types/agora';
@@ -145,7 +147,7 @@ export const Onboarding: React.FC = () => {
     setActiveTab('inicio');
   };
 
-  const totalSteps = 4;
+  const totalSteps = 5;
   const progressPercent = (currentStep / totalSteps) * 100;
 
   return (
@@ -189,8 +191,61 @@ export const Onboarding: React.FC = () => {
         {/* STEP CONTENT BODY */}
         <div className="min-h-[320px] flex flex-col justify-center">
 
-          {/* ETAPA 1: APRESENTAÇÃO */}
+          {/* ETAPA 1: ABERTURA GLORIOSA */}
           {currentStep === 1 && (
+            <div className="space-y-6 animate-fadeIn">
+              <div className="relative overflow-hidden rounded-3xl border border-accent-gold/30 bg-gradient-to-br from-bg-surface via-bg-base to-bg-elevated p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.45)]">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(212,175,55,0.18),_transparent_50%)]" />
+                <div className="relative space-y-5">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-accent-gold/30 bg-accent-gold/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.25em] text-accent-gold">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    Abertura Gloriosa
+                  </div>
+
+                  <div className="space-y-2">
+                    <h2 className="font-serif font-bold text-3xl sm:text-4xl text-text-primary leading-tight">
+                      Bem-vindo à Ágora
+                    </h2>
+                    <p className="text-sm sm:text-base text-text-secondary max-w-2xl">
+                      Aqui, leituras, memórias e trilhas se tornam uma jornada viva. Seu segundo cérebro se abre com dignidade, beleza e propósito.
+                    </p>
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <div className="rounded-2xl border border-accent-gold/20 bg-bg-surface/80 p-3">
+                      <div className="flex items-center gap-2 text-accent-gold">
+                        <BookOpen className="w-4 h-4" />
+                        <span className="text-[10px] font-semibold uppercase tracking-wider">Leituras</span>
+                      </div>
+                      <p className="mt-2 text-xs text-text-secondary">Uma biblioteca viva para cada jornada.</p>
+                    </div>
+                    <div className="rounded-2xl border border-accent-gold/20 bg-bg-surface/80 p-3">
+                      <div className="flex items-center gap-2 text-accent-gold">
+                        <Compass className="w-4 h-4" />
+                        <span className="text-[10px] font-semibold uppercase tracking-wider">Trilhas</span>
+                      </div>
+                      <p className="mt-2 text-xs text-text-secondary">Caminhos claros para estudar com paixão.</p>
+                    </div>
+                    <div className="rounded-2xl border border-accent-gold/20 bg-bg-surface/80 p-3">
+                      <div className="flex items-center gap-2 text-accent-gold">
+                        <Sparkles className="w-4 h-4" />
+                        <span className="text-[10px] font-semibold uppercase tracking-wider">Reflexão</span>
+                      </div>
+                      <p className="mt-2 text-xs text-text-secondary">Aprofunde ideias, memórias e projetos.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-accent-gold/20 bg-bg-base/70 p-4 text-sm text-text-secondary">
+                <p className="font-semibold text-text-primary">Pronto para entrar?</p>
+                <p className="mt-1">A próxima etapa personaliza seu perfil e prepara a Ágora para acolher sua presença.</p>
+              </div>
+            </div>
+          )}
+
+          {/* ETAPA 2: APRESENTAÇÃO */}
+          {currentStep === 2 && (
             <div className="space-y-6 animate-fadeIn">
               <div className="space-y-1">
                 <h2 className="font-serif font-bold text-2xl text-text-primary flex items-center gap-2">
@@ -232,8 +287,8 @@ export const Onboarding: React.FC = () => {
             </div>
           )}
 
-          {/* ETAPA 2: IDENTIDADE VISUAL (UPLOAD DE FOTO) */}
-          {currentStep === 2 && (
+          {/* ETAPA 3: IDENTIDADE VISUAL (UPLOAD DE FOTO) */}
+          {currentStep === 3 && (
             <div className="space-y-6 animate-fadeIn">
               <div className="space-y-1">
                 <h2 className="font-serif font-bold text-2xl text-text-primary flex items-center gap-2">
@@ -312,8 +367,8 @@ export const Onboarding: React.FC = () => {
             </div>
           )}
 
-          {/* ETAPA 3: INTERESSES E TAGS */}
-          {currentStep === 3 && (
+          {/* ETAPA 4: INTERESSES E TAGS */}
+          {currentStep === 4 && (
             <div className="space-y-6 animate-fadeIn">
               <div className="space-y-1">
                 <h2 className="font-serif font-bold text-2xl text-text-primary flex items-center gap-2">
@@ -397,8 +452,8 @@ export const Onboarding: React.FC = () => {
             </div>
           )}
 
-          {/* ETAPA 4: CONTADORES E EVENTOS */}
-          {currentStep === 4 && (
+          {/* ETAPA 5: CONTADORES E EVENTOS */}
+          {currentStep === 5 && (
             <div className="space-y-6 animate-fadeIn">
               <div className="space-y-1">
                 <h2 className="font-serif font-bold text-2xl text-text-primary flex items-center gap-2">
