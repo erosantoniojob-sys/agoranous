@@ -88,7 +88,7 @@ const MainContent: React.FC = () => {
   return (
     <div className="min-h-screen flex bg-transparent text-text-primary font-sans selection:bg-accent-gold/30 selection:text-text-primary">
       {/* Left Sidebar (Desktop Only) */}
-      <div className="hidden lg:block w-80 border-r border-text-primary/15 bg-bg-surface sticky top-0 h-screen overflow-y-auto">
+      <div className="hidden lg:flex lg:w-80 lg:flex-col lg:border-r lg:border-text-primary/15 lg:bg-bg-surface">
         <LeftDrawer />
       </div>
 
