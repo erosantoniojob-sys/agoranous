@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { lazy, Suspense, useMemo, useState } from 'react'
 import {
   Sparkles,
   BookOpen,
@@ -14,11 +14,12 @@ import {
   ChevronRight,
 } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
-import { DailyQuoteCard } from '../components/DailyQuoteCard'
 import { NetflixMediaCard } from '../components/NetflixMediaCard'
-import { RecommendationsSection } from '../components/RecommendationsSection'
 import { TrailSelectionModal } from '../components/TrailSelectionModal'
 import dawnLandscape from '../assets/agora-dawn-landscape.jpg'
+
+const DailyQuoteCard = lazy(() => import('../components/DailyQuoteCard').then((module) => ({ default: module.DailyQuoteCard })))
+const RecommendationsSection = lazy(() => import('../components/RecommendationsSection').then((module) => ({ default: module.RecommendationsSection })))
 
 export const DashboardView: React.FC = () => {
   const {
@@ -45,22 +46,18 @@ export const DashboardView: React.FC = () => {
     { label: 'Jogos', icon: Gamepad2, type: 'Jogo' },
   ]
 
-  const stats = getEstatisticas()
+  const stats = useMemo(() => getEstatisticas(), [getEstatisticas])
 
-  // Items in progress for "Continue sua jornada"
-  const inProgressItems = mediaItems.filter((i) =>
-    ['Lendo', 'Assistindo', 'Jogando'].includes(i.status)
-  )
-
-  // Filter items for main catalog
-  const filteredMediaItems = mediaItems.filter((item) => {
-    if (selectedFilter === 'Todos') return true
-    if (selectedFilter === 'Livros') return item.tipo === 'Livro'
-    if (selectedFilter === 'Filmes') return item.tipo === 'Filme'
-    if (selectedFilter === 'Séries') return item.tipo === 'Série'
-    if (selectedFilter === 'Jogos') return item.tipo === 'Jogo'
-    return item.generos?.includes(selectedFilter) || item.tipo === selectedFilter
-  })
+  const filteredMediaItems = useMemo(() => {
+    return mediaItems.filter((item) => {
+      if (selectedFilter === 'Todos') return true
+      if (selectedFilter === 'Livros') return item.tipo === 'Livro'
+      if (selectedFilter === 'Filmes') return item.tipo === 'Filme'
+      if (selectedFilter === 'Séries') return item.tipo === 'Série'
+      if (selectedFilter === 'Jogos') return item.tipo === 'Jogo'
+      return item.generos?.includes(selectedFilter) || item.tipo === selectedFilter
+    })
+  }, [mediaItems, selectedFilter])
 
   const handleCreateCategory = (e: React.FormEvent) => {
     e.preventDefault()
@@ -74,9 +71,95 @@ export const DashboardView: React.FC = () => {
   return (
     <div className="space-y-8 pb-12 font-sans animate-fadeIn">
       {/* 1. HEADER - CITAÇÃO DIÁRIA (NOVO TOPO ABSOLUTO) */}
-      <DailyQuoteCard />
+      <Suspense fallback={<div className="rounded-2xl border border-accent-gold/20 bg-bg-surface/80 p-4 text-sm text-text-secondary">Carregando abertura…</div>}>
+        <DailyQuoteCard />
+      </Suspense>
 
-      {/* 2. CATEGORIAS DO ACERVO */}
+      {/* 2. TRILHAS EM ANDAMENTO (MOVIDO PARA CIMA) */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="font-serif font-bold text-lg text-text-primary flex items-center gap-2">
+            <Network className="w-4.5 h-4.5 text-accent-gold" />
+            Trilhas em Andamento
+          </h3>
+
+          <button
+            onClick={() => setIsTrailModalOpen(true)}
+            className="py-1.5 px-3 bg-accent-gold/15 hover:bg-accent-gold/25 text-accent-gold border border-accent-gold/40 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Escolher ou Criar Trilha</span>
+          </button>
+        </div>
+
+        {customTrails.length === 0 ? (
+          <div
+            onClick={() => setIsTrailModalOpen(true)}
+            className="trail-landscape relative overflow-hidden p-5 border border-accent-gold/30 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-3d-card hover:shadow-3d-gold transition-all cursor-pointer group"
+            style={{ backgroundImage: `url(${dawnLandscape})` }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-bg-surface via-bg-surface/85 to-bg-base/10" />
+            <div className="relative z-10 space-y-1 text-center sm:text-left">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-accent-gold">
+                Inicie sua Primeira Trilha
+              </span>
+              <h4 className="font-serif font-bold text-base sm:text-lg text-text-primary group-hover:text-accent-gold transition-colors">
+                Nenhuma trilha temática configurada no momento
+              </h4>
+              <p className="text-xs text-text-secondary">
+                Clique aqui para escolher ou criar uma nova jornada de estudos.
+              </p>
+            </div>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                setIsTrailModalOpen(true)
+              }}
+              className="relative z-10 py-2 px-4 bg-accent-gold text-bg-base font-bold text-xs rounded-xl uppercase tracking-wider transition-all cursor-pointer shadow-md flex items-center gap-1.5 whitespace-nowrap"
+            >
+              <span>+ Criar Trilha</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {customTrails.slice(0, 2).map((trail) => (
+              <div
+                key={trail.id}
+                onClick={() => setActiveTab('memoria')}
+                className="p-4 bg-gradient-to-r from-bg-surface via-[#182838] to-bg-surface border border-white/5 hover:border-accent-gold/50 rounded-2xl space-y-2 shadow-3d-card hover:shadow-3d-gold transition-all cursor-pointer group"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-accent-gold px-2 py-0.5 rounded bg-accent-gold/10 border border-accent-gold/20">
+                    {trail.categoria || 'Trilha'}
+                  </span>
+                  <span className="font-serif font-bold text-lg text-accent-gold">
+                    {trail.progresso_percentual || 0}%
+                  </span>
+                </div>
+
+                <h4 className="font-serif font-bold text-base text-text-primary group-hover:text-accent-gold transition-colors truncate">
+                  {trail.nome}
+                </h4>
+
+                <p className="text-xs text-text-secondary line-clamp-1">
+                  {trail.descricao || 'Sem descrição'} • {trail.mediaIds.length} conteúdos
+                </p>
+
+                <div className="w-full bg-bg-base h-1.5 rounded-full overflow-hidden border border-text-primary/10 mt-2">
+                  <div
+                    className="bg-accent-gold h-full rounded-full transition-all duration-500"
+                    style={{ width: `${trail.progresso_percentual || 0}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* 3. CATEGORIAS DO ACERVO */}
       <section className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-text-secondary flex items-center gap-1.5">
@@ -203,90 +286,6 @@ export const DashboardView: React.FC = () => {
         </div>
       </section>
 
-      {/* 3. TRILHAS EM ANDAMENTO (INTERATIVO COM MODAL RÁPIDO) */}
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="font-serif font-bold text-lg text-text-primary flex items-center gap-2">
-            <Network className="w-4.5 h-4.5 text-accent-gold" />
-            Trilhas em Andamento
-          </h3>
-
-          <button
-            onClick={() => setIsTrailModalOpen(true)}
-            className="py-1.5 px-3 bg-accent-gold/15 hover:bg-accent-gold/25 text-accent-gold border border-accent-gold/40 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Escolher ou Criar Trilha</span>
-          </button>
-        </div>
-
-        {customTrails.length === 0 ? (
-          <div
-            onClick={() => setIsTrailModalOpen(true)}
-            className="trail-landscape relative overflow-hidden p-5 border border-accent-gold/30 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-3d-card hover:shadow-3d-gold transition-all cursor-pointer group"
-            style={{ backgroundImage: `url(${dawnLandscape})` }}
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-bg-surface via-bg-surface/85 to-bg-base/10" />
-            <div className="relative z-10 space-y-1 text-center sm:text-left">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-accent-gold">
-                Inicie sua Primeira Trilha
-              </span>
-              <h4 className="font-serif font-bold text-base sm:text-lg text-text-primary group-hover:text-accent-gold transition-colors">
-                Nenhuma trilha temática configurada no momento
-              </h4>
-              <p className="text-xs text-text-secondary">
-                Clique aqui para escolher ou criar uma nova jornada de estudos.
-              </p>
-            </div>
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                setIsTrailModalOpen(true)
-              }}
-              className="relative z-10 py-2 px-4 bg-accent-gold text-bg-base font-bold text-xs rounded-xl uppercase tracking-wider transition-all cursor-pointer shadow-md flex items-center gap-1.5 whitespace-nowrap"
-            >
-              <span>+ Criar Trilha</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {customTrails.slice(0, 2).map((trail) => (
-              <div
-                key={trail.id}
-                onClick={() => setActiveTab('memoria')}
-                className="p-4 bg-gradient-to-r from-bg-surface via-[#182838] to-bg-surface border border-white/5 hover:border-accent-gold/50 rounded-2xl space-y-2 shadow-3d-card hover:shadow-3d-gold transition-all cursor-pointer group"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-accent-gold px-2 py-0.5 rounded bg-accent-gold/10 border border-accent-gold/20">
-                    {trail.categoria || 'Trilha'}
-                  </span>
-                  <span className="font-serif font-bold text-lg text-accent-gold">
-                    {trail.progresso_percentual || 0}%
-                  </span>
-                </div>
-
-                <h4 className="font-serif font-bold text-base text-text-primary group-hover:text-accent-gold transition-colors truncate">
-                  {trail.nome}
-                </h4>
-
-                <p className="text-xs text-text-secondary line-clamp-1">
-                  {trail.descricao || 'Sem descrição'} • {trail.mediaIds.length} conteúdos
-                </p>
-
-                <div className="w-full bg-bg-base h-1.5 rounded-full overflow-hidden border border-text-primary/10 mt-2">
-                  <div
-                    className="bg-accent-gold h-full rounded-full transition-all duration-500"
-                    style={{ width: `${trail.progresso_percentual || 0}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-
       {/* 4. CATÁLOGO DE MÍDIAS */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
@@ -324,7 +323,9 @@ export const DashboardView: React.FC = () => {
       {/* 5. RECOMENDAÇÕES DO PERFIL */}
       {selectedFilter === 'Todos' && (
         <section className="pt-6 border-t border-text-primary/10">
-          <RecommendationsSection />
+          <Suspense fallback={<div className="rounded-2xl border border-text-primary/10 bg-bg-surface/70 p-4 text-sm text-text-secondary">Consultando recomendações…</div>}>
+            <RecommendationsSection />
+          </Suspense>
         </section>
       )}
 
