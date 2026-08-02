@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react'
-import { X, Sliders, Database, Sparkles, Hourglass, Dumbbell, Lightbulb, PenTool, Music } from 'lucide-react'
+import { X, Sliders, Database, Home, Compass, Map, BookOpen, Bookmark, Lightbulb, Hourglass, Dumbbell } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
 import { preloadView } from '../lib/viewPreload'
 
 export const LeftDrawer: React.FC = () => {
-  const { isLeftDrawerOpen, setIsLeftDrawerOpen, setActiveTab, userProfile, isVisitor } = useAgoraStore()
+  const { isLeftDrawerOpen, setIsLeftDrawerOpen, setActiveTab, activeTab, userProfile, isVisitor } = useAgoraStore()
 
   useEffect(() => {
     const closeWithEscape = (event: KeyboardEvent) => {
@@ -25,148 +25,110 @@ export const LeftDrawer: React.FC = () => {
     downloadAnchor.remove()
   }
 
+  const navigationItems = [
+    { label: 'Início', icon: Home, tab: 'inicio' },
+    { label: 'Explorar', icon: Compass, tab: 'explorar' },
+    { label: 'Trilhas', icon: Map, tab: 'trilhas' },
+    { label: 'Acervo', icon: BookOpen, tab: 'inicio' }, // links to dashboard
+    { label: 'Memória', icon: Bookmark, tab: 'memoria' },
+  ]
+
+  const handleNavClick = (tab: string) => {
+    setActiveTab(tab)
+    setIsLeftDrawerOpen(false)
+  }
+
   return (
-    <div className="pointer-events-none fixed inset-0 z-50 lg:static lg:inset-auto lg:z-auto lg:pointer-events-none">
-      {/* Backdrop */}
+    <div className="pointer-events-none fixed inset-0 z-50 lg:static lg:inset-auto lg:z-auto lg:pointer-events-auto">
+      {/* Mobile Backdrop */}
       <div
         onClick={() => setIsLeftDrawerOpen(false)}
         aria-hidden="true"
         className={`fixed inset-0 bg-bg-base/80 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${isLeftDrawerOpen ? 'pointer-events-auto opacity-100' : 'opacity-0'}`}
       />
 
-      {/* The sidebar stays available on larger screens, but starts retracted so the central navigation remains primary. */}
+      {/* Sidebar */}
       <aside
         id="menu-lateral"
-        aria-label="Menu lateral de estilo de vida"
+        aria-label="Menu lateral principal"
         aria-hidden={!isLeftDrawerOpen}
-        className={`pointer-events-auto fixed inset-y-0 left-0 z-50 flex h-full w-80 max-w-[85vw] flex-col justify-between border-r border-text-primary/15 bg-bg-surface p-6 shadow-2xl transition-transform duration-300 ease-out motion-reduce:transition-none ${isLeftDrawerOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`pointer-events-auto fixed inset-y-0 left-0 z-50 flex h-full w-80 max-w-[85vw] flex-col lg:relative lg:inset-auto lg:z-auto lg:w-full lg:h-auto lg:max-w-none lg:border-none lg:shadow-none lg:translate-x-0 lg:bg-transparent lg:p-0 border-r border-text-primary/15 bg-bg-surface p-6 shadow-2xl transition-transform duration-300 ease-out motion-reduce:transition-none ${isLeftDrawerOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
-        <div className="space-y-6">
-          {/* Drawer Header */}
-          <div className="flex items-center justify-between border-b border-text-primary/10 pb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-bg-elevated border border-accent-gold/40 flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-accent-gold" />
-              </div>
-              <div>
-                <h2 className="font-serif font-bold text-lg text-text-primary">
-                  Estilo de Vida
-                </h2>
-                <p className="text-[10px] text-accent-gold uppercase tracking-widest">
-                  Segundo Cérebro
-                </p>
-              </div>
+        <div className="space-y-6 lg:space-y-8">
+          {/* Logo */}
+          <div className="flex items-center justify-between">
+            <div className="text-center lg:text-left">
+              <div className="font-serif font-bold text-sm text-text-primary">ÁGORA</div>
+              <p className="text-[10px] text-text-secondary uppercase tracking-widest">Conhecimento que forma caráter.</p>
             </div>
 
             <button
-              onPointerEnter={() => preloadView('schole')}
-              onFocus={() => preloadView('schole')}
               onClick={() => setIsLeftDrawerOpen(false)}
-              className="p-1.5 text-text-secondary hover:text-text-primary rounded-lg hover:bg-bg-elevated transition-colors"
+              className="lg:hidden p-1.5 text-text-secondary hover:text-text-primary rounded-lg hover:bg-bg-elevated transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* User Persona Quick Info */}
-          {isVisitor ? (
-            <div className="p-3 bg-bg-elevated/60 rounded-xl border border-text-primary/10 flex items-start gap-3">
-              <Lightbulb className="w-5 h-5 mt-0.5 shrink-0 text-accent-gold" />
-              <div><h3 className="font-serif font-bold text-sm text-text-primary">Explore sem compromissos</h3><p className="text-[11px] text-text-secondary mt-1">Use a Scholé, experimente hábitos e crie um ritmo que faça sentido para você.</p></div>
-            </div>
-          ) : <div className="p-3 bg-bg-elevated/60 rounded-xl border border-text-primary/10 flex items-center gap-3">
-            {userProfile.avatar_url ? (
-              <img
-                src={userProfile.avatar_url}
-                alt={userProfile.nome || 'Convidado'}
-                className="w-10 h-10 rounded-full object-cover border border-accent-gold/40"
-              />
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-bg-base border border-accent-gold/40 flex items-center justify-center text-accent-gold font-serif font-bold text-sm">
-                {(userProfile.nome || 'C').charAt(0).toUpperCase()}
-              </div>
-            )}
-            <div className="min-w-0 flex-1">
-              <h3 className="font-serif font-bold text-sm text-text-primary truncate">
-                {userProfile.nome || 'Convidado'}
-              </h3>
-              <p className="text-[11px] text-text-secondary truncate">
-                {userProfile.biografia || 'Sem biografia informada'}
-              </p>
-            </div>
-          </div>}
-
-          {!isVisitor && (
-            <button
-              onPointerEnter={() => preloadView('rotina')}
-              onFocus={() => preloadView('rotina')}
-              onClick={() => {
-                setActiveTab('perfil')
-                setIsLeftDrawerOpen(false)
-              }}
-              className="w-full -mt-3 flex items-center justify-center gap-2 rounded-xl border border-text-primary/10 px-3 py-2 text-xs font-semibold text-text-secondary transition-colors hover:border-accent-gold/40 hover:text-accent-gold"
-            >
-              Editar meu perfil
-            </button>
-          )}
-
-          {/* Navigation Links */}
-          <nav className="space-y-1 pt-2">
-            <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider block px-2 mb-2">
-              Espaços principais
-            </span>
-
-            <button
-              onClick={() => {
-                setActiveTab('schole')
-                setIsLeftDrawerOpen(false)
-              }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold text-text-primary hover:text-accent-gold hover:bg-bg-elevated/80 rounded-xl transition-all"
-            >
-              <Hourglass className="w-4 h-4 text-accent-gold" />
-              <span>Scholé</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setActiveTab('rotina')
-                setIsLeftDrawerOpen(false)
-              }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold text-text-primary hover:text-accent-gold hover:bg-bg-elevated/80 rounded-xl transition-all"
-            >
-              <Dumbbell className="w-4 h-4 text-accent-gold" />
-              <span>Rotina</span>
-            </button>
-
-            <button
-              type="button"
-              onPointerEnter={() => preloadView('poiesis')}
-              onFocus={() => preloadView('poiesis')}
-              onClick={() => {
-                setActiveTab('poiesis')
-                setIsLeftDrawerOpen(false)
-              }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold text-text-primary hover:text-accent-gold hover:bg-bg-elevated/80 rounded-xl transition-all"
-            >
-              <Sparkles className="w-4 h-4 text-accent-gold" />
-              <span>Poíesis</span>
-            </button>
-
-            <div className="mt-4 border-t border-text-primary/10 pt-4">
-              <p className="px-2 text-[10px] font-semibold uppercase tracking-wider text-text-secondary">Em breve</p>
-              <div className="mt-2 space-y-2 px-3 text-xs text-text-secondary">
-                <p className="flex items-center gap-3"><PenTool className="w-4 h-4 text-accent-gold/70" />Escrita & roteiros <span className="ml-auto text-[10px]">em breve</span></p>
-                <p className="flex items-center gap-3"><Music className="w-4 h-4 text-accent-gold/70" />Projetos musicais <span className="ml-auto text-[10px]">em breve</span></p>
-              </div>
-            </div>
+          {/* Main Navigation */}
+          <nav className="space-y-2">
+            {navigationItems.map((item) => {
+              const Icon = item.icon
+              return (
+                <button
+                  key={item.tab}
+                  onPointerEnter={() => preloadView(item.tab)}
+                  onFocus={() => preloadView(item.tab)}
+                  onClick={() => handleNavClick(item.tab)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold rounded-xl transition-all ${
+                    activeTab === item.tab
+                      ? 'bg-accent-gold/15 text-accent-gold border border-accent-gold/40'
+                      : 'text-text-primary hover:text-accent-gold hover:bg-bg-elevated/50'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span>{item.label}</span>
+                </button>
+              )
+            })}
           </nav>
 
-          {/* System Settings & Backup */}
-          <div className="space-y-1 pt-4 border-t border-text-primary/10">
-            <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider block px-2 mb-2">
-              Configurações & Dados
-            </span>
+          {/* Lifestyle Spaces */}
+          <div className="border-t border-text-primary/15 pt-4">
+            <p className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider px-2 mb-3">
+              Espaços de Cultivo
+            </p>
+            <div className="space-y-2">
+              <button
+                onPointerEnter={() => preloadView('schole')}
+                onFocus={() => preloadView('schole')}
+                onClick={() => handleNavClick('schole')}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold rounded-xl transition-all ${
+                  activeTab === 'schole'
+                    ? 'bg-accent-gold/15 text-accent-gold border border-accent-gold/40'
+                    : 'text-text-primary hover:text-accent-gold hover:bg-bg-elevated/50'
+                }`}
+              >
+                <Hourglass className="w-4 h-4" />
+                <span>Scholé</span>
+              </button>
 
+              <button
+                onClick={() => handleNavClick('rotina')}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold rounded-xl transition-all ${
+                  activeTab === 'rotina'
+                    ? 'bg-accent-gold/15 text-accent-gold border border-accent-gold/40'
+                    : 'text-text-primary hover:text-accent-gold hover:bg-bg-elevated/50'
+                }`}
+              >
+                <Dumbbell className="w-4 h-4" />
+                <span>Rotina</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Settings */}
+          <div className="border-t border-text-primary/15 pt-4 space-y-2">
             <button
               onClick={() => {
                 alert('Configurações da Interface Ágora: Modo Dark Academia Ativo.')
@@ -174,30 +136,21 @@ export const LeftDrawer: React.FC = () => {
               }}
               className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold text-text-secondary hover:text-text-primary hover:bg-bg-elevated/50 rounded-xl transition-all"
             >
-              <Sliders className="w-4 h-4 text-accent-gold" />
-              <span>Ajustes de Interface</span>
+              <Sliders className="w-4 h-4" />
+              <span>Ajustes</span>
             </button>
 
             <button
               onClick={handleBackup}
               className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold text-text-secondary hover:text-text-primary hover:bg-bg-elevated/50 rounded-xl transition-all"
             >
-              <Database className="w-4 h-4 text-accent-gold" />
-              <span>Exportar Backup do Acervo (JSON)</span>
+              <Database className="w-4 h-4" />
+              <span>Exportar Backup</span>
             </button>
           </div>
-        </div>
-
-        {/* Footer */}
-        <div className="pt-4 border-t border-text-primary/10 text-center space-y-1">
-          <p className="font-serif font-bold text-xs text-text-primary">
-            Àgora v3.0
-          </p>
-          <p className="font-sans font-light text-[11px] text-text-secondary">
-            Tudo o que você assiste, lê e aprende, em um só lugar.
-          </p>
         </div>
       </aside>
     </div>
   )
 }
+

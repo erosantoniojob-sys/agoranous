@@ -86,19 +86,30 @@ const MainContent: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-transparent text-text-primary font-sans selection:bg-accent-gold/30 selection:text-text-primary">
-      {/* Top Header */}
-      <Header />
+    <div className="min-h-screen flex bg-transparent text-text-primary font-sans selection:bg-accent-gold/30 selection:text-text-primary">
+      {/* Left Sidebar (Desktop Only) */}
+      <div className="hidden lg:block w-80 border-r border-text-primary/15 bg-bg-surface sticky top-0 h-screen overflow-y-auto">
+        <LeftDrawer />
+      </div>
 
-      {/* Main Page Shell Content */}
-      <main className="app-page-shell flex-1 pt-4 pb-32 sm:pt-6 sm:pb-28 lg:pb-28">
-        <Suspense fallback={<ViewLoading />}>{renderActiveView()}</Suspense>
-      </main>
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Top Header */}
+        <Header />
+
+        {/* Page Content */}
+        <main className="app-page-shell flex-1 pt-4 pb-32 sm:pt-6 sm:pb-28 lg:pb-28">
+          <Suspense fallback={<ViewLoading />}>{renderActiveView()}</Suspense>
+        </main>
+      </div>
 
       {/* Modals & Drawers */}
       <SearchModal />
       <MediaDetailModal />
-      <LeftDrawer />
+      {/* Mobile Left Drawer - Hidden on LG */}
+      <div className="lg:hidden">
+        <LeftDrawer />
+      </div>
       <RightChatDrawer />
       <AmbientSoundControl />
 

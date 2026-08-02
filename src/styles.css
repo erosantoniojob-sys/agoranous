@@ -164,10 +164,10 @@
 
 @media (min-width: 1024px) {
   .app-page-shell {
-    /* A largura anterior de 100% somada à margem esquerda excedia a viewport. */
+    /* Sidebar agora é parte do flex layout, não mais fixed */
     width: auto;
     max-width: none;
-    margin-left: 6.25rem;
+    margin-left: 0;
     margin-right: 0;
     padding-inline: clamp(1.25rem, 2.5vw, 3rem);
   }
