@@ -375,16 +375,8 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const isCloudHydrated = Boolean(user?.id && hydratedUserId === user.id);
   const isDataReady = !user || hydratedUserId === user.id;
 
-  // LIMPEZA RÍGOROSA PARA CONVIDADOS
-  useEffect(() => {
-    if (isVisitor) {
-      localStorage.removeItem(storagePrefix + 'profile');
-      localStorage.removeItem(storagePrefix + 'media');
-      localStorage.removeItem(storagePrefix + 'learnings');
-      localStorage.removeItem(storagePrefix + 'trails');
-      localStorage.removeItem(storagePrefix + 'chat');
-    }
-  }, [isVisitor, storagePrefix]);
+  // Os dados do visitante também pertencem ao navegador atual. Eles não são
+  // enviados à nuvem, mas precisam sobreviver a recargas e reabertura do app.
 
   const [mediaItems, setMediaItems] = useState<MediaItem[]>(() => {
     try {

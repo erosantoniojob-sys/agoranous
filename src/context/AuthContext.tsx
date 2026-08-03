@@ -179,11 +179,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const loginAsGuest = () => {
-    if (typeof localStorage !== 'undefined') {
-      Object.keys(localStorage).forEach((key) => {
-        if (key.startsWith('agora_guest')) localStorage.removeItem(key)
-      })
-    }
     const guestUser: AuthUser = { id: 'guest_user', email: '', name: '' }
     setUser(guestUser)
     localStorage.setItem(LOCAL_STORAGE_GUEST_KEY, JSON.stringify(guestUser))
