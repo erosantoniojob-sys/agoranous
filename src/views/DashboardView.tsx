@@ -8,6 +8,7 @@ import {
   Play,
   Flame,
   Plus,
+  ArrowUpRight,
   Network,
   X,
   Check,
@@ -33,6 +34,7 @@ export const DashboardView: React.FC = () => {
     customCategories,
     addCategory,
     customTrails,
+    userProfile,
   } = useAgoraStore()
 
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false)
@@ -59,6 +61,11 @@ export const DashboardView: React.FC = () => {
     })
   }, [mediaItems, selectedFilter])
 
+  const activeItems = useMemo(
+    () => mediaItems.filter((item) => ['Lendo', 'Assistindo', 'Jogando'].includes(item.status)).length,
+    [mediaItems],
+  )
+
   const handleCreateCategory = (e: React.FormEvent) => {
     e.preventDefault()
     if (!newCatName.trim()) return
@@ -70,7 +77,41 @@ export const DashboardView: React.FC = () => {
 
   return (
     <div className="space-y-8 pb-12 font-sans animate-fadeIn">
-      {/* 1. HEADER - CITAÇÃO DIÁRIA (NOVO TOPO ABSOLUTO) */}
+      <section className="journey-hero overflow-hidden rounded-3xl px-5 py-6 sm:px-8 sm:py-8">
+        <div className="relative z-10 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+          <div className="max-w-xl">
+            <p className="mb-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.22em] text-accent-gold">
+              <Sparkles className="h-3.5 w-3.5" /> O fio da sua jornada
+            </p>
+            <h2 className="font-serif text-3xl font-bold leading-tight text-text-primary sm:text-4xl">
+              {userProfile.nome ? `Bem-vindo de volta, ${userProfile.nome}.` : 'Seu acervo começa aqui.'}
+            </h2>
+            <p className="mt-3 max-w-lg text-sm leading-relaxed text-text-secondary">
+              Cada obra guardada é uma ideia à espera de se conectar à próxima.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="journey-stat">
+              <strong>{stats.totalItens}</strong>
+              <span>obras</span>
+            </div>
+            <div className="journey-stat">
+              <strong>{activeItems}</strong>
+              <span>em curso</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsSearchOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-accent-gold px-3.5 py-3 text-xs font-bold text-bg-base shadow-lg shadow-accent-gold/15 transition-transform hover:-translate-y-0.5 hover:bg-accent-gold-bright focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-gold"
+            >
+              Adicionar <ArrowUpRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* 1. CITAÇÃO DIÁRIA */}
       <Suspense fallback={<div className="rounded-2xl border border-accent-gold/20 bg-bg-surface/80 p-4 text-sm text-text-secondary">Carregando abertura…</div>}>
         <DailyQuoteCard />
       </Suspense>
@@ -304,8 +345,15 @@ export const DashboardView: React.FC = () => {
             <span className="text-3xl text-accent-gold block font-serif">✦</span>
             <h4 className="font-serif font-bold text-lg text-text-primary">Nenhuma mídia cadastrada</h4>
             <p className="text-xs text-text-secondary max-w-sm mx-auto">
-              Seu acervo está limpo. Clique no botão flutuante (+) para consultar o Oráculo e cadastrar suas mídias.
+              Seu acervo está pronto para a primeira descoberta.
             </p>
+            <button
+              type="button"
+              onClick={() => setIsSearchOpen(true)}
+              className="mx-auto inline-flex items-center gap-1.5 rounded-xl border border-accent-gold/40 bg-accent-gold/10 px-4 py-2 text-xs font-bold text-accent-gold transition-colors hover:bg-accent-gold hover:text-bg-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-gold"
+            >
+              <Sparkles className="h-3.5 w-3.5" /> Encontrar uma obra
+            </button>
           </div>
         ) : (
           <div className="flex overflow-x-auto snap-x space-x-4 pb-4 pt-1 scrollbar-thin scrollbar-thumb-accent-gold/40 scrollbar-track-bg-base">

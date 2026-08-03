@@ -27,7 +27,15 @@ export const NetflixMediaCard: React.FC<NetflixMediaCardProps> = ({ item, onClic
   return (
     <div
       onClick={onClick}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onClick()
+        }
+      }}
       tabIndex={0}
+      role="button"
+      aria-label={`Abrir ${item.titulo}`}
       className="group relative aspect-[2/3] w-36 sm:w-44 flex-shrink-0 snap-start rounded-xl overflow-hidden cursor-pointer shadow-3d-card transition-all duration-300 hover:scale-105 hover:shadow-3d-gold focus:outline-none focus:ring-2 focus:ring-accent-gold"
     >
       {/* Base Image Cover without title or thick borders */}

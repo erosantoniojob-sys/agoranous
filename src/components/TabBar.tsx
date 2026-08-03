@@ -18,7 +18,8 @@ const DockItem: React.FC<NavItemProps> = ({ label, icon: Icon, active, onClick, 
     onPointerEnter={() => preloadView(view)}
     onFocus={() => preloadView(view)}
     aria-label={label}
-    className={`group relative flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-lg transition-all duration-250 ease-out ${
+    aria-current={active ? 'page' : undefined}
+    className={`group relative flex min-w-10 flex-col items-center justify-center gap-1 p-2 rounded-lg transition-all duration-250 ease-out ${
       active
         ? 'bg-accent-gold/15 text-accent-gold'
         : 'text-text-secondary hover:text-text-primary hover:bg-border-primary/30'
@@ -26,6 +27,7 @@ const DockItem: React.FC<NavItemProps> = ({ label, icon: Icon, active, onClick, 
     title={label}
   >
     <Icon className="w-5 h-5" />
+    <span className="text-[9px] font-semibold leading-none lg:hidden">{label}</span>
   </button>
 )
 
@@ -49,7 +51,7 @@ export const TabBar: React.FC = () => {
     <>
       {/* Mobile Dock - Bottom */}
       <nav className="lg:hidden fixed inset-x-0 bottom-0 z-40 px-[max(0.75rem,env(safe-area-inset-left))] py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-        <div className="flex items-center justify-between gap-1 px-2 py-2.5 bg-bg-sidebar/95 backdrop-blur-md border border-border-primary rounded-2xl shadow-lg-elevation">
+        <div className="tab-bar-mobile flex items-center justify-between gap-1 px-2 py-2 rounded-2xl border border-border-primary">
           {mainNavItems.map((item) => (
             <DockItem
               key={item.tab}
@@ -66,10 +68,12 @@ export const TabBar: React.FC = () => {
           <button
             type="button"
             onClick={openAddMedia}
-            className="group flex flex-col items-center justify-center gap-1 p-2.5 rounded-lg bg-accent-gold hover:bg-accent-gold/90 text-bg-base transition-all duration-250 ease-out hover:scale-110"
+            aria-label="Adicionar mídia"
+            className="group flex min-w-10 flex-col items-center justify-center gap-1 p-2 rounded-lg bg-accent-gold hover:bg-accent-gold/90 text-bg-base transition-all duration-250 ease-out hover:scale-110"
             title="Adicionar"
           >
             <Plus className="w-5 h-5" />
+            <span className="text-[9px] font-bold leading-none lg:hidden">Adicionar</span>
           </button>
 
           <div className="w-px h-6 bg-border-primary/50" />
@@ -88,7 +92,7 @@ export const TabBar: React.FC = () => {
       </nav>
 
       {/* Desktop Dock - Bottom Center */}
-      <nav className="hidden lg:flex fixed bottom-6 left-1/2 -translate-x-1/2 z-40 items-center gap-2 px-4 py-3 bg-bg-sidebar/95 backdrop-blur-md border border-border-primary rounded-2xl shadow-lg-elevation">
+      <nav className="tab-bar-desktop hidden lg:flex fixed bottom-6 left-1/2 -translate-x-1/2 z-40 items-center gap-2 px-4 py-3 rounded-2xl shadow-lg-elevation">
         {mainNavItems.map((item) => (
           <DockItem
             key={item.tab}
@@ -105,6 +109,7 @@ export const TabBar: React.FC = () => {
         <button
           type="button"
           onClick={openAddMedia}
+          aria-label="Adicionar mídia"
           className="group flex items-center justify-center gap-1 p-2.5 rounded-lg bg-gradient-to-b from-accent-gold to-amber-700 hover:shadow-md-elevation text-bg-base font-bold transition-all duration-250 ease-out hover:scale-110 hover:-translate-y-1"
           title="Adicionar"
         >

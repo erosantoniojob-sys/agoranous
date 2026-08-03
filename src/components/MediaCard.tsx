@@ -26,7 +26,16 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
   return (
     <article
       onClick={onClick}
-      className="group cursor-pointer bg-bg-card border border-text-primary/10 hover:border-accent-gold/50 rounded-xl p-3 flex flex-col gap-3 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/40"
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onClick()
+        }
+      }}
+      tabIndex={0}
+      role="button"
+      aria-label={`Abrir ${item.titulo}`}
+      className="group cursor-pointer bg-bg-card border border-text-primary/10 hover:border-accent-gold/50 rounded-xl p-3 flex flex-col gap-3 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-gold"
     >
       {/* Cover Image Container */}
       <div className="relative">

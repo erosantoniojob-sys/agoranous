@@ -85,7 +85,18 @@ export const ExploreView: React.FC = () => {
         {filteredItems.length === 0 ? (
           <div className="p-12 text-center bg-bg-card border border-text-primary/10 rounded-2xl space-y-3">
             <span className="text-2xl text-accent-gold block font-serif">✦</span>
-            <p className="text-sm text-text-secondary">Nenhum resultado corresponde à sua pesquisa.</p>
+            <p className="text-sm text-text-secondary">
+              {mediaItems.length === 0 ? 'Seu acervo está esperando a primeira obra.' : 'Nenhum resultado corresponde à sua pesquisa.'}
+            </p>
+            {mediaItems.length === 0 ? (
+              <button type="button" onClick={() => setIsSearchOpen(true)} className="inline-flex items-center gap-1.5 rounded-xl bg-accent-gold px-4 py-2 text-xs font-bold text-bg-base transition-colors hover:bg-accent-gold-bright focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-gold">
+                <Sparkles className="h-3.5 w-3.5" /> Consultar o Oráculo
+              </button>
+            ) : (
+              <button type="button" onClick={() => { setSearchTerm(''); setMinRating(0) }} className="text-xs font-semibold text-accent-gold underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-gold">
+                Limpar filtros
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
