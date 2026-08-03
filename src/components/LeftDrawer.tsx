@@ -13,7 +13,7 @@ interface NavItem {
 }
 
 export const LeftDrawer: React.FC = () => {
-  const { isLeftDrawerOpen, setIsLeftDrawerOpen, setActiveTab, activeTab } = useAgoraStore()
+  const { isLeftDrawerOpen, setIsLeftDrawerOpen, setActiveTab, activeTab, mediaItems } = useAgoraStore()
 
   useEffect(() => {
     const closeWithEscape = (event: KeyboardEvent) => {
@@ -25,7 +25,7 @@ export const LeftDrawer: React.FC = () => {
   }, [isLeftDrawerOpen, setIsLeftDrawerOpen])
 
   const handleBackup = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(localStorage.getItem('agora_media_items_v3') || '{}')
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(mediaItems, null, 2))
     const downloadAnchor = document.createElement('a')
     downloadAnchor.setAttribute("href", dataStr)
     downloadAnchor.setAttribute("download", `agora_second_brain_backup_${new Date().toISOString().slice(0, 10)}.json`)
@@ -63,7 +63,7 @@ export const LeftDrawer: React.FC = () => {
         id="menu-lateral"
         aria-label="Menu lateral principal"
         aria-hidden={!isLeftDrawerOpen}
-        className={`pointer-events-auto fixed inset-y-0 left-0 z-50 flex h-full w-80 max-w-[85vw] flex-col border-r border-text-primary/15 bg-bg-surface p-6 shadow-2xl transition-transform duration-300 ease-out motion-reduce:transition-none ${isLeftDrawerOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`pointer-events-auto fixed inset-y-0 left-0 z-50 flex h-full w-80 max-w-[85vw] flex-col overflow-y-auto border-r border-text-primary/15 bg-bg-surface px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] shadow-2xl transition-transform duration-300 ease-out motion-reduce:transition-none ${isLeftDrawerOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
         <div className="space-y-6">
           {/* Logo */}

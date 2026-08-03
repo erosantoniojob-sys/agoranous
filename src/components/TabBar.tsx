@@ -17,6 +17,7 @@ const DockItem: React.FC<NavItemProps> = ({ label, icon: Icon, active, onClick, 
     onClick={onClick}
     onPointerEnter={() => preloadView(view)}
     onFocus={() => preloadView(view)}
+    aria-label={label}
     className={`group relative flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-lg transition-all duration-250 ease-out ${
       active
         ? 'bg-accent-gold/15 text-accent-gold'
@@ -47,8 +48,8 @@ export const TabBar: React.FC = () => {
   return (
     <>
       {/* Mobile Dock - Bottom */}
-      <nav className="lg:hidden fixed inset-x-0 bottom-0 z-40 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-        <div className="flex items-center justify-between gap-1 px-3 py-2.5 bg-bg-sidebar/95 backdrop-blur-md border border-border-primary rounded-2xl shadow-lg-elevation">
+      <nav className="lg:hidden fixed inset-x-0 bottom-0 z-40 px-[max(0.75rem,env(safe-area-inset-left))] py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+        <div className="flex items-center justify-between gap-1 px-2 py-2.5 bg-bg-sidebar/95 backdrop-blur-md border border-border-primary rounded-2xl shadow-lg-elevation">
           {mainNavItems.map((item) => (
             <DockItem
               key={item.tab}

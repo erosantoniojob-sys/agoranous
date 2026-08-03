@@ -46,6 +46,11 @@
     overflow-x: clip;
   }
 
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
   #root {
     position: relative;
     isolation: isolate;
@@ -186,6 +191,18 @@
   /* Prevent long labels and wide content from causing horizontal scrolling. */
   #root {
     overflow-x: clip;
+  }
+
+  /* Evita que o Safari aproxime a página ao focar campos com fonte pequena. */
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  button,
+  [role='button'] {
+    touch-action: manipulation;
   }
 }
 

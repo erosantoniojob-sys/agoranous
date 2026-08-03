@@ -58,6 +58,29 @@ function isLegacyDefaultProfile(profile?: Partial<UserProfile>) {
   return profile?.nome === 'Visitante' && profile.biografia?.includes('Banda Pioneiros')
 }
 
+function readStoredArray<T>(key: string): T[] {
+  try {
+    const value = localStorage.getItem(key)
+    const parsed = value ? JSON.parse(value) : []
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+function readStoredObject<T>(key: string): T | null {
+  try {
+    const value = localStorage.getItem(key)
+    return value ? JSON.parse(value) as T : null
+  } catch {
+    return null
+  }
+}
+
+// Chave usada pelas versões anteriores à sincronização por conta. Mantemos a
+// leitura apenas como migração para não abandonar acervos já existentes.
+const LEGACY_MEDIA_STORAGE_KEY = 'agora_media_items_v3'
+
 const SEED_MEDIA: MediaItem[] = [
   {
     id: 'm1',
@@ -412,6 +435,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // BUSCA DA NUVEM AO LOGAR (Re-sync inteligente usando API da Vercel)
   useEffect(() => {
     const keyPrefix = storagePrefix;
+    let cancelled = false;
 
     async function loadCloudData() {
       setHydratedUserId(null);
@@ -425,13 +449,25 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           });
           if (res.ok) {
             const cloudData = await res.json();
+            if (cancelled) return;
 
             const hasCloudValue = (collection: string) => Object.hasOwn(cloudData, collection);
-            setMediaItems(hasCloudValue('media') ? cloudData.media : []);
-            setAprendizados(hasCloudValue('learnings') ? cloudData.learnings : []);
-            setUserProfile(hasCloudValue('profile') ? cloudData.profile : EMPTY_PROFILE);
-            setCustomTrails(hasCloudValue('trails') ? cloudData.trails : []);
-            setChatMessages(hasCloudValue('chat') ? cloudData.chat : SEED_CHAT);
+            const localMedia = readStoredArray<MediaItem>(keyPrefix + 'media');
+            const legacyMedia = readStoredArray<MediaItem>(LEGACY_MEDIA_STORAGE_KEY);
+            const cloudMedia = Array.isArray(cloudData.media) ? cloudData.media as MediaItem[] : [];
+            // A nuvem é a fonte principal. Se ela estiver vazia, preservamos o
+            // cache da conta — ou o acervo da versão anterior — em vez de apagá-lo.
+            const recoveredMedia = cloudMedia.length > 0
+              ? cloudMedia
+              : localMedia.length > 0
+                ? localMedia
+                : legacyMedia;
+
+            setMediaItems(recoveredMedia);
+            setAprendizados(hasCloudValue('learnings') ? cloudData.learnings : readStoredArray<Aprendizado>(keyPrefix + 'learnings'));
+            setUserProfile(hasCloudValue('profile') ? cloudData.profile : readStoredObject<UserProfile>(keyPrefix + 'profile') || EMPTY_PROFILE);
+            setCustomTrails(hasCloudValue('trails') ? cloudData.trails : readStoredArray<CustomTrail>(keyPrefix + 'trails'));
+            setChatMessages(hasCloudValue('chat') ? cloudData.chat : readStoredArray<ChatMessage>(keyPrefix + 'chat').length ? readStoredArray<ChatMessage>(keyPrefix + 'chat') : SEED_CHAT);
             setHasCompletedOnboarding(Boolean(
               Boolean(cloudData.onboarding)
                 || (!hasCloudValue('onboarding') && hasExistingUserData(cloudData))
@@ -447,28 +483,26 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
 
       // Fallback local se for visitante ou falha de rede
-      const storedMedia = localStorage.getItem(keyPrefix + 'media');
-      const localMedia = storedMedia ? JSON.parse(storedMedia) : [];
-      setMediaItems(localMedia);
+      if (cancelled) return;
+      const localMedia = readStoredArray<MediaItem>(keyPrefix + 'media');
+      const legacyMedia = !isVisitor ? readStoredArray<MediaItem>(LEGACY_MEDIA_STORAGE_KEY) : [];
+      setMediaItems(localMedia.length ? localMedia : legacyMedia);
 
-      const storedLearnings = localStorage.getItem(keyPrefix + 'learnings');
-      const localLearnings = storedLearnings ? JSON.parse(storedLearnings) : [];
+      const localLearnings = readStoredArray<Aprendizado>(keyPrefix + 'learnings');
       setAprendizados(localLearnings);
 
-      const storedChat = localStorage.getItem(keyPrefix + 'chat');
-      setChatMessages(storedChat ? JSON.parse(storedChat) : isVisitor ? VISITOR_CHAT : SEED_CHAT);
+      const localChat = readStoredArray<ChatMessage>(keyPrefix + 'chat');
+      setChatMessages(localChat.length ? localChat : isVisitor ? VISITOR_CHAT : SEED_CHAT);
 
-      const storedProfile = isVisitor ? null : localStorage.getItem(keyPrefix + 'profile');
-      const localProfile = storedProfile ? JSON.parse(storedProfile) : EMPTY_PROFILE;
+      const localProfile = isVisitor ? EMPTY_PROFILE : readStoredObject<UserProfile>(keyPrefix + 'profile') || EMPTY_PROFILE;
       setUserProfile(localProfile);
 
-      const storedTrails = localStorage.getItem(keyPrefix + 'trails');
-      const localTrails = storedTrails ? JSON.parse(storedTrails) : [];
+      const localTrails = readStoredArray<CustomTrail>(keyPrefix + 'trails');
       setCustomTrails(localTrails);
 
-      const storedOnboarding = localStorage.getItem(keyPrefix + 'has_completed_onboarding');
+      const storedOnboarding = readStoredObject<boolean>(keyPrefix + 'has_completed_onboarding');
       setHasCompletedOnboarding(Boolean(
-        Boolean(storedOnboarding && JSON.parse(storedOnboarding))
+        storedOnboarding
           || (storedOnboarding === null && hasExistingUserData({ media: localMedia, learnings: localLearnings, trails: localTrails, profile: localProfile }))
           || isLegacyDefaultProfile(localProfile),
       ));
@@ -476,6 +510,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
 
     loadCloudData();
+    return () => { cancelled = true; };
   }, [isVisitor, storagePrefix, user?.id]);
 
   const [activeTab, setActiveTab] = useState<'inicio' | 'explorar' | 'memoria' | 'trilhas' | 'perfil' | 'schole' | 'rotina' | 'poiesis'>('inicio');
@@ -516,36 +551,41 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // EFEITOS DE PERSISTÊNCIA
   useEffect(() => {
+    if (!isDataReady) return;
     localStorage.setItem(storagePrefix + 'media', JSON.stringify(mediaItems));
     syncToCloud('media', mediaItems);
-  }, [mediaItems, storagePrefix, syncToCloud]);
+  }, [mediaItems, storagePrefix, syncToCloud, isDataReady]);
 
   useEffect(() => {
+    if (!isDataReady) return;
     localStorage.setItem(storagePrefix + 'learnings', JSON.stringify(aprendizados));
     syncToCloud('learnings', aprendizados);
-  }, [aprendizados, storagePrefix, syncToCloud]);
+  }, [aprendizados, storagePrefix, syncToCloud, isDataReady]);
 
   useEffect(() => {
+    if (!isDataReady) return;
     localStorage.setItem(storagePrefix + 'chat', JSON.stringify(chatMessages));
     syncToCloud('chat', chatMessages);
-  }, [chatMessages, storagePrefix, syncToCloud]);
+  }, [chatMessages, storagePrefix, syncToCloud, isDataReady]);
 
   useEffect(() => {
-    if (!isVisitor) {
+    if (isDataReady && !isVisitor) {
       localStorage.setItem(storagePrefix + 'profile', JSON.stringify(userProfile));
       syncToCloud('profile', userProfile);
     }
-  }, [userProfile, storagePrefix, isVisitor, syncToCloud]);
+  }, [userProfile, storagePrefix, isVisitor, syncToCloud, isDataReady]);
 
   useEffect(() => {
+    if (!isDataReady) return;
     localStorage.setItem(storagePrefix + 'trails', JSON.stringify(customTrails));
     syncToCloud('trails', customTrails);
-  }, [customTrails, storagePrefix, syncToCloud]);
+  }, [customTrails, storagePrefix, syncToCloud, isDataReady]);
 
   useEffect(() => {
+    if (!isDataReady) return;
     localStorage.setItem(storagePrefix + 'has_completed_onboarding', JSON.stringify(hasCompletedOnboarding));
     syncToCloud('onboarding', hasCompletedOnboarding);
-  }, [hasCompletedOnboarding, storagePrefix, syncToCloud]);
+  }, [hasCompletedOnboarding, storagePrefix, syncToCloud, isDataReady]);
 
   const completeOnboarding = useCallback((profileData?: Partial<UserProfile>) => {
     if (profileData) {
