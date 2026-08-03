@@ -77,9 +77,16 @@ function readStoredObject<T>(key: string): T | null {
   }
 }
 
-// Chave usada pelas versões anteriores à sincronização por conta. Mantemos a
-// leitura apenas como migração para não abandonar acervos já existentes.
+// Chaves usadas pelas versões anteriores à sincronização por conta. Mantemos a
+// leitura como migração: até a versão 1.6.6.1 os dados autenticados usavam o
+// prefixo sem o id da conta. Sem isso, uma atualização faria o acervo parecer
+// vazio mesmo que ele ainda estivesse salvo no navegador.
 const LEGACY_MEDIA_STORAGE_KEY = 'agora_media_items_v3'
+const LEGACY_ACCOUNT_STORAGE_PREFIX = 'agora_user_v5_'
+
+function firstNonEmptyArray<T>(...values: T[][]): T[] {
+  return values.find((value) => value.length > 0) || []
+}
 
 const SEED_MEDIA: MediaItem[] = [
   {
@@ -451,27 +458,48 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             const cloudData = await res.json();
             if (cancelled) return;
 
-            const hasCloudValue = (collection: string) => Object.hasOwn(cloudData, collection);
             const localMedia = readStoredArray<MediaItem>(keyPrefix + 'media');
+            const legacyAccountMedia = readStoredArray<MediaItem>(LEGACY_ACCOUNT_STORAGE_PREFIX + 'media');
             const legacyMedia = readStoredArray<MediaItem>(LEGACY_MEDIA_STORAGE_KEY);
             const cloudMedia = Array.isArray(cloudData.media) ? cloudData.media as MediaItem[] : [];
-            // A nuvem é a fonte principal. Se ela estiver vazia, preservamos o
-            // cache da conta — ou o acervo da versão anterior — em vez de apagá-lo.
-            const recoveredMedia = cloudMedia.length > 0
-              ? cloudMedia
-              : localMedia.length > 0
-                ? localMedia
-                : legacyMedia;
+            // Uma resposta vazia nunca pode apagar uma cópia existente. A ordem
+            // também cobre o prefixo v5 anterior, que ainda não tinha user.id.
+            const recoveredMedia = firstNonEmptyArray(cloudMedia, localMedia, legacyAccountMedia, legacyMedia);
+
+            const localLearnings = readStoredArray<Aprendizado>(keyPrefix + 'learnings');
+            const legacyAccountLearnings = readStoredArray<Aprendizado>(LEGACY_ACCOUNT_STORAGE_PREFIX + 'learnings');
+            const cloudLearnings = Array.isArray(cloudData.learnings) ? cloudData.learnings as Aprendizado[] : [];
+
+            const localTrails = readStoredArray<CustomTrail>(keyPrefix + 'trails');
+            const legacyAccountTrails = readStoredArray<CustomTrail>(LEGACY_ACCOUNT_STORAGE_PREFIX + 'trails');
+            const cloudTrails = Array.isArray(cloudData.trails) ? cloudData.trails as CustomTrail[] : [];
+
+            const localChat = readStoredArray<ChatMessage>(keyPrefix + 'chat');
+            const legacyAccountChat = readStoredArray<ChatMessage>(LEGACY_ACCOUNT_STORAGE_PREFIX + 'chat');
+            const cloudChat = Array.isArray(cloudData.chat) ? cloudData.chat as ChatMessage[] : [];
+
+            const localProfile = readStoredObject<UserProfile>(keyPrefix + 'profile');
+            const legacyAccountProfile = readStoredObject<UserProfile>(LEGACY_ACCOUNT_STORAGE_PREFIX + 'profile');
+            const cloudProfile = cloudData.profile && typeof cloudData.profile === 'object'
+              ? cloudData.profile as UserProfile
+              : null;
+            const recoveredProfile = hasExistingUserData({ profile: cloudProfile || undefined })
+              ? cloudProfile!
+              : hasExistingUserData({ profile: localProfile || undefined })
+                ? localProfile!
+                : hasExistingUserData({ profile: legacyAccountProfile || undefined })
+                  ? legacyAccountProfile!
+                  : EMPTY_PROFILE;
 
             setMediaItems(recoveredMedia);
-            setAprendizados(hasCloudValue('learnings') ? cloudData.learnings : readStoredArray<Aprendizado>(keyPrefix + 'learnings'));
-            setUserProfile(hasCloudValue('profile') ? cloudData.profile : readStoredObject<UserProfile>(keyPrefix + 'profile') || EMPTY_PROFILE);
-            setCustomTrails(hasCloudValue('trails') ? cloudData.trails : readStoredArray<CustomTrail>(keyPrefix + 'trails'));
-            setChatMessages(hasCloudValue('chat') ? cloudData.chat : readStoredArray<ChatMessage>(keyPrefix + 'chat').length ? readStoredArray<ChatMessage>(keyPrefix + 'chat') : SEED_CHAT);
+            setAprendizados(firstNonEmptyArray(cloudLearnings, localLearnings, legacyAccountLearnings));
+            setUserProfile(recoveredProfile);
+            setCustomTrails(firstNonEmptyArray(cloudTrails, localTrails, legacyAccountTrails));
+            setChatMessages(firstNonEmptyArray(cloudChat, localChat, legacyAccountChat, SEED_CHAT));
             setHasCompletedOnboarding(Boolean(
               Boolean(cloudData.onboarding)
-                || (!hasCloudValue('onboarding') && hasExistingUserData(cloudData))
-                || isLegacyDefaultProfile(cloudData.profile),
+                || hasExistingUserData({ media: recoveredMedia, learnings: firstNonEmptyArray(cloudLearnings, localLearnings, legacyAccountLearnings), trails: firstNonEmptyArray(cloudTrails, localTrails, legacyAccountTrails), profile: recoveredProfile })
+                || isLegacyDefaultProfile(recoveredProfile),
             ));
             setHydratedUserId(user.id);
             return; 
@@ -485,26 +513,39 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       // Fallback local se for visitante ou falha de rede
       if (cancelled) return;
       const localMedia = readStoredArray<MediaItem>(keyPrefix + 'media');
+      const legacyAccountMedia = !isVisitor ? readStoredArray<MediaItem>(LEGACY_ACCOUNT_STORAGE_PREFIX + 'media') : [];
       const legacyMedia = !isVisitor ? readStoredArray<MediaItem>(LEGACY_MEDIA_STORAGE_KEY) : [];
-      setMediaItems(localMedia.length ? localMedia : legacyMedia);
+      const recoveredMedia = firstNonEmptyArray(localMedia, legacyAccountMedia, legacyMedia);
+      setMediaItems(recoveredMedia);
 
       const localLearnings = readStoredArray<Aprendizado>(keyPrefix + 'learnings');
-      setAprendizados(localLearnings);
+      const legacyAccountLearnings = !isVisitor ? readStoredArray<Aprendizado>(LEGACY_ACCOUNT_STORAGE_PREFIX + 'learnings') : [];
+      const recoveredLearnings = firstNonEmptyArray(localLearnings, legacyAccountLearnings);
+      setAprendizados(recoveredLearnings);
 
       const localChat = readStoredArray<ChatMessage>(keyPrefix + 'chat');
-      setChatMessages(localChat.length ? localChat : isVisitor ? VISITOR_CHAT : SEED_CHAT);
+      const legacyAccountChat = !isVisitor ? readStoredArray<ChatMessage>(LEGACY_ACCOUNT_STORAGE_PREFIX + 'chat') : [];
+      setChatMessages(firstNonEmptyArray(localChat, legacyAccountChat, isVisitor ? VISITOR_CHAT : SEED_CHAT));
 
       const localProfile = isVisitor ? EMPTY_PROFILE : readStoredObject<UserProfile>(keyPrefix + 'profile') || EMPTY_PROFILE;
-      setUserProfile(localProfile);
+      const legacyAccountProfile = !isVisitor ? readStoredObject<UserProfile>(LEGACY_ACCOUNT_STORAGE_PREFIX + 'profile') : null;
+      const recoveredProfile = hasExistingUserData({ profile: localProfile })
+        ? localProfile
+        : hasExistingUserData({ profile: legacyAccountProfile || undefined })
+          ? legacyAccountProfile!
+          : EMPTY_PROFILE;
+      setUserProfile(recoveredProfile);
 
       const localTrails = readStoredArray<CustomTrail>(keyPrefix + 'trails');
-      setCustomTrails(localTrails);
+      const legacyAccountTrails = !isVisitor ? readStoredArray<CustomTrail>(LEGACY_ACCOUNT_STORAGE_PREFIX + 'trails') : [];
+      const recoveredTrails = firstNonEmptyArray(localTrails, legacyAccountTrails);
+      setCustomTrails(recoveredTrails);
 
       const storedOnboarding = readStoredObject<boolean>(keyPrefix + 'has_completed_onboarding');
       setHasCompletedOnboarding(Boolean(
         storedOnboarding
-          || (storedOnboarding === null && hasExistingUserData({ media: localMedia, learnings: localLearnings, trails: localTrails, profile: localProfile }))
-          || isLegacyDefaultProfile(localProfile),
+          || (storedOnboarding === null && hasExistingUserData({ media: recoveredMedia, learnings: recoveredLearnings, trails: recoveredTrails, profile: recoveredProfile }))
+          || isLegacyDefaultProfile(recoveredProfile),
       ));
       setHydratedUserId(user?.id || null);
     }
