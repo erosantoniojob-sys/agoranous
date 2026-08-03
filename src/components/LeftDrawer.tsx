@@ -50,12 +50,12 @@ export const LeftDrawer: React.FC = () => {
   }
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-50 lg:static lg:inset-auto lg:z-auto lg:pointer-events-auto">
-      {/* Mobile Backdrop */}
+    <div className="pointer-events-none fixed inset-0 z-50">
+      {/* Backdrop */}
       <div
         onClick={() => setIsLeftDrawerOpen(false)}
         aria-hidden="true"
-        className={`fixed inset-0 bg-bg-base/80 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${isLeftDrawerOpen ? 'pointer-events-auto opacity-100' : 'opacity-0'}`}
+        className={`fixed inset-0 bg-bg-base/80 backdrop-blur-sm transition-opacity duration-300 ${isLeftDrawerOpen ? 'pointer-events-auto opacity-100' : 'opacity-0'}`}
       />
 
       {/* Sidebar */}
@@ -63,19 +63,19 @@ export const LeftDrawer: React.FC = () => {
         id="menu-lateral"
         aria-label="Menu lateral principal"
         aria-hidden={!isLeftDrawerOpen}
-        className={`pointer-events-auto fixed inset-y-0 left-0 z-50 flex h-full w-80 max-w-[85vw] flex-col lg:relative lg:inset-auto lg:z-auto lg:w-full lg:h-auto lg:max-w-none lg:border-none lg:shadow-none lg:translate-x-0 lg:bg-transparent lg:p-0 border-r border-text-primary/15 bg-bg-surface p-6 shadow-2xl transition-transform duration-300 ease-out motion-reduce:transition-none ${isLeftDrawerOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`pointer-events-auto fixed inset-y-0 left-0 z-50 flex h-full w-80 max-w-[85vw] flex-col border-r border-text-primary/15 bg-bg-surface p-6 shadow-2xl transition-transform duration-300 ease-out motion-reduce:transition-none ${isLeftDrawerOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
-        <div className="space-y-6 lg:space-y-8">
+        <div className="space-y-6">
           {/* Logo */}
           <div className="flex items-center justify-between">
-            <div className="text-center lg:text-left">
+            <div className="text-center">
               <div className="font-serif font-bold text-sm text-text-primary">ÁGORA</div>
               <p className="text-[10px] text-text-secondary uppercase tracking-widest">Conhecimento que forma caráter.</p>
             </div>
 
             <button
               onClick={() => setIsLeftDrawerOpen(false)}
-              className="lg:hidden p-1.5 text-text-secondary hover:text-text-primary rounded-lg hover:bg-bg-elevated transition-colors"
+              className="p-1.5 text-text-secondary hover:text-text-primary rounded-lg hover:bg-bg-elevated transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
