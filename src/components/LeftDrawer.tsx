@@ -1,10 +1,19 @@
 import React, { useEffect } from 'react'
-import { X, Sliders, Database, Home, Compass, Map, BookOpen, Bookmark, Lightbulb, Hourglass, Dumbbell } from 'lucide-react'
+import { X, Sliders, Database, Home, Compass, Map, BookOpen, Bookmark, Hourglass, Dumbbell } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
 import { preloadView } from '../lib/viewPreload'
 
+// 1. Definição do tipo exato que o seu app espera
+type ViewName = "inicio" | "explorar" | "memoria" | "trilhas" | "perfil" | "schole" | "rotina" | "poiesis";
+
+interface NavItem {
+  label: string
+  icon: React.ElementType
+  tab: ViewName
+}
+
 export const LeftDrawer: React.FC = () => {
-  const { isLeftDrawerOpen, setIsLeftDrawerOpen, setActiveTab, activeTab, userProfile, isVisitor } = useAgoraStore()
+  const { isLeftDrawerOpen, setIsLeftDrawerOpen, setActiveTab, activeTab } = useAgoraStore()
 
   useEffect(() => {
     const closeWithEscape = (event: KeyboardEvent) => {
@@ -25,15 +34,17 @@ export const LeftDrawer: React.FC = () => {
     downloadAnchor.remove()
   }
 
-  const navigationItems = [
+  // 2. Array devidamente tipado para não inferir `tab` como 'string'
+  const navigationItems: NavItem[] = [
     { label: 'Início', icon: Home, tab: 'inicio' },
     { label: 'Explorar', icon: Compass, tab: 'explorar' },
     { label: 'Trilhas', icon: Map, tab: 'trilhas' },
-    { label: 'Acervo', icon: BookOpen, tab: 'inicio' }, // links to dashboard
+    { label: 'Acervo', icon: BookOpen, tab: 'inicio' },
     { label: 'Memória', icon: Bookmark, tab: 'memoria' },
   ]
 
-  const handleNavClick = (tab: string) => {
+  // 3. Tipagem exata do parâmetro 'tab'
+  const handleNavClick = (tab: ViewName) => {
     setActiveTab(tab)
     setIsLeftDrawerOpen(false)
   }
@@ -76,7 +87,7 @@ export const LeftDrawer: React.FC = () => {
               const Icon = item.icon
               return (
                 <button
-                  key={item.tab}
+                  key={item.label}
                   onPointerEnter={() => preloadView(item.tab)}
                   onFocus={() => preloadView(item.tab)}
                   onClick={() => handleNavClick(item.tab)}
@@ -114,6 +125,8 @@ export const LeftDrawer: React.FC = () => {
               </button>
 
               <button
+                onPointerEnter={() => preloadView('rotina')}
+                onFocus={() => preloadView('rotina')}
                 onClick={() => handleNavClick('rotina')}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold rounded-xl transition-all ${
                   activeTab === 'rotina'
@@ -153,4 +166,3 @@ export const LeftDrawer: React.FC = () => {
     </div>
   )
 }
-
