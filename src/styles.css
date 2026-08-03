@@ -169,12 +169,10 @@
 
 @media (min-width: 1024px) {
   .app-page-shell {
-    /* Sidebar agora é parte do flex layout, não mais fixed */
-    width: auto;
-    max-width: none;
-    margin-left: 0;
-    margin-right: 0;
-    padding-inline: clamp(1.25rem, 2.5vw, 3rem);
+    /* Mantém uma margem de respiro nas telas largas e evita linhas longas. */
+    max-width: 82rem;
+    margin-inline: auto;
+    padding-inline: clamp(1.5rem, 3vw, 3.5rem);
   }
 
   .app-header-shell {
