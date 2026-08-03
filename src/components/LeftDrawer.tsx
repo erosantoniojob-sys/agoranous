@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react'
-import { X, ChevronLeft, Sliders, Database, Home, Compass, Map, BookOpen, Bookmark, Hourglass, Dumbbell } from 'lucide-react'
+import React, { useEffect } from 'react'
+import { X, Sliders, Database, Home, Compass, Map, BookOpen, Bookmark, Lightbulb, Hourglass, Dumbbell } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
 import { preloadView } from '../lib/viewPreload'
 
 export const LeftDrawer: React.FC = () => {
-  const { isLeftDrawerOpen, setIsLeftDrawerOpen, setActiveTab, activeTab } = useAgoraStore()
-  const [isCollapsed, setIsCollapsed] = useState(false)
+  const { isLeftDrawerOpen, setIsLeftDrawerOpen, setActiveTab, activeTab, userProfile, isVisitor } = useAgoraStore()
 
   useEffect(() => {
     const closeWithEscape = (event: KeyboardEvent) => {
@@ -30,18 +29,8 @@ export const LeftDrawer: React.FC = () => {
     { label: 'Início', icon: Home, tab: 'inicio' },
     { label: 'Explorar', icon: Compass, tab: 'explorar' },
     { label: 'Trilhas', icon: Map, tab: 'trilhas' },
-    { label: 'Acervo', icon: BookOpen, tab: 'inicio' },
+    { label: 'Acervo', icon: BookOpen, tab: 'inicio' }, // links to dashboard
     { label: 'Memória', icon: Bookmark, tab: 'memoria' },
-  ]
-
-  const lifestyleItems = [
-    { label: 'Scholé', icon: Hourglass, tab: 'schole' },
-    { label: 'Rotina', icon: Dumbbell, tab: 'rotina' },
-  ]
-
-  const settingsItems = [
-    { label: 'Ajustes', icon: Sliders, action: () => alert('Configurações') },
-    { label: 'Backup', icon: Database, action: handleBackup },
   ]
 
   const handleNavClick = (tab: string) => {
@@ -50,213 +39,118 @@ export const LeftDrawer: React.FC = () => {
   }
 
   return (
-    <div className="hidden lg:flex lg:flex-col lg:w-64 lg:h-screen lg:bg-bg-sidebar lg:border-r lg:border-border-primary lg:pointer-events-auto">
-      {/* Mobile/Desktop Drawer Container */}
-      <div className="pointer-events-none fixed inset-0 z-50 lg:static lg:inset-auto lg:z-auto lg:pointer-events-auto lg:hidden">
-        {/* Mobile Backdrop */}
-        <div
-          onClick={() => setIsLeftDrawerOpen(false)}
-          aria-hidden="true"
-          className={`fixed inset-0 bg-bg-base/80 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${isLeftDrawerOpen ? 'pointer-events-auto opacity-100' : 'opacity-0'}`}
-        />
+    <div className="pointer-events-none fixed inset-0 z-50 lg:static lg:inset-auto lg:z-auto lg:pointer-events-auto">
+      {/* Mobile Backdrop */}
+      <div
+        onClick={() => setIsLeftDrawerOpen(false)}
+        aria-hidden="true"
+        className={`fixed inset-0 bg-bg-base/80 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${isLeftDrawerOpen ? 'pointer-events-auto opacity-100' : 'opacity-0'}`}
+      />
 
-        {/* Mobile Sidebar */}
-        <aside
-          className={`pointer-events-auto fixed inset-y-0 left-0 z-50 flex flex-col bg-bg-sidebar border-r border-border-primary transition-all duration-250 ease-out motion-reduce:transition-none w-64 max-w-[85vw] ${
-            isLeftDrawerOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-border-primary">
-            <div>
-              <div className="font-serif text-lg font-bold text-text-primary">ÁGORA</div>
-              <p className="text-xs text-text-secondary uppercase tracking-widest">Conhecimento</p>
+      {/* Sidebar */}
+      <aside
+        id="menu-lateral"
+        aria-label="Menu lateral principal"
+        aria-hidden={!isLeftDrawerOpen}
+        className={`pointer-events-auto fixed inset-y-0 left-0 z-50 flex h-full w-80 max-w-[85vw] flex-col lg:relative lg:inset-auto lg:z-auto lg:w-full lg:h-auto lg:max-w-none lg:border-none lg:shadow-none lg:translate-x-0 lg:bg-transparent lg:p-0 border-r border-text-primary/15 bg-bg-surface p-6 shadow-2xl transition-transform duration-300 ease-out motion-reduce:transition-none ${isLeftDrawerOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      >
+        <div className="space-y-6 lg:space-y-8">
+          {/* Logo */}
+          <div className="flex items-center justify-between">
+            <div className="text-center lg:text-left">
+              <div className="font-serif font-bold text-sm text-text-primary">ÁGORA</div>
+              <p className="text-[10px] text-text-secondary uppercase tracking-widest">Conhecimento que forma caráter.</p>
             </div>
 
             <button
               onClick={() => setIsLeftDrawerOpen(false)}
-              className="p-1.5 text-text-secondary hover:text-text-primary rounded-md transition-all duration-250 ease-out"
+              className="lg:hidden p-1.5 text-text-secondary hover:text-text-primary rounded-lg hover:bg-bg-elevated transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto p-4 space-y-1">
+          {/* Main Navigation */}
+          <nav className="space-y-2">
             {navigationItems.map((item) => {
               const Icon = item.icon
-              const isActive = activeTab === item.tab
               return (
                 <button
                   key={item.tab}
                   onPointerEnter={() => preloadView(item.tab)}
                   onFocus={() => preloadView(item.tab)}
                   onClick={() => handleNavClick(item.tab)}
-                  className={`w-full group relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-250 ease-out ${
-                    isActive
-                      ? 'bg-accent-gold/10 text-accent-gold'
-                      : 'text-text-primary hover:bg-border-primary/30 hover:text-accent-gold'
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold rounded-xl transition-all ${
+                    activeTab === item.tab
+                      ? 'bg-accent-gold/15 text-accent-gold border border-accent-gold/40'
+                      : 'text-text-primary hover:text-accent-gold hover:bg-bg-elevated/50'
                   }`}
                 >
-                  <Icon className="w-5 h-5 shrink-0" />
-                  <span className="text-sm font-medium">{item.label}</span>
-                  {isActive && (
-                    <div className="absolute left-0 top-1/2 w-1 h-6 -translate-y-1/2 bg-accent-gold rounded-r-full" />
-                  )}
+                  <Icon className="w-4 h-4" />
+                  <span>{item.label}</span>
                 </button>
               )
             })}
-
-            {/* Lifestyle Spaces */}
-            <div className="border-t border-border-primary mt-4 pt-4">
-              <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3 px-3">Espaços</p>
-              <div className="space-y-1">
-                {lifestyleItems.map((item) => {
-                  const Icon = item.icon
-                  const isActive = activeTab === item.tab
-                  return (
-                    <button
-                      key={item.tab}
-                      onPointerEnter={() => preloadView(item.tab)}
-                      onClick={() => handleNavClick(item.tab)}
-                      className={`w-full group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-250 ease-out ${
-                        isActive
-                          ? 'bg-accent-gold/10 text-accent-gold'
-                          : 'text-text-primary hover:bg-border-primary/30 hover:text-accent-gold'
-                      }`}
-                    >
-                      <Icon className="w-5 h-5 shrink-0" />
-                      <span className="text-sm font-medium">{item.label}</span>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* Settings */}
-            <div className="border-t border-border-primary mt-4 pt-4">
-              <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3 px-3">Sistema</p>
-              <div className="space-y-1">
-                {settingsItems.map((item, idx) => {
-                  const Icon = item.icon
-                  return (
-                    <button
-                      key={idx}
-                      onClick={item.action}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 text-text-secondary hover:text-text-primary hover:bg-border-primary/30 rounded-lg transition-all duration-250 ease-out"
-                    >
-                      <Icon className="w-5 h-5 shrink-0" />
-                      <span className="text-sm">{item.label}</span>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
           </nav>
-        </aside>
-      </div>
-
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex lg:flex-col lg:h-full">
-        {/* Header */}
-        <div className={`flex items-center justify-between p-6 border-b border-border-primary ${isCollapsed ? 'justify-center' : ''}`}>
-          {!isCollapsed && (
-            <div>
-              <div className="font-serif text-lg font-bold text-text-primary">ÁGORA</div>
-              <p className="text-xs text-text-secondary uppercase tracking-widest">Conhecimento</p>
-            </div>
-          )}
-        </div>
-
-        {/* Navigation */}
-        <nav className={`flex-1 overflow-y-auto p-3 space-y-1 flex flex-col ${isCollapsed ? 'items-center' : ''}`}>
-          {navigationItems.map((item) => {
-            const Icon = item.icon
-            const isActive = activeTab === item.tab
-            return (
-              <button
-                key={item.tab}
-                onPointerEnter={() => preloadView(item.tab)}
-                onFocus={() => preloadView(item.tab)}
-                onClick={() => handleNavClick(item.tab)}
-                className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-250 ease-out ${
-                  isActive
-                    ? 'bg-accent-gold/10 text-accent-gold'
-                    : 'text-text-primary hover:bg-border-primary/30 hover:text-accent-gold'
-                } ${isCollapsed ? 'justify-center w-10' : 'w-full'}`}
-                title={isCollapsed ? item.label : undefined}
-              >
-                <Icon className="w-5 h-5 shrink-0" />
-                {!isCollapsed && <span className="text-sm font-medium">{item.label}</span>}
-                {isActive && !isCollapsed && (
-                  <div className="absolute left-0 top-1/2 w-1 h-6 -translate-y-1/2 bg-accent-gold rounded-r-full" />
-                )}
-              </button>
-            )
-          })}
 
           {/* Lifestyle Spaces */}
-          {!isCollapsed && (
-            <div className="border-t border-border-primary mt-4 pt-4">
-              <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3 px-3">Espaços</p>
-              <div className="space-y-1">
-                {lifestyleItems.map((item) => {
-                  const Icon = item.icon
-                  const isActive = activeTab === item.tab
-                  return (
-                    <button
-                      key={item.tab}
-                      onPointerEnter={() => preloadView(item.tab)}
-                      onClick={() => handleNavClick(item.tab)}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-250 ease-out ${
-                        isActive
-                          ? 'bg-accent-gold/10 text-accent-gold'
-                          : 'text-text-primary hover:bg-border-primary/30 hover:text-accent-gold'
-                      }`}
-                    >
-                      <Icon className="w-5 h-5 shrink-0" />
-                      <span className="text-sm font-medium">{item.label}</span>
-                    </button>
-                  )
-                })}
-              </div>
+          <div className="border-t border-text-primary/15 pt-4">
+            <p className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider px-2 mb-3">
+              Espaços de Cultivo
+            </p>
+            <div className="space-y-2">
+              <button
+                onPointerEnter={() => preloadView('schole')}
+                onFocus={() => preloadView('schole')}
+                onClick={() => handleNavClick('schole')}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold rounded-xl transition-all ${
+                  activeTab === 'schole'
+                    ? 'bg-accent-gold/15 text-accent-gold border border-accent-gold/40'
+                    : 'text-text-primary hover:text-accent-gold hover:bg-bg-elevated/50'
+                }`}
+              >
+                <Hourglass className="w-4 h-4" />
+                <span>Scholé</span>
+              </button>
+
+              <button
+                onClick={() => handleNavClick('rotina')}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold rounded-xl transition-all ${
+                  activeTab === 'rotina'
+                    ? 'bg-accent-gold/15 text-accent-gold border border-accent-gold/40'
+                    : 'text-text-primary hover:text-accent-gold hover:bg-bg-elevated/50'
+                }`}
+              >
+                <Dumbbell className="w-4 h-4" />
+                <span>Rotina</span>
+              </button>
             </div>
-          )}
+          </div>
 
           {/* Settings */}
-          {!isCollapsed && (
-            <div className="border-t border-border-primary mt-4 pt-4">
-              <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3 px-3">Sistema</p>
-              <div className="space-y-1">
-                {settingsItems.map((item, idx) => {
-                  const Icon = item.icon
-                  return (
-                    <button
-                      key={idx}
-                      onClick={item.action}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 text-text-secondary hover:text-text-primary hover:bg-border-primary/30 rounded-lg transition-all duration-250 ease-out"
-                    >
-                      <Icon className="w-5 h-5 shrink-0" />
-                      <span className="text-sm">{item.label}</span>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-        </nav>
+          <div className="border-t border-text-primary/15 pt-4 space-y-2">
+            <button
+              onClick={() => {
+                alert('Configurações da Interface Ágora: Modo Dark Academia Ativo.')
+                setIsLeftDrawerOpen(false)
+              }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold text-text-secondary hover:text-text-primary hover:bg-bg-elevated/50 rounded-xl transition-all"
+            >
+              <Sliders className="w-4 h-4" />
+              <span>Ajustes</span>
+            </button>
 
-        {/* Collapse Button */}
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="flex items-center justify-center p-3 m-3 border border-border-primary rounded-lg hover:bg-border-primary/30 text-text-secondary hover:text-text-primary transition-all duration-250 ease-out"
-          title={isCollapsed ? 'Expandir' : 'Recolher'}
-        >
-          <ChevronLeft className={`w-5 h-5 transition-transform duration-250 ${isCollapsed ? 'rotate-180' : ''}`} />
-        </button>
+            <button
+              onClick={handleBackup}
+              className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold text-text-secondary hover:text-text-primary hover:bg-bg-elevated/50 rounded-xl transition-all"
+            >
+              <Database className="w-4 h-4" />
+              <span>Exportar Backup</span>
+            </button>
+          </div>
+        </div>
       </aside>
     </div>
   )
 }
-
 
