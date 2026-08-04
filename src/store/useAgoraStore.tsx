@@ -835,12 +835,22 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     ]
     const tags = [...new Set(interesses.map((tag) => tag.trim()).filter(Boolean))]
     const existingTitles = mediaItems.map((item) => item.titulo)
+    // Enviamos somente os sinais que ajudam a curadoria. Obras bem avaliadas e
+    // concluídas têm mais peso no servidor; itens pendentes não definem o gosto.
+    const tasteSignals = mediaItems.map((item) => ({
+      titulo: item.titulo,
+      tipo: item.tipo,
+      autor_criador: item.autor_criador || '',
+      generos: item.generos || [],
+      avaliacao_numerica: item.avaliacao_numerica || 0,
+      status: item.status,
+    }))
 
     try {
       const response = await fetch('/api/getRecommendations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tags, existingTitles }),
+        body: JSON.stringify({ tags, existingTitles, tasteSignals }),
       })
       const data = await response.json().catch(() => ({}))
       if (response.ok && Array.isArray(data.recommendations) && data.recommendations.length) {
