@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { X, Sliders, Database, Home, Compass, Map, BookOpen, Bookmark, Hourglass, Dumbbell } from 'lucide-react'
+import { X, Sliders, Database, Home, Compass, Map, BookOpen, Bookmark, Hourglass, Dumbbell, UserRound, Feather } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
 import { preloadView } from '../lib/viewPreload'
 
@@ -41,6 +41,7 @@ export const LeftDrawer: React.FC = () => {
     { label: 'Trilhas', icon: Map, tab: 'trilhas' },
     { label: 'Acervo', icon: BookOpen, tab: 'inicio' },
     { label: 'Memória', icon: Bookmark, tab: 'memoria' },
+    { label: 'Perfil', icon: UserRound, tab: 'perfil' },
   ]
 
   // 3. Tipagem exata do parâmetro 'tab'
@@ -136,6 +137,20 @@ export const LeftDrawer: React.FC = () => {
               >
                 <Dumbbell className="w-4 h-4" />
                 <span>Rotina</span>
+              </button>
+
+              <button
+                onPointerEnter={() => preloadView('poiesis')}
+                onFocus={() => preloadView('poiesis')}
+                onClick={() => handleNavClick('poiesis')}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold rounded-xl transition-all ${
+                  activeTab === 'poiesis'
+                    ? 'bg-accent-gold/15 text-accent-gold border border-accent-gold/40'
+                    : 'text-text-primary hover:text-accent-gold hover:bg-bg-elevated/50'
+                }`}
+              >
+                <Feather className="w-4 h-4" />
+                <span>Poíesis</span>
               </button>
             </div>
           </div>

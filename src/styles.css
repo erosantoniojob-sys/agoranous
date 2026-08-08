@@ -240,6 +240,14 @@
 }
 
 @media (max-width: 639px) {
+  .app-header-shell {
+    padding-inline: 0.75rem;
+  }
+
+  .app-header [data-greeting] {
+    max-width: min(40vw, 190px);
+  }
+
   .app-page-shell {
     padding-inline: 0.75rem;
     padding-bottom: 7.6rem;

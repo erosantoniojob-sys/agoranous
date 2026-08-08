@@ -196,12 +196,12 @@ export const ProfileView: React.FC = () => {
             </div>
 
             {/* Profile Action Buttons */}
-            <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
+            <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-shrink-0">
               {!isEditing ? (
                 <>
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="py-2 px-3.5 bg-bg-base hover:bg-bg-elevated text-text-primary border border-text-primary/15 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer shadow-md"
+                    className="flex-1 justify-center py-2 px-3.5 bg-bg-base hover:bg-bg-elevated text-text-primary border border-text-primary/15 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer shadow-md sm:flex-none"
                   >
                     <Edit3 className="w-3.5 h-3.5 text-accent-gold" />
                     <span>Editar Perfil</span>
@@ -209,7 +209,7 @@ export const ProfileView: React.FC = () => {
 
                   <button
                     onClick={() => resetOnboarding()}
-                    className="py-2 px-3 bg-bg-base hover:bg-bg-elevated text-accent-gold border border-accent-gold/25 rounded-xl text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer"
+                    className="flex-1 justify-center py-2 px-3 bg-bg-base hover:bg-bg-elevated text-accent-gold border border-accent-gold/25 rounded-xl text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer sm:flex-none"
                     title="Refazer tutorial guiado de onboarding"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
@@ -219,7 +219,7 @@ export const ProfileView: React.FC = () => {
               ) : (
                 <button
                   onClick={handleSaveProfile}
-                  className="py-2 px-3.5 bg-accent-gold hover:bg-accent-gold-bright text-bg-base font-bold rounded-xl text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shadow-md"
+                  className="flex-1 justify-center py-2 px-3.5 bg-accent-gold hover:bg-accent-gold-bright text-bg-base font-bold rounded-xl text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shadow-md sm:flex-none"
                 >
                   <Check className="w-3.5 h-3.5" />
                   <span>Salvar Perfil</span>
@@ -228,7 +228,7 @@ export const ProfileView: React.FC = () => {
 
               <button
                 onClick={() => logout()}
-                className="py-2 px-3.5 bg-bg-base hover:bg-red-950/40 text-text-secondary hover:text-red-400 border border-text-primary/15 hover:border-red-500/40 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
+                className="flex-1 justify-center py-2 px-3.5 bg-bg-base hover:bg-red-950/40 text-text-secondary hover:text-red-400 border border-text-primary/15 hover:border-red-500/40 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer sm:flex-none"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span>Sair</span>

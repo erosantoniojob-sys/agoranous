@@ -1,11 +1,11 @@
 import React from 'react'
-import { Menu, Search, Compass, LogOut } from 'lucide-react'
+import { Menu, Search, Compass, LogOut, UserRound } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
 import { useAuth } from '../context/AuthContext'
 import { ClassicArchLogoIcon } from './ClassicArchLogo'
 
 export const Header: React.FC = () => {
-  const { setIsSearchOpen, isLeftDrawerOpen, setIsLeftDrawerOpen, setIsRightChatOpen, userProfile } = useAgoraStore()
+  const { setIsSearchOpen, isLeftDrawerOpen, setIsLeftDrawerOpen, setIsRightChatOpen, setActiveTab, userProfile } = useAgoraStore()
   const { logout } = useAuth()
 
   // Dynamic greeting: Moment of day, day of week, user name
@@ -17,20 +17,11 @@ export const Header: React.FC = () => {
     if (hour >= 5 && hour < 12) period = 'Bom dia'
     else if (hour >= 18 || hour < 5) period = 'Boa noite'
 
-    const days = [
-      'Domingo',
-      'Segunda-feira',
-      'Terça-feira',
-      'Quarta-feira',
-      'Quinta-feira',
-      'Sexta-feira',
-      'Sábado',
-    ]
-    const dayOfWeek = days[now.getDay()]
+    const weekday = new Intl.DateTimeFormat('pt-BR', { weekday: 'long' }).format(now)
+    const dayOfWeek = weekday.charAt(0).toUpperCase() + weekday.slice(1)
+    const name = userProfile.nome?.trim() || 'Erudito'
 
-    const nameStr = userProfile.nome ? `, ${userProfile.nome}` : ''
-
-    return `${period}, ${dayOfWeek}${nameStr}.`
+    return `${period}, ${dayOfWeek}, ${name}.`
   }
 
   return (
@@ -61,7 +52,7 @@ export const Header: React.FC = () => {
               <h1 className="font-serif font-bold text-xl text-text-primary tracking-wide leading-tight">
                 Àgora
               </h1>
-              <p className="max-w-[min(42vw,260px)] text-xs font-sans font-medium text-accent-gold truncate">
+              <p data-greeting className="max-w-[min(42vw,260px)] text-xs font-sans font-medium text-accent-gold truncate">
                 {getDynamicGreeting()}
               </p>
             </div>
@@ -69,6 +60,15 @@ export const Header: React.FC = () => {
 
           {/* Right Mobile Actions */}
           <div className="flex items-center gap-2 md:hidden">
+            <button
+              type="button"
+              onClick={() => setActiveTab('perfil')}
+              title="Personalizar perfil"
+              aria-label="Personalizar perfil"
+              className="p-2 text-accent-gold bg-bg-surface hover:bg-bg-elevated rounded-xl border border-accent-gold/30 transition-colors"
+            >
+              <UserRound className="w-4 h-4" />
+            </button>
             <button
               onClick={() => setIsRightChatOpen(true)}
               title="Abrir Guia da Ágora"
@@ -107,6 +107,16 @@ export const Header: React.FC = () => {
           >
             <Compass className="w-4 h-4" />
             <span>Guia da Ágora</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('perfil')}
+            title="Personalizar perfil"
+            className="hidden md:flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-accent-gold bg-bg-surface hover:bg-bg-elevated border border-accent-gold/30 rounded-full transition-all cursor-pointer"
+          >
+            <UserRound className="w-3.5 h-3.5" />
+            <span>Perfil</span>
           </button>
 
           <button

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Bookmark, Compass, Dumbbell, Home, Hourglass, Map, Plus } from 'lucide-react'
+import { Bookmark, Compass, Dumbbell, Feather, Home, Hourglass, Map, Plus } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
 import { ViewName, preloadView } from '../lib/viewPreload'
 
@@ -103,6 +103,14 @@ export const TabBar: React.FC = () => {
             onClick={() => setActiveTab(item.tab)}
           />
         ))}
+
+        <DockItem
+          label="Poíesis"
+          icon={Feather}
+          active={activeTab === 'poiesis'}
+          view="poiesis"
+          onClick={() => setActiveTab('poiesis')}
+        />
 
         <div className="w-px h-8 bg-border-primary/50" />
 
