@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Bookmark, Compass, Dumbbell, Feather, Home, Hourglass, Map, Plus } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
 import { ViewName, preloadView } from '../lib/viewPreload'
@@ -35,6 +35,55 @@ export const TabBar: React.FC = () => {
   const { activeTab, setActiveTab, setIsSearchOpen } = useAgoraStore()
   const openAddMedia = () => setIsSearchOpen(true)
 
+  useEffect(() => {
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
+    if (reducedMotion.matches) return
+
+    const docks = Array.from(document.querySelectorAll<HTMLElement>('.velocity-dock'))
+    let lastY = window.scrollY
+    let lastTime = performance.now()
+    let targetVelocity = 0
+    let currentVelocity = 0
+    let frame = 0
+
+    const render = () => {
+      targetVelocity *= 0.84
+      currentVelocity += (targetVelocity - currentVelocity) * 0.18
+      const value = currentVelocity.toFixed(3)
+      const energy = Math.abs(currentVelocity).toFixed(3)
+      docks.forEach((dock) => {
+        dock.style.setProperty('--scroll-velocity', value)
+        dock.style.setProperty('--scroll-energy', energy)
+      })
+
+      if (Math.abs(currentVelocity) > 0.003 || Math.abs(targetVelocity) > 0.003) {
+        frame = window.requestAnimationFrame(render)
+      } else {
+        docks.forEach((dock) => {
+          dock.style.setProperty('--scroll-velocity', '0')
+          dock.style.setProperty('--scroll-energy', '0')
+        })
+        frame = 0
+      }
+    }
+
+    const onScroll = () => {
+      const now = performance.now()
+      const elapsed = Math.max(now - lastTime, 16)
+      const distance = window.scrollY - lastY
+      targetVelocity = Math.max(-1, Math.min(1, distance / elapsed / 1.25))
+      lastY = window.scrollY
+      lastTime = now
+      if (!frame) frame = window.requestAnimationFrame(render)
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      if (frame) window.cancelAnimationFrame(frame)
+    }
+  }, [])
+
   const mainNavItems = [
     { label: 'Início', icon: Home, tab: 'inicio' },
     { label: 'Explorar', icon: Compass, tab: 'explorar' },
@@ -51,7 +100,7 @@ export const TabBar: React.FC = () => {
     <>
       {/* Mobile Dock - Bottom */}
       <nav className="lg:hidden fixed inset-x-0 bottom-0 z-40 px-[max(0.75rem,env(safe-area-inset-left))] py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-        <div className="tab-bar-mobile flex items-center justify-between gap-1 px-2 py-2 rounded-2xl border border-border-primary">
+        <div className="velocity-dock tab-bar-mobile relative flex items-center justify-between gap-1 px-2 py-2 rounded-2xl border border-border-primary">
           {mainNavItems.map((item) => (
             <DockItem
               key={item.tab}
@@ -92,7 +141,7 @@ export const TabBar: React.FC = () => {
       </nav>
 
       {/* Desktop Dock - Bottom Center */}
-      <nav className="tab-bar-desktop hidden lg:flex fixed bottom-6 left-1/2 -translate-x-1/2 z-40 items-center gap-2 px-4 py-3 rounded-2xl shadow-lg-elevation">
+      <nav className="velocity-dock tab-bar-desktop hidden lg:flex fixed bottom-6 left-1/2 -translate-x-1/2 z-40 items-center gap-2 px-4 py-3 rounded-2xl shadow-lg-elevation">
         {mainNavItems.map((item) => (
           <DockItem
             key={item.tab}

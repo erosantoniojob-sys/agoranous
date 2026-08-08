@@ -106,6 +106,80 @@
   animation: agora-starlight 16s ease-in-out infinite alternate;
 }
 
+/* Profundidade inspirada em experiências WebGL, construída só com CSS e um
+   pequeno acompanhamento do ponteiro. Mantém a interface leve e legível. */
+.ambient-depth {
+  --depth-x: 0;
+  --depth-y: 0;
+  --light-x: 50vw;
+  --light-y: 32vh;
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+}
+
+.ambient-depth__glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    34rem circle at var(--light-x) var(--light-y),
+    rgba(229, 193, 88, 0.105),
+    rgba(79, 126, 150, 0.035) 38%,
+    transparent 70%
+  );
+  mix-blend-mode: screen;
+  transform: translate3d(calc(var(--depth-x) * -8px), calc(var(--depth-y) * -8px), 0);
+  transition: opacity 500ms ease;
+  will-change: transform;
+}
+
+.ambient-depth__orbit {
+  position: absolute;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px solid rgba(212, 175, 55, 0.1);
+  opacity: 0.72;
+  will-change: transform;
+}
+
+.ambient-depth__orbit::before,
+.ambient-depth__orbit::after {
+  content: '';
+  position: absolute;
+  border-radius: inherit;
+  border: 1px solid rgba(212, 175, 55, 0.055);
+}
+
+.ambient-depth__orbit::before { inset: 12%; }
+.ambient-depth__orbit::after { inset: 27%; }
+
+.ambient-depth__orbit--near {
+  width: min(58vw, 52rem);
+  top: -30%;
+  right: -17%;
+  transform: translate3d(calc(var(--depth-x) * 22px), calc(var(--depth-y) * 16px), 0) rotate(-12deg);
+}
+
+.ambient-depth__orbit--far {
+  width: min(42vw, 38rem);
+  bottom: -27%;
+  left: -12%;
+  opacity: 0.42;
+  transform: translate3d(calc(var(--depth-x) * -13px), calc(var(--depth-y) * -9px), 0) rotate(18deg);
+}
+
+.kinetic-guide {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.82;
+  mix-blend-mode: screen;
+}
+
 /* Colunatas sugeridas e névoa azulada aprofundam a sensação de uma ágora noturna. */
 #root > div::before {
   content: '';
@@ -143,6 +217,35 @@
   }
 
   #root > div::before { animation: none; }
+
+  .ambient-depth__glow,
+  .ambient-depth__orbit {
+    transform: none;
+    will-change: auto;
+  }
+
+  .velocity-dock {
+    scale: 1;
+    rotate: 0deg;
+    translate: 0;
+    will-change: auto;
+  }
+
+  .kinetic-guide {
+    display: none;
+  }
+}
+
+@media (pointer: coarse) {
+  .kinetic-guide {
+    display: none;
+  }
+}
+
+@media (pointer: coarse) {
+  .ambient-depth__glow {
+    opacity: 0.65;
+  }
 }
 
 :focus-visible {
@@ -174,7 +277,6 @@
 }
 
 .journey-hero {
-  position: relative;
   isolation: isolate;
   border: 1px solid rgba(212, 175, 55, 0.32);
   background:
@@ -356,6 +458,33 @@
 .tab-bar-desktop {
   background: linear-gradient(180deg, rgba(9, 15, 24, 0.78), rgba(12, 20, 32, 0.84));
   border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* A cápsula reage à energia do scroll, inspirada na navegação cinética da
+   Active Theory. A variável é atualizada sem provocar renders do React. */
+.velocity-dock {
+  --scroll-velocity: 0;
+  --scroll-energy: 0;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  scale: calc(1 + var(--scroll-energy) * 0.018)
+    calc(1 - var(--scroll-energy) * 0.025);
+  rotate: calc(var(--scroll-velocity) * -0.7deg);
+  translate: 0 calc(var(--scroll-energy) * -3px);
+  transition: border-color 220ms ease, box-shadow 220ms ease;
+  will-change: scale, rotate, translate;
+}
+
+.velocity-dock::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent 12%, rgba(229, 193, 88, 0.2), transparent 48%);
+  opacity: calc(var(--scroll-energy) * 1.8);
+  transform: translateX(calc(var(--scroll-velocity) * 24%));
 }
 
 .modern-surface::after {

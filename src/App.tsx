@@ -10,6 +10,8 @@ import { RightChatDrawer } from './components/RightChatDrawer'
 import { LoginView } from './views/LoginView'
 import { Onboarding } from './components/Onboarding'
 import { AmbientSoundControl } from './components/AmbientSoundControl'
+import { AmbientDepth } from './components/AmbientDepth'
+import { KineticGuide } from './components/KineticGuide'
 
 const DashboardView = lazy(() => import('./views/DashboardView').then((module) => ({ default: module.DashboardView })))
 const ExploreView = lazy(() => import('./views/ExploreView').then((module) => ({ default: module.ExploreView })))
@@ -87,6 +89,8 @@ const MainContent: React.FC = () => {
 
   return (
     <div className="min-h-screen flex bg-transparent text-text-primary font-sans selection:bg-accent-gold/30 selection:text-text-primary">
+      <AmbientDepth />
+      <KineticGuide />
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
         {/* Top Header */}
