@@ -42,4 +42,10 @@ Os dados do acervo são associados à conta Supabase autenticada. Para ativar a 
 - `SUPABASE_URL`: a mesma URL, usada somente pelas funções do servidor;
 - `SUPABASE_SECRET_KEY`: chave secreta do Supabase, mantida somente na Vercel e nunca exposta no frontend.
 
+Para ativar o enriquecimento de capas e sinopses com Gemini, configure também no ambiente das Functions:
+
+- `GEMINI_API_KEY`: chave criada no Google AI Studio, mantida somente no servidor;
+- `GEMINI_MODEL` (opcional): modelo utilizado na busca; o padrão é `gemini-2.5-flash-lite`;
+- `GEMINI_DAILY_LIMIT` (opcional): máximo diário de enriquecimentos por IP; o padrão é `3`.
+
 Depois, basta entrar com o mesmo e-mail e senha em cada dispositivo. Contas de visitante permanecem locais por definição.

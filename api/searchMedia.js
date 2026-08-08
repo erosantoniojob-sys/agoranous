@@ -1,4 +1,10 @@
 const MEDIA_TYPES = new Set(['Livro', 'Filme', 'Série', 'Jogo'])
+const DAY_MS = 24 * 60 * 60 * 1000
+const GEMINI_CACHE_MS = 12 * 60 * 60 * 1000
+const geminiDailyLimit = Math.max(0, Number.parseInt(process.env.GEMINI_DAILY_LIMIT || '3', 10) || 3)
+const geminiModel = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite'
+const rateBuckets = new Map()
+const enrichmentCache = new Map()
 
 function cleanText(value = '', maxLength = 650) {
   const text = String(value).replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()
@@ -14,6 +20,90 @@ function yearFrom(value) {
 const DEFAULT_HEADERS = {
   'User-Agent': 'AgoraCatalog/1.0 (https://seu-app.com; contato@seu-app.com)',
   'Accept': 'application/json',
+}
+
+function clientIdentifier(req) {
+  const forwarded = req.headers['x-forwarded-for'] || req.headers['x-vercel-forwarded-for']
+  return String(Array.isArray(forwarded) ? forwarded[0] : forwarded || req.socket?.remoteAddress || 'anonymous')
+    .split(',')[0]
+    .trim()
+}
+
+function canUseGemini(req) {
+  if (!process.env.GEMINI_API_KEY || geminiDailyLimit === 0) return false
+
+  const now = Date.now()
+  const identifier = clientIdentifier(req)
+  const bucket = rateBuckets.get(identifier)
+  if (!bucket || now - bucket.startedAt >= DAY_MS) {
+    rateBuckets.set(identifier, { startedAt: now, count: 1 })
+    return true
+  }
+  if (bucket.count >= geminiDailyLimit) return false
+  bucket.count += 1
+  return true
+}
+
+function synopsisMissing(result) {
+  const synopsis = result?.sinopse?.trim() || ''
+  return !synopsis || /^(sinopse não disponível|ficha oficial|ficha catalogada)/i.test(synopsis)
+}
+
+function parseGeminiJson(raw) {
+  const cleaned = String(raw || '').replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
+  try {
+    const value = JSON.parse(cleaned)
+    return value && typeof value === 'object' ? value : null
+  } catch {
+    return null
+  }
+}
+
+async function enrichMetadata(req, query, tipo, currentResult) {
+  const cacheKey = `${tipo}:${query.toLocaleLowerCase('pt-BR')}`
+  const cached = enrichmentCache.get(cacheKey)
+  if (cached && Date.now() - cached.createdAt < GEMINI_CACHE_MS) return cached.value
+  if (!canUseGemini(req)) return null
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(geminiModel)}:generateContent`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': process.env.GEMINI_API_KEY,
+      },
+      signal: AbortSignal.timeout(12000),
+      body: JSON.stringify({
+        contents: [{
+          role: 'user',
+          parts: [{
+            text: `Identifique a obra abaixo e devolva somente JSON válido. Não invente URLs, citações ou informações incertas. A sinopse deve ter 2 a 4 frases em português brasileiro e no máximo 600 caracteres.\n\nTítulo pesquisado: ${query}\nCategoria: ${tipo}\nResultado da fonte pública: ${currentResult ? JSON.stringify({ titulo: currentResult.titulo, criador: currentResult.autor_criador, ano: currentResult.ano }) : 'nenhum'}\n\nFormato: {"titulo":"", "autor_criador":"", "ano":null, "sinopse":""}`,
+          }],
+        }],
+        generationConfig: {
+          temperature: 0.2,
+          maxOutputTokens: 260,
+          responseMimeType: 'application/json',
+        },
+      }),
+    },
+  )
+
+  if (!response.ok) throw new Error(`Gemini retornou status ${response.status}`)
+  const data = await response.json()
+  const raw = data?.candidates?.[0]?.content?.parts?.map((part) => part.text || '').join('')
+  const parsed = parseGeminiJson(raw)
+  if (!parsed?.titulo || !parsed?.sinopse) return null
+
+  const value = {
+    titulo: cleanText(parsed.titulo, 160),
+    autor_criador: cleanText(parsed.autor_criador, 160),
+    ano: Number.isInteger(parsed.ano) ? parsed.ano : yearFrom(parsed.ano),
+    sinopse: cleanText(parsed.sinopse, 650),
+  }
+  enrichmentCache.set(cacheKey, { createdAt: Date.now(), value })
+  return value
 }
 
 async function searchBook(query) {
@@ -152,9 +242,41 @@ export default async function handler(req, res) {
       result = await searchEntertainment(query, tipo)
     }
 
-    if (!result) {
-      return res.status(404).json({ error: 'Nenhuma obra encontrada para esse título.' })
+    if (!result || !result.url_capa || synopsisMissing(result)) {
+      try {
+        const enrichment = await enrichMetadata(req, query, tipo, result)
+        if (enrichment) {
+          let coverResult = result
+          if (!coverResult?.url_capa && enrichment.titulo.toLocaleLowerCase('pt-BR') !== query.toLocaleLowerCase('pt-BR')) {
+            try {
+              coverResult = tipo === 'Livro'
+                ? (await searchBook(enrichment.titulo)) || (await searchOpenLibraryBook(enrichment.titulo))
+                : await searchEntertainment(enrichment.titulo, tipo)
+            } catch (coverError) {
+              console.warn('Busca de capa após identificação do Gemini falhou:', coverError.message)
+            }
+          }
+
+          result = {
+            ...(coverResult || {}),
+            titulo: coverResult?.titulo || enrichment.titulo,
+            tipo,
+            autor_criador: coverResult?.autor_criador || enrichment.autor_criador || 'Criador não informado',
+            ano: coverResult?.ano ?? enrichment.ano,
+            data_lancamento_oficial: coverResult?.data_lancamento_oficial || (enrichment.ano ? String(enrichment.ano) : ''),
+            sinopse: synopsisMissing(coverResult) ? enrichment.sinopse : coverResult.sinopse,
+            generos: coverResult?.generos || [],
+            url_capa_oficial: coverResult?.url_capa_oficial || '',
+            url_capa: coverResult?.url_capa || '',
+            fonte: `${coverResult?.fonte ? `${coverResult.fonte} + ` : ''}Gemini`,
+          }
+        }
+      } catch (geminiError) {
+        console.warn('Enriquecimento Gemini indisponível:', geminiError.message)
+      }
     }
+
+    if (!result) return res.status(404).json({ error: 'Nenhuma obra encontrada para esse título.' })
 
     return res.status(200).json(result)
   } catch (error) {
