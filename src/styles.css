@@ -232,7 +232,7 @@
   .velocity-dock {
     scale: 1;
     rotate: 0deg;
-    translate: 0;
+    translate: var(--dock-x, 0) 0;
     will-change: auto;
   }
 
@@ -266,7 +266,7 @@
   .velocity-dock {
     scale: 1;
     rotate: 0deg;
-    translate: 0;
+    translate: var(--dock-x, 0) 0;
   }
 }
 
@@ -291,16 +291,14 @@
 /* Área de conteúdo única para todas as páginas e o cabeçalho. */
 .app-page-shell {
   width: 100%;
-  max-width: 72rem;
-  margin-inline: auto;
+  max-width: none;
   padding-inline: 1rem;
 }
 
 .app-header-shell {
   display: flex;
   width: 100%;
-  max-width: 100rem;
-  margin-inline: auto;
+  max-width: none;
   padding-inline: 1rem;
 }
 
@@ -413,9 +411,7 @@
 
 @media (min-width: 1024px) {
   .app-page-shell {
-    /* Mantém uma margem de respiro nas telas largas e evita linhas longas. */
-    max-width: 82rem;
-    margin-inline: auto;
+    max-width: none;
     padding-inline: clamp(1.5rem, 3vw, 3.5rem);
   }
 
@@ -548,15 +544,19 @@
 .velocity-dock {
   --scroll-velocity: 0;
   --scroll-energy: 0;
-  position: relative;
+  --dock-x: 0;
   isolation: isolate;
   overflow: hidden;
   scale: calc(1 + var(--scroll-energy) * 0.018)
     calc(1 - var(--scroll-energy) * 0.025);
   rotate: calc(var(--scroll-velocity) * -0.7deg);
-  translate: 0 calc(var(--scroll-energy) * -3px);
+  translate: var(--dock-x) calc(var(--scroll-energy) * -3px);
   transition: border-color 220ms ease, box-shadow 220ms ease;
   will-change: scale, rotate, translate;
+}
+
+.tab-bar-desktop {
+  --dock-x: -50%;
 }
 
 .velocity-dock::before {

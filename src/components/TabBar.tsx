@@ -141,7 +141,7 @@ export const TabBar: React.FC = () => {
       </nav>
 
       {/* Desktop Dock - Bottom Center */}
-      <nav className="velocity-dock tab-bar-desktop hidden lg:flex fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] items-center gap-2 px-4 py-3 rounded-2xl shadow-lg-elevation">
+      <nav className="velocity-dock tab-bar-desktop hidden lg:flex fixed bottom-6 left-1/2 z-[60] items-center gap-2 px-4 py-3 rounded-2xl shadow-lg-elevation">
         {mainNavItems.map((item) => (
           <DockItem
             key={item.tab}
