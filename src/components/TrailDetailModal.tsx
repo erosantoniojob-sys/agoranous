@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
 import { CustomTrail } from '../types/agora'
+import { useModalAccessibility } from '../lib/useModalAccessibility'
 
 interface TrailDetailModalProps {
   trailId: string | null
@@ -49,6 +50,7 @@ export const TrailDetailModal: React.FC<TrailDetailModalProps> = ({
   const [newNoteText, setNewNoteText] = useState('')
   const [newNoteTopic, setNewNoteTopic] = useState('')
   const [selectedMediaForNote, setSelectedMediaForNote] = useState('')
+  const modalRef = useModalAccessibility<HTMLDivElement>(Boolean(trail), onClose)
 
   if (!trail) return null
 
@@ -107,14 +109,14 @@ export const TrailDetailModal: React.FC<TrailDetailModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn font-sans">
-      <div className="w-full max-w-2xl bg-bg-surface border border-accent-gold/40 rounded-2xl shadow-3d-deep p-6 sm:p-8 space-y-6 relative max-h-[90vh] overflow-y-auto">
+      <div ref={modalRef} role="dialog" aria-modal="true" aria-labelledby="trail-detail-title" className="w-full max-w-2xl bg-bg-surface border border-accent-gold/40 rounded-2xl shadow-3d-deep p-6 sm:p-8 space-y-6 relative max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-start justify-between border-b border-text-primary/10 pb-4">
           <div className="space-y-1 pr-4">
             <span className="text-[10px] uppercase font-bold text-accent-gold px-2.5 py-0.5 rounded bg-accent-gold/15 border border-accent-gold/30">
               {trail.categoria || 'Trilha Temática'}
             </span>
-            <h2 className="font-serif font-bold text-xl sm:text-2xl text-text-primary">
+            <h2 id="trail-detail-title" className="font-serif font-bold text-xl sm:text-2xl text-text-primary">
               {trail.nome}
             </h2>
             <p className="text-xs text-text-secondary">
@@ -123,7 +125,9 @@ export const TrailDetailModal: React.FC<TrailDetailModalProps> = ({
           </div>
 
           <button
+            type="button"
             onClick={onClose}
+            aria-label="Fechar detalhes da trilha"
             className="p-1.5 text-text-secondary hover:text-text-primary hover:bg-bg-base rounded-lg transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />

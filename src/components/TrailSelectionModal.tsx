@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { X, Network, Plus, Check, Layers, Sparkles, BookOpen } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
+import { useModalAccessibility } from '../lib/useModalAccessibility'
 
 interface TrailSelectionModalProps {
   isOpen: boolean
@@ -20,6 +21,7 @@ export const TrailSelectionModal: React.FC<TrailSelectionModalProps> = ({
   const [trailDesc, setTrailDesc] = useState('')
   const [trailCat, setTrailCat] = useState('Filosofia & Cosmovisão')
   const [selectedMediaIds, setSelectedMediaIds] = useState<string[]>([])
+  const modalRef = useModalAccessibility<HTMLDivElement>(isOpen, onClose)
 
   if (!isOpen) return null
 
@@ -47,7 +49,7 @@ export const TrailSelectionModal: React.FC<TrailSelectionModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn font-sans">
-      <div className="w-full max-w-lg bg-bg-surface border border-accent-gold/40 rounded-2xl shadow-3d-deep p-6 space-y-5 relative max-h-[90vh] overflow-y-auto">
+      <div ref={modalRef} role="dialog" aria-modal="true" aria-labelledby="trail-selection-title" className="w-full max-w-lg bg-bg-surface border border-accent-gold/40 rounded-2xl shadow-3d-deep p-6 space-y-5 relative max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-text-primary/10 pb-3">
           <div className="flex items-center gap-2">
@@ -55,7 +57,7 @@ export const TrailSelectionModal: React.FC<TrailSelectionModalProps> = ({
               <Network className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-serif font-bold text-lg text-text-primary">
+              <h3 id="trail-selection-title" className="font-serif font-bold text-lg text-text-primary">
                 Escolher ou Criar Trilha
               </h3>
               <p className="text-xs text-text-secondary">
@@ -65,7 +67,9 @@ export const TrailSelectionModal: React.FC<TrailSelectionModalProps> = ({
           </div>
 
           <button
+            type="button"
             onClick={onClose}
+            aria-label="Fechar seleção de trilha"
             className="p-1.5 text-text-secondary hover:text-text-primary hover:bg-bg-base rounded-lg transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />

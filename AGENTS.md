@@ -7,7 +7,7 @@
 ## Key Paths
 
 - `index.html`: application HTML entry point
-- `src/main.js`: JavaScript entry point
+- `src/main.tsx`: React/TypeScript entry point
 - `src/styles.css`: global visual system and responsive layout
 - `netlify.toml`: Netlify build, publish, runtime, and SPA redirect configuration
 - `dist/`: generated production output; never edit or commit it

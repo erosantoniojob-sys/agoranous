@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
+import { getErrorMessage, readBrowserValue, removeBrowserValue, writeBrowserValue } from '../lib/browserStorage'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY || ''
@@ -52,15 +53,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     async function initAuth() {
       try {
-        const storedGuest = localStorage.getItem(LOCAL_STORAGE_GUEST_KEY)
+        const storedGuest = readBrowserValue<AuthUser | null>(LOCAL_STORAGE_GUEST_KEY, null)
         if (storedGuest && isMounted) {
-          try {
-            setUser(JSON.parse(storedGuest))
-            setIsLoading(false)
-            return
-          } catch {
-            localStorage.removeItem(LOCAL_STORAGE_GUEST_KEY)
-          }
+          setUser(storedGuest)
+          setIsLoading(false)
+          return
         }
 
         if (!isSupabaseConfigured) {
@@ -99,7 +96,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           email: session.user.email || '',
           name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Membro da Ágora',
         })
-      } else if (event === 'SIGNED_OUT' && !localStorage.getItem(LOCAL_STORAGE_GUEST_KEY)) {
+      } else if (event === 'SIGNED_OUT' && !readBrowserValue<AuthUser | null>(LOCAL_STORAGE_GUEST_KEY, null)) {
         setUser(null)
       }
     })
@@ -122,14 +119,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password: pass })
       if (authError) throw authError
       if (data.session) {
-        localStorage.removeItem(LOCAL_STORAGE_GUEST_KEY)
+        removeBrowserValue(LOCAL_STORAGE_GUEST_KEY)
         setIsLoading(false)
         return true
       }
       return false
-    } catch (err: any) {
+    } catch (err: unknown) {
       setIsLoading(false)
-      setError(err.message.includes('Invalid login credentials') ? 'E-mail ou senha incorretos.' : err.message || 'Erro ao realizar login.')
+      const message = getErrorMessage(err, 'Erro ao realizar login.')
+      setError(message.includes('Invalid login credentials') ? 'E-mail ou senha incorretos.' : message)
       return false
     }
   }
@@ -155,14 +153,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setIsLoading(false)
           return false
         }
-        localStorage.removeItem(LOCAL_STORAGE_GUEST_KEY)
+        removeBrowserValue(LOCAL_STORAGE_GUEST_KEY)
         setIsLoading(false)
         return true
       }
       return false
-    } catch (err: any) {
+    } catch (err: unknown) {
       setIsLoading(false)
-      setError(err.message.includes('User already registered') ? 'Este e-mail já está em uso.' : err.message || 'Erro ao criar conta.')
+      const message = getErrorMessage(err, 'Erro ao criar conta.')
+      setError(message.includes('User already registered') ? 'Este e-mail já está em uso.' : message)
       return false
     }
   }
@@ -172,7 +171,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await supabase.auth.signOut()
     } finally {
-      localStorage.removeItem(LOCAL_STORAGE_GUEST_KEY)
+      removeBrowserValue(LOCAL_STORAGE_GUEST_KEY)
       setUser(null)
       setIsLoading(false)
     }
@@ -181,7 +180,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginAsGuest = () => {
     const guestUser: AuthUser = { id: 'guest_user', email: '', name: '' }
     setUser(guestUser)
-    localStorage.setItem(LOCAL_STORAGE_GUEST_KEY, JSON.stringify(guestUser))
+    writeBrowserValue(LOCAL_STORAGE_GUEST_KEY, guestUser)
   }
 
   const clearError = () => setError(null)

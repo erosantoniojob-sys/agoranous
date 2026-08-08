@@ -585,6 +585,12 @@
   background-size: cover;
 }
 
+/* Long collections can skip paint work until they approach the viewport. */
+.content-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 420px;
+}
+
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 8px;

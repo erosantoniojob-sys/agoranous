@@ -1,4 +1,4 @@
-import { integer, jsonb, pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core'
+import { integer, jsonb, pgTable, primaryKey, serial, text, timestamp } from 'drizzle-orm/pg-core'
 
 export const libraryItems = pgTable('library_items', {
   id: serial().primaryKey(),
@@ -13,3 +13,10 @@ export const libraryItems = pgTable('library_items', {
   source: text().notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 })
+
+export const userData = pgTable('user_data', {
+  userId: text('user_id').notNull(),
+  collection: text().notNull(),
+  data: jsonb().$type<unknown>().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [primaryKey({ columns: [table.userId, table.collection] })])

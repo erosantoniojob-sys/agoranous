@@ -4,6 +4,7 @@ import { useAgoraStore } from '../store/useAgoraStore'
 import { RatingStars } from './RatingStars'
 import { CoverImage } from './CoverImage'
 import { MediaStatus } from '../types/agora'
+import { useModalAccessibility } from '../lib/useModalAccessibility'
 
 export const MediaDetailModal: React.FC = () => {
   const {
@@ -29,6 +30,7 @@ export const MediaDetailModal: React.FC = () => {
   const [editableSinopse, setEditableSinopse] = useState('')
   const [editableCapaUrl, setEditableCapaUrl] = useState('')
   const [saveSuccessMsg, setSaveSuccessMsg] = useState(false)
+  const modalRef = useModalAccessibility<HTMLDivElement>(Boolean(selectedMedia), () => setSelectedMedia(null))
 
   useEffect(() => {
     if (selectedMedia) {
@@ -168,7 +170,7 @@ export const MediaDetailModal: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-bg-base/80 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-2xl max-h-[90vh] bg-bg-surface border border-text-primary/15 rounded-2xl shadow-2xl overflow-hidden flex flex-col my-auto">
+      <div ref={modalRef} role="dialog" aria-modal="true" aria-label={`Detalhes de ${selectedMedia.titulo}`} className="relative w-full max-w-2xl max-h-[90vh] bg-bg-surface border border-text-primary/15 rounded-2xl shadow-2xl overflow-hidden flex flex-col my-auto">
         {/* Close Button */}
         <button
           onClick={() => setSelectedMedia(null)}
@@ -208,7 +210,7 @@ export const MediaDetailModal: React.FC = () => {
 
               {!isEditingMedia ? (
                 <>
-                  <h2 className="font-serif font-bold text-xl sm:text-2xl text-text-primary truncate">
+                  <h2 id="media-detail-title" className="font-serif font-bold text-xl sm:text-2xl text-text-primary truncate">
                     {selectedMedia.titulo}
                   </h2>
 

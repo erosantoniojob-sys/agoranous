@@ -18,6 +18,7 @@ import {
 import { useAgoraStore } from '../store/useAgoraStore';
 import { EventoRegressivo, MediaType } from '../types/agora';
 import { convertFileToBase64 } from '../lib/fileUtils';
+import { getErrorMessage } from '../lib/browserStorage';
 
 export const Onboarding: React.FC = () => {
   const { userProfile, completeOnboarding, setActiveTab } = useAgoraStore();
@@ -70,8 +71,8 @@ export const Onboarding: React.FC = () => {
     try {
       const base64String = await convertFileToBase64(file);
       setAvatarUrl(base64String);
-    } catch (err: any) {
-      setUploadError(err.message || 'Erro ao carregar arquivo de imagem.');
+    } catch (err: unknown) {
+      setUploadError(getErrorMessage(err, 'Erro ao carregar arquivo de imagem.'));
     }
   };
 

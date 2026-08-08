@@ -328,7 +328,7 @@ export const DashboardView: React.FC = () => {
       </section>
 
       {/* 4. CATÁLOGO DE MÍDIAS */}
-      <section className="space-y-4">
+      <section className="content-auto space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="font-serif font-bold text-xl text-text-primary">
@@ -370,7 +370,7 @@ export const DashboardView: React.FC = () => {
 
       {/* 5. RECOMENDAÇÕES DO PERFIL */}
       {selectedFilter === 'Todos' && (
-        <section className="pt-6 border-t border-text-primary/10">
+        <section className="content-auto pt-6 border-t border-text-primary/10">
           <Suspense fallback={<div className="rounded-2xl border border-text-primary/10 bg-bg-surface/70 p-4 text-sm text-text-secondary">Consultando recomendações…</div>}>
             <RecommendationsSection />
           </Suspense>

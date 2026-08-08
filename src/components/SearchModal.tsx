@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { X, Search, Loader2, Check, Sparkles, Edit3, Plus } from 'lucide-react';
 import { useAgoraStore } from '../store/useAgoraStore';
 import { CoverImage } from './CoverImage';
-import { MediaType, MediaItem } from '../types/agora';
+import { MediaType, MediaItem, MediaStatus } from '../types/agora';
+import { useModalAccessibility } from '../lib/useModalAccessibility';
 
 export const SearchModal: React.FC = () => {
   const { isSearchOpen, setIsSearchOpen, fetchInteligente, addMedia, setSelectedMedia } =
@@ -17,8 +18,9 @@ export const SearchModal: React.FC = () => {
     MediaItem,
     'id' | 'criadoEm' | 'status' | 'avaliacao_numerica'
   > | null>(null);
-  const [statusInicial, setStatusInicial] = useState<'Lendo' | 'Assistindo' | 'Jogando' | 'Concluído' | 'Pendente'>('Concluído');
+  const [statusInicial, setStatusInicial] = useState<MediaStatus>('Concluído');
   const [avaliacaoInicial, setAvaliacaoInicial] = useState<number>(5);
+  const modalRef = useModalAccessibility<HTMLDivElement>(isSearchOpen, () => setIsSearchOpen(false));
 
   if (!isSearchOpen) return null;
 
@@ -78,7 +80,7 @@ export const SearchModal: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-bg-main/85 backdrop-blur-md animate-fadeIn lg:items-center lg:p-4">
-      <div className="relative w-full bg-bg-card border border-text-primary/15 rounded-t-2xl lg:max-w-lg lg:rounded-2xl shadow-2xl overflow-hidden flex flex-col p-4 sm:p-6 space-y-5 max-h-[calc(100dvh-5.75rem-env(safe-area-inset-bottom))] lg:max-h-[90vh] overflow-y-auto">
+      <div ref={modalRef} role="dialog" aria-modal="true" aria-labelledby="search-modal-title" className="relative w-full bg-bg-card border border-text-primary/15 rounded-t-2xl lg:max-w-lg lg:rounded-2xl shadow-2xl overflow-hidden flex flex-col p-4 sm:p-6 space-y-5 max-h-[calc(100dvh-5.75rem-env(safe-area-inset-bottom))] lg:max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-text-primary/10 pb-4">
           <div>
@@ -86,12 +88,14 @@ export const SearchModal: React.FC = () => {
               <Sparkles className="w-3 h-3" />
               Oráculo Bibliográfico
             </span>
-            <h2 className="font-serif font-bold text-xl text-text-primary">
+            <h2 id="search-modal-title" className="font-serif font-bold text-xl text-text-primary">
               Busca Inteligente de Mídias
             </h2>
           </div>
           <button
+            type="button"
             onClick={() => setIsSearchOpen(false)}
+            aria-label="Fechar busca"
             className="p-1.5 text-text-secondary hover:text-text-primary rounded-lg hover:bg-bg-main/50 transition-colors"
           >
             <X className="w-5 h-5" />
@@ -107,6 +111,7 @@ export const SearchModal: React.FC = () => {
             <div className="relative">
               <input
                 type="text"
+                data-autofocus
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Ex.: Os Irmãos Karamázov, FIFA, Matrix..."
@@ -268,7 +273,7 @@ export const SearchModal: React.FC = () => {
                 </label>
                 <select
                   value={statusInicial}
-                  onChange={(e) => setStatusInicial(e.target.value as any)}
+                  onChange={(e) => setStatusInicial(e.target.value as MediaStatus)}
                   className="w-full bg-bg-card text-text-primary border border-text-primary/20 rounded-lg px-2.5 py-1.5 text-xs font-semibold focus:border-accent-gold focus:outline-none"
                 >
                   <option value="Concluído">Concluído</option>

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import {
   MediaItem,
   Aprendizado,
@@ -13,6 +13,7 @@ import {
   KnowledgeNode,
 } from '../types/agora';
 import { supabase, useAuth } from '../context/AuthContext';
+import { readBrowserValue, writeBrowserValue } from '../lib/browserStorage';
 
 export interface Recommendation {
   id: string;
@@ -62,22 +63,12 @@ function isLegacyDefaultProfile(profile?: Partial<UserProfile>) {
 }
 
 function readStoredArray<T>(key: string): T[] {
-  try {
-    const value = localStorage.getItem(key)
-    const parsed = value ? JSON.parse(value) : []
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
+  const parsed = readBrowserValue<unknown>(key, [])
+  return Array.isArray(parsed) ? parsed as T[] : []
 }
 
 function readStoredObject<T>(key: string): T | null {
-  try {
-    const value = localStorage.getItem(key)
-    return value ? JSON.parse(value) as T : null
-  } catch {
-    return null
-  }
+  return readBrowserValue<T | null>(key, null)
 }
 
 // Chaves usadas pelas versões anteriores à sincronização por conta. Mantemos a
@@ -361,6 +352,7 @@ interface AgoraStoreContextType {
   hasCompletedOnboarding: boolean;
   completeOnboarding: (profileData?: Partial<UserProfile>) => void;
   resetOnboarding: () => void;
+  syncStatus: 'local' | 'syncing' | 'synced' | 'error';
 }
 
 const AgoraStoreContext = createContext<AgoraStoreContextType | undefined>(undefined);
@@ -381,58 +373,21 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Os dados do visitante também pertencem ao navegador atual. Eles não são
   // enviados à nuvem, mas precisam sobreviver a recargas e reabertura do app.
 
-  const [mediaItems, setMediaItems] = useState<MediaItem[]>(() => {
-    try {
-      const stored = localStorage.getItem(storagePrefix + 'media');
-      if (stored) return JSON.parse(stored);
-      return [];
-    } catch { return []; }
-  });
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>(() => readStoredArray(storagePrefix + 'media'));
 
-  const [aprendizados, setAprendizados] = useState<Aprendizado[]>(() => {
-    try {
-      const stored = localStorage.getItem(storagePrefix + 'learnings');
-      if (stored) return JSON.parse(stored);
-      return [];
-    } catch { return []; }
-  });
+  const [aprendizados, setAprendizados] = useState<Aprendizado[]>(() => readStoredArray(storagePrefix + 'learnings'));
 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>(() => {
-    try {
-      const stored = localStorage.getItem(storagePrefix + 'chat');
-      if (stored) return JSON.parse(stored);
-      return isVisitor ? VISITOR_CHAT : SEED_CHAT;
-    } catch {
-      return isVisitor ? VISITOR_CHAT : SEED_CHAT;
-    }
+    const stored = readStoredArray<ChatMessage>(storagePrefix + 'chat')
+    return stored.length ? stored : isVisitor ? VISITOR_CHAT : SEED_CHAT
   });
 
-  const [userProfile, setUserProfile] = useState<UserProfile>(() => {
-    try {
-      const stored = localStorage.getItem(storagePrefix + 'profile');
-      if (stored) return JSON.parse(stored);
-      return EMPTY_PROFILE;
-    } catch {
-      return EMPTY_PROFILE;
-    }
-  });
+  const [userProfile, setUserProfile] = useState<UserProfile>(() => readStoredObject<UserProfile>(storagePrefix + 'profile') || EMPTY_PROFILE);
 
-  const [customTrails, setCustomTrails] = useState<CustomTrail[]>(() => {
-    try {
-      const stored = localStorage.getItem(storagePrefix + 'trails');
-      if (stored) return JSON.parse(stored);
-      return [];
-    } catch { return []; }
-  });
+  const [customTrails, setCustomTrails] = useState<CustomTrail[]>(() => readStoredArray(storagePrefix + 'trails'));
 
   const [customCategories, setCustomCategories] = useState<Category[]>([]);
-  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean>(() => {
-    try {
-      const stored = localStorage.getItem(storagePrefix + 'has_completed_onboarding');
-      if (stored !== null) return JSON.parse(stored);
-      return false;
-    } catch { return false; }
-  });
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean>(() => readStoredObject<boolean>(storagePrefix + 'has_completed_onboarding') ?? false);
 
   // BUSCA DA NUVEM AO LOGAR (Re-sync inteligente usando API da Vercel)
   useEffect(() => {
@@ -555,10 +510,14 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [isLeftDrawerOpen, setIsLeftDrawerOpen] = useState<boolean>(false);
   const [isRightChatOpen, setIsRightChatOpen] = useState<boolean>(false);
+  const [syncStatus, setSyncStatus] = useState<'local' | 'syncing' | 'synced' | 'error'>(isVisitor ? 'local' : 'synced');
+  const pendingSyncs = useRef(0)
 
   // FUNÇÃO UTILITÁRIA PARA SALVAR NA NUVEM (Usando API da Vercel)
-  const syncToCloud = useCallback(async (collection: string, data: any) => {
+  const syncToCloud = useCallback(async (collection: string, data: unknown) => {
     if (!isVisitor && user?.id && isCloudHydrated) {
+      pendingSyncs.current += 1
+      setSyncStatus('syncing')
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session?.access_token) throw new Error('Sessão não encontrada.');
@@ -579,47 +538,53 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           const error = await response.json().catch(() => ({}));
           throw new Error(error.error || `Falha ao sincronizar (${response.status}).`);
         }
+        pendingSyncs.current -= 1
+        if (pendingSyncs.current === 0) setSyncStatus('synced')
       } catch (err) {
+        pendingSyncs.current = Math.max(0, pendingSyncs.current - 1)
+        setSyncStatus('error')
         console.error(`Erro ao sincronizar ${collection}:`, err);
       }
+    } else if (isVisitor) {
+      setSyncStatus('local')
     }
   }, [isCloudHydrated, isVisitor, user?.id]);
 
   // EFEITOS DE PERSISTÊNCIA
   useEffect(() => {
     if (!isDataReady) return;
-    localStorage.setItem(storagePrefix + 'media', JSON.stringify(mediaItems));
+    writeBrowserValue(storagePrefix + 'media', mediaItems);
     syncToCloud('media', mediaItems);
   }, [mediaItems, storagePrefix, syncToCloud, isDataReady]);
 
   useEffect(() => {
     if (!isDataReady) return;
-    localStorage.setItem(storagePrefix + 'learnings', JSON.stringify(aprendizados));
+    writeBrowserValue(storagePrefix + 'learnings', aprendizados);
     syncToCloud('learnings', aprendizados);
   }, [aprendizados, storagePrefix, syncToCloud, isDataReady]);
 
   useEffect(() => {
     if (!isDataReady) return;
-    localStorage.setItem(storagePrefix + 'chat', JSON.stringify(chatMessages));
+    writeBrowserValue(storagePrefix + 'chat', chatMessages);
     syncToCloud('chat', chatMessages);
   }, [chatMessages, storagePrefix, syncToCloud, isDataReady]);
 
   useEffect(() => {
     if (isDataReady && !isVisitor) {
-      localStorage.setItem(storagePrefix + 'profile', JSON.stringify(userProfile));
+      writeBrowserValue(storagePrefix + 'profile', userProfile);
       syncToCloud('profile', userProfile);
     }
   }, [userProfile, storagePrefix, isVisitor, syncToCloud, isDataReady]);
 
   useEffect(() => {
     if (!isDataReady) return;
-    localStorage.setItem(storagePrefix + 'trails', JSON.stringify(customTrails));
+    writeBrowserValue(storagePrefix + 'trails', customTrails);
     syncToCloud('trails', customTrails);
   }, [customTrails, storagePrefix, syncToCloud, isDataReady]);
 
   useEffect(() => {
     if (!isDataReady) return;
-    localStorage.setItem(storagePrefix + 'has_completed_onboarding', JSON.stringify(hasCompletedOnboarding));
+    writeBrowserValue(storagePrefix + 'has_completed_onboarding', hasCompletedOnboarding);
     syncToCloud('onboarding', hasCompletedOnboarding);
   }, [hasCompletedOnboarding, storagePrefix, syncToCloud, isDataReady]);
 
@@ -1033,6 +998,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         hasCompletedOnboarding,
         completeOnboarding,
         resetOnboarding,
+        syncStatus,
       }}
     >
       {children}

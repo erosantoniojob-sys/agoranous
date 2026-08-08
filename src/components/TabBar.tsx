@@ -99,7 +99,7 @@ export const TabBar: React.FC = () => {
   return (
     <>
       {/* Mobile Dock - Bottom */}
-      <nav className="mobile-dock-shell lg:hidden fixed inset-x-0 bottom-0 z-[60] flex justify-center px-[max(0.75rem,env(safe-area-inset-left))] py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+      <nav className="mobile-dock-shell lg:hidden fixed inset-x-0 bottom-0 z-40 flex justify-center px-[max(0.75rem,env(safe-area-inset-left))] py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
         <div className="velocity-dock tab-bar-mobile relative flex w-full max-w-[30rem] items-center justify-between gap-1 px-2 py-2 rounded-2xl border border-border-primary">
           {mainNavItems.map((item) => (
             <DockItem
@@ -141,7 +141,7 @@ export const TabBar: React.FC = () => {
       </nav>
 
       {/* Desktop Dock - Bottom Center */}
-      <nav className="velocity-dock tab-bar-desktop hidden lg:flex fixed bottom-6 left-1/2 z-[60] items-center gap-2 px-4 py-3 rounded-2xl shadow-lg-elevation">
+      <nav className="velocity-dock tab-bar-desktop hidden lg:flex fixed bottom-6 left-1/2 z-40 items-center gap-2 px-4 py-3 rounded-2xl shadow-lg-elevation">
         {mainNavItems.map((item) => (
           <DockItem
             key={item.tab}

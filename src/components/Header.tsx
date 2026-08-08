@@ -1,12 +1,19 @@
 import React from 'react'
-import { Menu, Search, Compass, LogOut, UserRound } from 'lucide-react'
+import { Menu, Search, Compass, LogOut, UserRound, Cloud, CloudAlert, CloudUpload, HardDrive } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
 import { useAuth } from '../context/AuthContext'
 import { ClassicArchLogoIcon } from './ClassicArchLogo'
 
 export const Header: React.FC = () => {
-  const { setIsSearchOpen, isLeftDrawerOpen, setIsLeftDrawerOpen, setIsRightChatOpen, setActiveTab, userProfile } = useAgoraStore()
+  const { setIsSearchOpen, isLeftDrawerOpen, setIsLeftDrawerOpen, setIsRightChatOpen, setActiveTab, userProfile, syncStatus } = useAgoraStore()
   const { logout } = useAuth()
+  const syncMeta = {
+    local: { label: 'Salvo neste navegador', Icon: HardDrive, color: 'text-text-secondary' },
+    syncing: { label: 'Sincronizando', Icon: CloudUpload, color: 'text-accent-gold' },
+    synced: { label: 'Sincronizado', Icon: Cloud, color: 'text-emerald-300' },
+    error: { label: 'Falha na sincronização', Icon: CloudAlert, color: 'text-red-300' },
+  }[syncStatus]
+  const SyncIcon = syncMeta.Icon
 
   // Dynamic greeting: Moment of day, day of week, user name
   const getDynamicGreeting = () => {
@@ -56,6 +63,9 @@ export const Header: React.FC = () => {
                 {getDynamicGreeting()}
               </p>
             </div>
+            <span className={`hidden xl:inline-flex items-center gap-1 text-[10px] ${syncMeta.color}`} title={syncMeta.label} aria-live="polite">
+              <SyncIcon className="h-3.5 w-3.5" /> {syncMeta.label}
+            </span>
           </div>
 
           {/* Right Mobile Actions */}

@@ -5,7 +5,7 @@
 ## Tecnologias
 
 - Vite para desenvolvimento e empacotamento do frontend
-- HTML, CSS e JavaScript em módulos
+- React, TypeScript e Tailwind CSS
 - Netlify Functions para busca e operações da biblioteca
 - Netlify Database com Drizzle ORM para persistência
 - Google Books, Wikidata e Wikipédia como fontes públicas de metadados
@@ -35,12 +35,12 @@ Ao conectar o repositório ao Netlify, essas opções são aplicadas automaticam
 
 ### Contas e dados em vários dispositivos
 
-Os dados do acervo são associados à conta Supabase autenticada. Para ativar a sincronização entre dispositivos, execute uma vez o script [supabase/user_data.sql](supabase/user_data.sql) no SQL Editor do Supabase e configure na Vercel as variáveis de ambiente abaixo:
+Os dados do acervo são associados à conta Supabase autenticada e persistidos no Netlify Database. A migração de `user_data` é aplicada pelo Netlify durante a publicação. Configure no ambiente do Netlify:
 
 - `VITE_SUPABASE_URL`: URL do projeto Supabase;
 - `VITE_SUPABASE_PUBLISHABLE_KEY`: chave pública do Supabase;
 - `SUPABASE_URL`: a mesma URL, usada somente pelas funções do servidor;
-- `SUPABASE_SECRET_KEY`: chave secreta do Supabase, mantida somente na Vercel e nunca exposta no frontend.
+- `SUPABASE_PUBLISHABLE_KEY`: chave pública usada pelas Functions para validar a sessão.
 
 Para ativar o enriquecimento de capas e sinopses com Gemini, configure também no ambiente das Functions:
 
@@ -49,3 +49,12 @@ Para ativar o enriquecimento de capas e sinopses com Gemini, configure também n
 - `GEMINI_DAILY_LIMIT` (opcional): máximo diário de enriquecimentos por IP; o padrão é `3`.
 
 Depois, basta entrar com o mesmo e-mail e senha em cada dispositivo. Contas de visitante permanecem locais por definição.
+
+## Verificação de qualidade
+
+```bash
+npm run typecheck
+npm run check
+```
+
+`typecheck` valida o frontend, as Functions e o schema do banco. `check` também produz o build de produção.

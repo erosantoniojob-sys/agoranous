@@ -18,6 +18,7 @@ import { useAgoraStore } from '../store/useAgoraStore'
 import { useAuth } from '../context/AuthContext'
 import { EventoRegressivo } from '../types/agora'
 import { convertFileToBase64 } from '../lib/fileUtils'
+import { getErrorMessage } from '../lib/browserStorage'
 
 export const ProfileView: React.FC = () => {
   const { getEstatisticas, userProfile, updateProfile, resetOnboarding } = useAgoraStore()
@@ -32,6 +33,7 @@ export const ProfileView: React.FC = () => {
   const [tags, setTags] = useState<string[]>(userProfile.tags_interesses || [])
   const [eventos, setEventos] = useState<EventoRegressivo[]>(userProfile.eventos_regressivos || [])
   const [newTagInput, setNewTagInput] = useState('')
+  const [uploadError, setUploadError] = useState<string | null>(null)
 
   useEffect(() => {
     setNome(userProfile.nome)
@@ -103,10 +105,11 @@ export const ProfileView: React.FC = () => {
   const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       try {
+        setUploadError(null)
         const base64 = await convertFileToBase64(e.target.files[0]);
         setAvatarUrl(base64);
-      } catch (err: any) {
-        alert(err.message || 'Erro ao carregar imagem do avatar.');
+      } catch (err: unknown) {
+        setUploadError(getErrorMessage(err, 'Erro ao carregar imagem do avatar.'))
       }
     }
   };
@@ -114,16 +117,18 @@ export const ProfileView: React.FC = () => {
   const handleCapaFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       try {
+        setUploadError(null)
         const base64 = await convertFileToBase64(e.target.files[0]);
         setCapaUrl(base64);
-      } catch (err: any) {
-        alert(err.message || 'Erro ao carregar imagem da capa.');
+      } catch (err: unknown) {
+        setUploadError(getErrorMessage(err, 'Erro ao carregar imagem da capa.'))
       }
     }
   };
 
   return (
     <div className="space-y-8 pb-12 font-sans">
+      {uploadError ? <div role="alert" className="rounded-xl border border-red-400/30 bg-red-400/10 p-3 text-sm text-red-200">{uploadError}</div> : null}
       {/* Profile Banner & Cover */}
       <section className="bg-bg-surface border border-text-primary/10 rounded-2xl overflow-hidden shadow-2xl">
         {/* Cover Image */}

@@ -1,6 +1,7 @@
 import React from 'react'
 import { ArrowRight, BookOpen, Compass, Map, Sparkles, Target, Timer, X } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
+import { useModalAccessibility } from '../lib/useModalAccessibility'
 
 type GuideAction = {
   title: string
@@ -19,6 +20,7 @@ export const RightChatDrawer: React.FC = () => {
     customTrails,
     getEstatisticas,
   } = useAgoraStore()
+  const drawerRef = useModalAccessibility<HTMLElement>(isRightChatOpen, () => setIsRightChatOpen(false))
 
   if (!isRightChatOpen) return null
 
@@ -79,11 +81,11 @@ export const RightChatDrawer: React.FC = () => {
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <button type="button" onClick={() => setIsRightChatOpen(false)} className="fixed inset-0 cursor-default bg-bg-base/80 backdrop-blur-sm animate-fadeIn" aria-label="Fechar guia" />
-      <aside className="relative z-10 flex h-full w-96 max-w-[90vw] flex-col border-l border-text-primary/15 bg-bg-surface shadow-2xl animate-slideLeft">
+      <aside ref={drawerRef} role="dialog" aria-modal="true" aria-labelledby="guide-title" className="relative z-10 flex h-full w-96 max-w-[90vw] flex-col border-l border-text-primary/15 bg-bg-surface shadow-2xl animate-slideLeft">
         <header className="flex items-center justify-between border-b border-text-primary/10 bg-bg-elevated/80 p-4">
           <div className="flex items-center gap-3">
             <div className="grid h-9 w-9 place-items-center rounded-xl border border-accent-gold/40 bg-bg-base text-accent-gold"><Compass className="h-5 w-5" /></div>
-            <div><h3 className="flex items-center gap-1.5 font-serif text-sm font-bold text-text-primary">Guia da Ágora <Sparkles className="h-3.5 w-3.5 text-accent-gold" /></h3><p className="text-[10px] text-text-secondary">Orientação local · sem IA ou token</p></div>
+            <div><h3 id="guide-title" className="flex items-center gap-1.5 font-serif text-sm font-bold text-text-primary">Guia da Ágora <Sparkles className="h-3.5 w-3.5 text-accent-gold" /></h3><p className="text-[10px] text-text-secondary">Orientação local · sem IA ou token</p></div>
           </div>
           <button type="button" onClick={() => setIsRightChatOpen(false)} className="rounded-lg p-1.5 text-text-secondary hover:bg-bg-base hover:text-text-primary" aria-label="Fechar"><X className="h-5 w-5" /></button>
         </header>
