@@ -12,6 +12,7 @@ import { Onboarding } from './components/Onboarding'
 import { AmbientSoundControl } from './components/AmbientSoundControl'
 import { AmbientDepth } from './components/AmbientDepth'
 import { KineticGuide } from './components/KineticGuide'
+import { SurfaceDepth } from './components/SurfaceDepth'
 
 const DashboardView = lazy(() => import('./views/DashboardView').then((module) => ({ default: module.DashboardView })))
 const ExploreView = lazy(() => import('./views/ExploreView').then((module) => ({ default: module.ExploreView })))
@@ -88,30 +89,33 @@ const MainContent: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex bg-transparent text-text-primary font-sans selection:bg-accent-gold/30 selection:text-text-primary">
+    <>
       <AmbientDepth />
       <KineticGuide />
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col">
-        {/* Top Header */}
-        <Header />
+      <SurfaceDepth />
+      <div className="app-frame min-h-screen w-full min-w-0 flex bg-transparent text-text-primary font-sans selection:bg-accent-gold/30 selection:text-text-primary">
+        {/* Main Content Area */}
+        <div className="min-w-0 flex-1 flex flex-col">
+          {/* Top Header */}
+          <Header />
 
-        {/* Page Content */}
-        <main className="app-page-shell flex-1 pt-4 pb-[calc(8.5rem+env(safe-area-inset-bottom))] sm:pt-6 lg:pb-28">
-          <Suspense fallback={<ViewLoading />}>{renderActiveView()}</Suspense>
-        </main>
+          {/* Page Content */}
+          <main className="app-page-shell flex-1 pt-4 pb-[calc(8.5rem+env(safe-area-inset-bottom))] sm:pt-6 lg:pb-28">
+            <Suspense fallback={<ViewLoading />}>{renderActiveView()}</Suspense>
+          </main>
+        </div>
+
+        {/* Modals & Drawers */}
+        <SearchModal />
+        <MediaDetailModal />
+        <LeftDrawer />
+        <RightChatDrawer />
+        <AmbientSoundControl />
+
+        {/* Bottom Floating Navigation Tab Bar */}
+        <TabBar />
       </div>
-
-      {/* Modals & Drawers */}
-      <SearchModal />
-      <MediaDetailModal />
-      <LeftDrawer />
-      <RightChatDrawer />
-      <AmbientSoundControl />
-
-      {/* Bottom Floating Navigation Tab Bar */}
-      <TabBar />
-    </div>
+    </>
   )
 }
 

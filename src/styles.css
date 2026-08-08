@@ -55,6 +55,11 @@
     position: relative;
     isolation: isolate;
   }
+
+  .app-frame {
+    width: 100%;
+    min-width: 0;
+  }
   
   body {
     background-color: #0B1420;
@@ -181,7 +186,7 @@
 }
 
 /* Colunatas sugeridas e névoa azulada aprofundam a sensação de uma ágora noturna. */
-#root > div::before {
+.app-frame::before {
   content: '';
   position: fixed;
   inset: 0;
@@ -216,7 +221,7 @@
     animation: none;
   }
 
-  #root > div::before { animation: none; }
+  .app-frame::before { animation: none; }
 
   .ambient-depth__glow,
   .ambient-depth__orbit {
@@ -233,6 +238,12 @@
 
   .kinetic-guide {
     display: none;
+  }
+
+  .depth-surface--active,
+  .depth-surface--active > :not(.absolute) {
+    transform: none;
+    will-change: auto;
   }
 }
 
@@ -283,6 +294,31 @@
     radial-gradient(circle at 84% 12%, rgba(229, 193, 88, 0.24), transparent 25%),
     linear-gradient(118deg, rgba(24, 43, 60, 0.94), rgba(12, 23, 36, 0.92) 55%, rgba(19, 34, 49, 0.78));
   box-shadow: 0 22px 54px rgba(0, 0, 0, 0.26), inset 0 1px rgba(255, 255, 255, 0.08);
+}
+
+/* Profundidade interativa aplicada às superfícies editoriais. */
+.journey-hero,
+.quote-landscape,
+.trail-landscape,
+.modern-surface {
+  transform-style: preserve-3d;
+  transform-origin: center;
+}
+
+.depth-surface--active {
+  transform: perspective(1100px) rotateX(var(--surface-rx, 0deg)) rotateY(var(--surface-ry, 0deg)) scale(1.008);
+  border-color: rgba(229, 193, 88, 0.52) !important;
+  box-shadow:
+    0 30px 70px rgba(0, 0, 0, 0.38),
+    0 0 34px rgba(212, 175, 55, 0.1),
+    inset 0 1px rgba(255, 255, 255, 0.12);
+  transition: transform 90ms linear, border-color 220ms ease, box-shadow 220ms ease;
+  will-change: transform;
+}
+
+.depth-surface--active > :not(.absolute) {
+  transform: translateZ(24px);
+  transition: transform 180ms ease-out;
 }
 
 .journey-hero::before {
