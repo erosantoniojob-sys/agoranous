@@ -77,8 +77,8 @@ export const SearchModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center p-2 sm:items-center sm:p-4 bg-bg-main/85 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-lg bg-bg-card border border-text-primary/15 rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col p-4 sm:p-6 my-auto space-y-5 max-h-[92dvh] sm:max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-bg-main/85 backdrop-blur-md animate-fadeIn lg:items-center lg:p-4">
+      <div className="relative w-full bg-bg-card border border-text-primary/15 rounded-t-2xl lg:max-w-lg lg:rounded-2xl shadow-2xl overflow-hidden flex flex-col p-4 sm:p-6 space-y-5 max-h-[calc(100dvh-5.75rem-env(safe-area-inset-bottom))] lg:max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-text-primary/10 pb-4">
           <div>
