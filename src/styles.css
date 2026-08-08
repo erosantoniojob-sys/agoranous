@@ -34,6 +34,20 @@
   --font-weight-semibold: 600;
 }
 
+:root[data-theme='alexandria'] { --color-bg-base:#071820; --color-bg-surface:#102b35; --color-bg-elevated:#193d47; --color-accent-gold:#d7b45a; }
+:root[data-theme='roman'] { --color-bg-base:#171512; --color-bg-surface:#29231d; --color-bg-elevated:#3b3127; --color-accent-gold:#c9a76a; }
+:root[data-theme='monastery'] { --color-bg-base:#120f0d; --color-bg-surface:#251b17; --color-bg-elevated:#39261e; --color-accent-gold:#bd8a4d; }
+:root[data-theme='renaissance'] { --color-bg-base:#15100f; --color-bg-surface:#2d1e1b; --color-bg-elevated:#493028; --color-accent-gold:#d7a84d; }
+:root[data-theme='enlightenment'] { --color-bg-base:#121822; --color-bg-surface:#202b3b; --color-bg-elevated:#303f54; --color-accent-gold:#d8bd71; }
+:root[data-theme='modernism'] { --color-bg-base:#0d1117; --color-bg-surface:#181f29; --color-bg-elevated:#252e3a; --color-accent-gold:#c7a94b; --font-serif:Inter, sans-serif; }
+
+.reading-mode .kinetic-guide,
+.reading-mode .ambient-depth,
+.reading-mode [data-ambient-control] { display:none; }
+.reading-mode .depth-surface--active,
+.reading-mode .depth-surface--mobile { transform:none !important; }
+.reading-mode .app-frame::before { opacity:.08; animation:none; }
+
 @layer base {
   :root {
     color-scheme: dark;

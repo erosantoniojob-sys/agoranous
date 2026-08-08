@@ -6,7 +6,7 @@ import { MediaType, MediaItem, MediaStatus } from '../types/agora';
 import { useModalAccessibility } from '../lib/useModalAccessibility';
 
 export const SearchModal: React.FC = () => {
-  const { isSearchOpen, setIsSearchOpen, fetchInteligente, addMedia, setSelectedMedia } =
+  const { isSearchOpen, setIsSearchOpen, fetchInteligente, addMedia, setSelectedMedia, mediaItems } =
     useAgoraStore();
 
   const [query, setQuery] = useState('');
@@ -265,6 +265,11 @@ export const SearchModal: React.FC = () => {
               />
             </div>
 
+            <div className="space-y-1">
+              <label className="text-[10px] text-accent-gold font-semibold uppercase tracking-wider block">Por que quero conhecer esta obra?</label>
+              <textarea rows={2} value={previewResult.motivo_leitura || ''} onChange={(e) => setPreviewResult({ ...previewResult, motivo_leitura: e.target.value })} placeholder="Registre a intenção que trouxe esta obra ao seu acervo…" className="w-full p-2.5 bg-bg-card text-text-primary text-xs rounded-xl border border-text-primary/20 focus:border-accent-gold focus:outline-none leading-relaxed resize-none" />
+            </div>
+
             {/* Custom Status & Rating Selection */}
             <div className="grid grid-cols-2 gap-3 pt-2 border-t border-text-primary/10">
               <div>
@@ -299,6 +304,9 @@ export const SearchModal: React.FC = () => {
                 />
               </div>
             </div>
+
+            <div className="grid grid-cols-3 gap-2"><input type="number" min="0" value={previewResult.progresso_detalhado?.atual ?? 0} onChange={event => setPreviewResult({ ...previewResult, progresso_detalhado: { ...(previewResult.progresso_detalhado || { unidade: 'percentual' }), atual: Number(event.target.value) } })} className="w-full rounded-lg border border-text-primary/20 bg-bg-card px-2 py-1.5 text-xs" aria-label="Progresso atual" /><input type="number" min="0" value={previewResult.progresso_detalhado?.total ?? ''} onChange={event => setPreviewResult({ ...previewResult, progresso_detalhado: { ...(previewResult.progresso_detalhado || { atual: 0, unidade: 'percentual' }), total: event.target.value ? Number(event.target.value) : undefined } })} className="w-full rounded-lg border border-text-primary/20 bg-bg-card px-2 py-1.5 text-xs" aria-label="Progresso total" /><select value={previewResult.progresso_detalhado?.unidade || 'percentual'} onChange={event => setPreviewResult({ ...previewResult, progresso_detalhado: { ...(previewResult.progresso_detalhado || { atual: 0 }), unidade: event.target.value as 'páginas' | 'episódios' | 'minutos' | 'horas' | 'percentual' } })} className="rounded-lg border border-text-primary/20 bg-bg-card px-2 py-1.5 text-xs" aria-label="Unidade do progresso"><option>percentual</option><option>páginas</option><option>episódios</option><option>minutos</option><option>horas</option></select></div>
+            {mediaItems.length ? <div><p className="mb-1 text-[10px] font-semibold uppercase text-text-secondary">Conhecimentos recomendados antes desta obra</p><div className="max-h-24 space-y-1 overflow-auto rounded-lg border border-text-primary/10 p-2">{mediaItems.map(item => <label key={item.id} className="flex items-center gap-2 text-[10px] text-text-secondary"><input type="checkbox" checked={previewResult.depende_de_ids?.includes(item.id) || false} onChange={() => setPreviewResult({ ...previewResult, depende_de_ids: previewResult.depende_de_ids?.includes(item.id) ? previewResult.depende_de_ids.filter(id => id !== item.id) : [...(previewResult.depende_de_ids || []), item.id] })} />{item.titulo}</label>)}</div></div> : null}
 
             <button
               onClick={handleConfirmAdd}

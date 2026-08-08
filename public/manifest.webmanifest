@@ -1,0 +1,10 @@
+{
+  "name": "Ágora — Formação Intelectual",
+  "short_name": "Ágora",
+  "description": "Acervo, memória e formação intelectual.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0B1420",
+  "theme_color": "#D4AF37",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

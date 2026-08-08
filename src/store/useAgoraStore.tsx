@@ -11,9 +11,11 @@ import {
   ChatMessage,
   UserProfile,
   KnowledgeNode,
+  DeletedMediaItem,
 } from '../types/agora';
 import { supabase, useAuth } from '../context/AuthContext';
 import { readBrowserValue, writeBrowserValue } from '../lib/browserStorage';
+import type { ViewName } from '../lib/viewPreload';
 
 export interface Recommendation {
   id: string;
@@ -319,8 +321,8 @@ interface AgoraStoreContextType {
   customTrails: CustomTrail[];
   customCategories: Category[];
   knowledgeNodes: KnowledgeNode[];
-  activeTab: 'inicio' | 'explorar' | 'memoria' | 'trilhas' | 'perfil' | 'schole' | 'rotina' | 'poiesis';
-  setActiveTab: (tab: 'inicio' | 'explorar' | 'memoria' | 'trilhas' | 'perfil' | 'schole' | 'rotina' | 'poiesis') => void;
+  activeTab: ViewName;
+  setActiveTab: (tab: ViewName) => void;
   selectedFilter: string;
   setSelectedFilter: (filter: string) => void;
   selectedMedia: MediaItem | null;
@@ -347,6 +349,8 @@ interface AgoraStoreContextType {
   fetchInteligente: (query: string, tipo: MediaType) => Promise<Omit<MediaItem, 'id' | 'criadoEm' | 'status' | 'avaliacao_numerica'>>;
   fetchRecommendations: () => Promise<Recommendation[]>;
   deleteMediaItem: (id: string) => void;
+  deletedMediaItems: DeletedMediaItem[];
+  restoreMediaItem: (id: string) => void;
   isVisitor: boolean;
   isDataReady: boolean;
   hasCompletedOnboarding: boolean;
@@ -385,6 +389,10 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [userProfile, setUserProfile] = useState<UserProfile>(() => readStoredObject<UserProfile>(storagePrefix + 'profile') || EMPTY_PROFILE);
 
   const [customTrails, setCustomTrails] = useState<CustomTrail[]>(() => readStoredArray(storagePrefix + 'trails'));
+  const [deletedMediaItems, setDeletedMediaItems] = useState<DeletedMediaItem[]>(() => {
+    const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000
+    return readStoredArray<DeletedMediaItem>(storagePrefix + 'media_trash').filter(item => new Date(item.deletedAt).getTime() > cutoff)
+  });
 
   const [customCategories, setCustomCategories] = useState<Category[]>([]);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean>(() => readStoredObject<boolean>(storagePrefix + 'has_completed_onboarding') ?? false);
@@ -446,6 +454,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setUserProfile(recoveredProfile);
             setCustomTrails(firstNonEmptyArray(cloudTrails, localTrails, legacyAccountTrails));
             setChatMessages(firstNonEmptyArray(cloudChat, localChat, legacyAccountChat, SEED_CHAT));
+            setDeletedMediaItems(readStoredArray<DeletedMediaItem>(keyPrefix + 'media_trash'))
             setHasCompletedOnboarding(Boolean(
               Boolean(cloudData.onboarding)
                 || hasExistingUserData({ media: recoveredMedia, learnings: firstNonEmptyArray(cloudLearnings, localLearnings, legacyAccountLearnings), trails: firstNonEmptyArray(cloudTrails, localTrails, legacyAccountTrails), profile: recoveredProfile })
@@ -490,6 +499,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const legacyAccountTrails = !isVisitor ? readStoredArray<CustomTrail>(LEGACY_ACCOUNT_STORAGE_PREFIX + 'trails') : [];
       const recoveredTrails = firstNonEmptyArray(localTrails, legacyAccountTrails);
       setCustomTrails(recoveredTrails);
+      setDeletedMediaItems(readStoredArray<DeletedMediaItem>(keyPrefix + 'media_trash'))
 
       const storedOnboarding = readStoredObject<boolean>(keyPrefix + 'has_completed_onboarding');
       setHasCompletedOnboarding(Boolean(
@@ -504,7 +514,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return () => { cancelled = true; };
   }, [isVisitor, storagePrefix, user?.id]);
 
-  const [activeTab, setActiveTab] = useState<'inicio' | 'explorar' | 'memoria' | 'trilhas' | 'perfil' | 'schole' | 'rotina' | 'poiesis'>('inicio');
+  const [activeTab, setActiveTab] = useState<ViewName>('inicio');
   const [selectedFilter, setSelectedFilter] = useState<string>('Todos');
   const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
@@ -588,6 +598,11 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     syncToCloud('onboarding', hasCompletedOnboarding);
   }, [hasCompletedOnboarding, storagePrefix, syncToCloud, isDataReady]);
 
+  useEffect(() => {
+    if (!isDataReady) return
+    writeBrowserValue(storagePrefix + 'media_trash', deletedMediaItems)
+  }, [deletedMediaItems, isDataReady, storagePrefix])
+
   const completeOnboarding = useCallback((profileData?: Partial<UserProfile>) => {
     if (profileData) {
       setUserProfile((prev) => {
@@ -606,6 +621,9 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, []);
 
   const addMedia = useCallback((item: Omit<MediaItem, 'id' | 'criadoEm'>): MediaItem => {
+    const normalizedTitle = item.titulo.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR').replace(/[^a-z0-9]/g, '')
+    const duplicate = mediaItems.find(existing => existing.titulo.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR').replace(/[^a-z0-9]/g, '') === normalizedTitle)
+    if (duplicate) return duplicate
     const newMediaItem: MediaItem = {
       ...item,
       id: `media_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
@@ -617,7 +635,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
     setMediaItems((prev) => [newMediaItem, ...prev]);
     return newMediaItem;
-  }, []);
+  }, [mediaItems]);
 
   const updateMediaStatusAndRating = useCallback(
     (id: string, status: MediaStatus, avaliacao: number, progresso?: number) => {
@@ -698,12 +716,22 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const deleteMediaItem = useCallback(
     (id: string) => {
+      const media = mediaItems.find(item => item.id === id)
+      if (media) setDeletedMediaItems(prev => [{ id: `deleted_${Date.now()}`, media, aprendizados: aprendizados.filter(item => item.mediaId === id), deletedAt: new Date().toISOString() }, ...prev])
       setMediaItems((prev) => prev.filter((item) => item.id !== id));
       setAprendizados((prev) => prev.filter((a) => a.mediaId !== id));
       if (selectedMedia?.id === id) setSelectedMedia(null);
     },
-    [selectedMedia]
+    [aprendizados, mediaItems, selectedMedia]
   );
+
+  const restoreMediaItem = useCallback((id: string) => {
+    const deleted = deletedMediaItems.find(item => item.id === id)
+    if (!deleted) return
+    setMediaItems(prev => [deleted.media, ...prev.filter(item => item.id !== deleted.media.id)])
+    setAprendizados(prev => [...deleted.aprendizados, ...prev.filter(item => item.mediaId !== deleted.media.id)])
+    setDeletedMediaItems(prev => prev.filter(item => item.id !== id))
+  }, [deletedMediaItems])
 
   const sendChatMessage = useCallback(
     async (text: string) => {
@@ -993,6 +1021,8 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         fetchInteligente,
         fetchRecommendations,
         deleteMediaItem,
+        deletedMediaItems,
+        restoreMediaItem,
         isVisitor,
         isDataReady,
         hasCompletedOnboarding,

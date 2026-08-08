@@ -5,6 +5,7 @@ import { readScholeValue, writeScholeValue } from '../lib/scholeStorage'
 export const AmbientSoundControl: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false)
   const [volume, setVolume] = useState(() => readScholeValue('ambient-volume', 18))
+  const [soundscape, setSoundscape] = useState<'piano' | 'strings' | 'lute'>(() => readScholeValue('ambient-soundscape', 'piano'))
   const contextRef = useRef<AudioContext | null>(null)
   const masterRef = useRef<GainNode | null>(null)
   const sourcesRef = useRef<AudioScheduledSourceNode[]>([])
@@ -29,9 +30,9 @@ export const AmbientSoundControl: React.FC = () => {
     const gain = context.createGain()
     const tone = context.createBiquadFilter()
 
-    fundamental.type = 'triangle'; fundamental.frequency.value = frequency
-    overtone.type = 'sine'; overtone.frequency.value = frequency * 2; overtone.detune.value = 3
-    tone.type = 'lowpass'; tone.frequency.value = 1750; tone.Q.value = .45
+    fundamental.type = soundscape === 'strings' ? 'sine' : 'triangle'; fundamental.frequency.value = frequency
+    overtone.type = soundscape === 'lute' ? 'triangle' : 'sine'; overtone.frequency.value = frequency * 2; overtone.detune.value = soundscape === 'strings' ? 7 : 3
+    tone.type = 'lowpass'; tone.frequency.value = soundscape === 'strings' ? 1250 : soundscape === 'lute' ? 2100 : 1750; tone.Q.value = .45
     gain.gain.setValueAtTime(.0001, startAt)
     gain.gain.exponentialRampToValueAtTime(.034 * strength, startAt + .055)
     gain.gain.exponentialRampToValueAtTime(.011 * strength, startAt + 1.15)
@@ -74,9 +75,10 @@ export const AmbientSoundControl: React.FC = () => {
     phraseTimerRef.current = window.setInterval(playMeasure, 7200)
     setIsPlaying(true)
     if (remember) writeScholeValue('classical-adagio-enabled', true)
-  }, [volume])
+  }, [soundscape, volume])
 
   useEffect(() => { writeScholeValue('ambient-volume', volume); if (masterRef.current) masterRef.current.gain.setTargetAtTime(volume / 100, contextRef.current?.currentTime || 0, .05) }, [volume])
+  useEffect(() => { writeScholeValue('ambient-soundscape', soundscape) }, [soundscape])
   useEffect(() => {
     if (!readScholeValue('classical-adagio-enabled', false)) return
     const unlock = (event: PointerEvent | KeyboardEvent) => {
@@ -95,7 +97,7 @@ export const AmbientSoundControl: React.FC = () => {
   useEffect(() => () => stop(false), [stop])
 
   return <aside data-ambient-control className="ambient-surface fixed bottom-[calc(6.5rem+env(safe-area-inset-bottom))] right-3 z-50 w-[min(88vw,13rem)] rounded-[1.3rem] p-3 lg:bottom-5 lg:right-5" aria-label="Ambiente sonoro">
-    <div className="flex items-center justify-between gap-2"><div className="flex items-center gap-2"><span className="grid h-8 w-8 place-items-center rounded-lg bg-accent-gold/15 text-accent-gold"><Music2 className="h-4 w-4" /></span><div><p className="text-xs font-semibold text-text-primary">Adágio contemplativo</p><p className="text-[10px] text-text-secondary">piano clássico suave</p></div></div><button type="button" onClick={() => isPlaying ? stop() : void start()} className="grid h-8 w-8 place-items-center rounded-full bg-accent-gold text-bg-base shadow-[0_8px_18px_rgba(212,175,55,0.25)] transition-transform duration-200 hover:-translate-y-0.5" aria-label={isPlaying ? 'Desativar ambiente sonoro' : 'Ativar ambiente sonoro'}>{isPlaying ? <Pause className="h-3.5 w-3.5 fill-current" /> : <Play className="h-3.5 w-3.5 fill-current translate-x-px" />}</button></div>
+    <div className="flex items-center justify-between gap-2"><div className="flex items-center gap-2"><span className="grid h-8 w-8 place-items-center rounded-lg bg-accent-gold/15 text-accent-gold"><Music2 className="h-4 w-4" /></span><div><p className="text-xs font-semibold text-text-primary">Adágio contemplativo</p><select value={soundscape} onChange={event => { if (isPlaying) stop(); setSoundscape(event.target.value as 'piano' | 'strings' | 'lute') }} className="bg-transparent text-[10px] text-text-secondary outline-none" aria-label="Instrumentação"><option value="piano">Piano clássico</option><option value="strings">Cordas de câmara</option><option value="lute">Alaúde renascentista</option></select></div></div><button type="button" onClick={() => isPlaying ? stop() : void start()} className="grid h-8 w-8 place-items-center rounded-full bg-accent-gold text-bg-base shadow-[0_8px_18px_rgba(212,175,55,0.25)] transition-transform duration-200 hover:-translate-y-0.5" aria-label={isPlaying ? 'Desativar ambiente sonoro' : 'Ativar ambiente sonoro'}>{isPlaying ? <Pause className="h-3.5 w-3.5 fill-current" /> : <Play className="h-3.5 w-3.5 fill-current translate-x-px" />}</button></div>
     <div className="mt-3 flex items-center gap-2 text-text-secondary"><button type="button" onClick={() => setVolume(value => value ? 0 : 18)} aria-label={volume ? 'Silenciar ambiente' : 'Ativar som'}>{volume ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}</button><input type="range" min="0" max="40" value={volume} onChange={event => setVolume(Number(event.target.value))} className="h-1 flex-1 accent-accent-gold" aria-label="Volume do ambiente" /><span className="w-7 text-right text-[10px]">{volume}%</span></div>
   </aside>
 }

@@ -14,13 +14,16 @@ export const TrailSelectionModal: React.FC<TrailSelectionModalProps> = ({
   onClose,
   onSelectTrail,
 }) => {
-  const { customTrails, mediaItems, addCustomTrail, setActiveTab } = useAgoraStore()
+  const { customTrails, mediaItems, addCustomTrail, updateCustomTrail, setActiveTab } = useAgoraStore()
 
   const [mode, setMode] = useState<'choose' | 'create'>('choose')
   const [trailName, setTrailName] = useState('')
   const [trailDesc, setTrailDesc] = useState('')
   const [trailCat, setTrailCat] = useState('Filosofia & Cosmovisão')
   const [selectedMediaIds, setSelectedMediaIds] = useState<string[]>([])
+  const [objective, setObjective] = useState('')
+  const [centralQuestion, setCentralQuestion] = useState('')
+  const [finalProject, setFinalProject] = useState('')
   const modalRef = useModalAccessibility<HTMLDivElement>(isOpen, onClose)
 
   if (!isOpen) return null
@@ -35,10 +38,12 @@ export const TrailSelectionModal: React.FC<TrailSelectionModalProps> = ({
       selectedMediaIds,
       trailCat
     )
+    updateCustomTrail(newTrail.id, { objetivo: objective.trim(), pergunta_central: centralQuestion.trim(), projeto_final: finalProject.trim(), etapas: ['Fundamentos', 'Leitura orientada', 'Síntese e revisão'], criterio_conclusao: 'Concluir as obras e produzir a síntese final.' })
 
     setTrailName('')
     setTrailDesc('')
     setSelectedMediaIds([])
+    setObjective(''); setCentralQuestion(''); setFinalProject('')
     setMode('choose')
 
     if (onSelectTrail) {
@@ -159,6 +164,11 @@ export const TrailSelectionModal: React.FC<TrailSelectionModalProps> = ({
         {/* MODE 2: CREATE NEW TRAIL */}
         {mode === 'create' && (
           <form onSubmit={handleCreateTrail} className="space-y-4">
+            <div className="flex flex-wrap gap-2">{[
+              ['Filosofia Grega','Compreender virtude, justiça e vida boa','O que constitui uma vida boa?'],
+              ['Literatura Russa','Investigar liberdade, culpa e redenção','Como a liberdade transforma a responsabilidade?'],
+              ['Cinema Contemplativo','Ler imagens, silêncio e transcendência','Como o cinema torna visível o interior?'],
+            ].map(([name,goal,question]) => <button key={name} type="button" onClick={() => { setTrailName(name); setObjective(goal); setCentralQuestion(question); setTrailCat('Modelo guiado') }} className="rounded-full border border-accent-gold/30 px-3 py-1 text-[10px] text-accent-gold hover:bg-accent-gold/10">{name}</button>)}</div>
             <div className="space-y-1">
               <label className="text-xs font-semibold uppercase text-text-secondary">
                 Nome da Trilha
@@ -172,6 +182,9 @@ export const TrailSelectionModal: React.FC<TrailSelectionModalProps> = ({
                 className="w-full p-2.5 bg-bg-base text-text-primary rounded-xl border border-text-primary/15 focus:border-accent-gold focus:outline-none text-xs"
               />
             </div>
+
+            <div className="grid gap-3 sm:grid-cols-2"><label className="text-xs font-semibold uppercase text-text-secondary">Objetivo<input value={objective} onChange={event => setObjective(event.target.value)} placeholder="O que deseja formar?" className="mt-1 w-full rounded-xl border border-text-primary/15 bg-bg-base p-2.5 text-xs normal-case text-text-primary outline-none focus:border-accent-gold" /></label><label className="text-xs font-semibold uppercase text-text-secondary">Pergunta central<input value={centralQuestion} onChange={event => setCentralQuestion(event.target.value)} placeholder="Qual pergunta orienta a trilha?" className="mt-1 w-full rounded-xl border border-text-primary/15 bg-bg-base p-2.5 text-xs normal-case text-text-primary outline-none focus:border-accent-gold" /></label></div>
+            <label className="block text-xs font-semibold uppercase text-text-secondary">Projeto final<input value={finalProject} onChange={event => setFinalProject(event.target.value)} placeholder="Ensaio, apresentação ou síntese" className="mt-1 w-full rounded-xl border border-text-primary/15 bg-bg-base p-2.5 text-xs normal-case text-text-primary outline-none focus:border-accent-gold" /></label>
 
             <div className="space-y-1">
               <label className="text-xs font-semibold uppercase text-text-secondary">

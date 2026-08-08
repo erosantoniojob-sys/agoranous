@@ -18,6 +18,9 @@ export interface MediaItem {
   progresso_percentual?: number; // 0 to 100
   generos?: string[];
   fonte?: string;
+  motivo_leitura?: string;
+  depende_de_ids?: string[];
+  progresso_detalhado?: { atual: number; total?: number; unidade: 'páginas' | 'episódios' | 'minutos' | 'horas' | 'percentual' };
   criadoEm: string; // ISO date string
 }
 
@@ -27,6 +30,13 @@ export interface Aprendizado {
   texto: string;
   data: string; // ISO or formatted date string
   topico?: string;
+}
+
+export interface DeletedMediaItem {
+  id: string;
+  media: MediaItem;
+  aprendizados: Aprendizado[];
+  deletedAt: string;
 }
 
 export interface Category {
@@ -44,6 +54,11 @@ export interface CustomTrail {
   categoria?: string;
   dataCriacao: string;
   progresso_percentual: number;
+  objetivo?: string;
+  pergunta_central?: string;
+  etapas?: string[];
+  projeto_final?: string;
+  criterio_conclusao?: string;
 }
 
 export interface TrilhaItem {

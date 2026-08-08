@@ -16,6 +16,7 @@ export const MediaDetailModal: React.FC = () => {
     aprendizados,
     deleteMediaItem,
     userProfile,
+    mediaItems,
   } = useAgoraStore()
 
   const [activeTab, setActiveTab] = useState<'detalhes' | 'aprendizados'>('detalhes')
@@ -383,6 +384,10 @@ export const MediaDetailModal: React.FC = () => {
                   </button>
                 </div>
               </div>
+
+              {selectedMedia.motivo_leitura ? <div className="rounded-xl border border-accent-gold/20 bg-accent-gold/5 p-3"><h3 className="text-[10px] font-semibold uppercase tracking-wider text-accent-gold">Por que esta obra está aqui</h3><p className="mt-1 text-xs text-text-secondary">{selectedMedia.motivo_leitura}</p></div> : null}
+              {selectedMedia.progresso_detalhado ? <div className="rounded-xl border border-text-primary/10 bg-bg-base/70 p-3 text-xs"><b>Progresso:</b> {selectedMedia.progresso_detalhado.atual}{selectedMedia.progresso_detalhado.total ? ` de ${selectedMedia.progresso_detalhado.total}` : ''} {selectedMedia.progresso_detalhado.unidade}</div> : null}
+              {selectedMedia.depende_de_ids?.length ? <div><h3 className="mb-2 text-[10px] font-semibold uppercase text-accent-gold">Leia antes</h3><div className="flex flex-wrap gap-1">{selectedMedia.depende_de_ids.map(id => <span key={id} className="rounded-full bg-bg-base px-2 py-1 text-[10px] text-text-secondary">{mediaItems.find(item => item.id === id)?.titulo || 'Obra não encontrada'}</span>)}</div></div> : null}
 
               {selectedMedia.generos && selectedMedia.generos.length > 0 && (
                 <div>

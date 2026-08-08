@@ -14,6 +14,7 @@ import { AmbientDepth } from './components/AmbientDepth'
 import { KineticGuide } from './components/KineticGuide'
 import { SurfaceDepth } from './components/SurfaceDepth'
 import { AgoraLoader } from './components/AgoraLoader'
+import { CommandPalette } from './components/CommandPalette'
 
 const DashboardView = lazy(() => import('./views/DashboardView').then((module) => ({ default: module.DashboardView })))
 const ExploreView = lazy(() => import('./views/ExploreView').then((module) => ({ default: module.ExploreView })))
@@ -23,6 +24,7 @@ const Trilhas = lazy(() => import('./components/Trilhas').then((module) => ({ de
 const ScholeView = lazy(() => import('./views/ScholeView').then((module) => ({ default: module.ScholeView })))
 const RoutineView = lazy(() => import('./views/RoutineView').then((module) => ({ default: module.RoutineView })))
 const PoiesisView = lazy(() => import('./views/PoiesisView').then((module) => ({ default: module.PoiesisView })))
+const StudiumView = lazy(() => import('./views/StudiumView').then((module) => ({ default: module.StudiumView })))
 
 const ViewLoading: React.FC = () => (
   <div className="flex min-h-[45vh] items-center justify-center"><AgoraLoader compact message="Abrindo este espaço" /></div>
@@ -71,6 +73,8 @@ const MainContent: React.FC = () => {
         return <RoutineView />
       case 'poiesis':
         return <PoiesisView />
+      case 'studium':
+        return <StudiumView />
       default:
         return <DashboardView />
     }
@@ -99,6 +103,7 @@ const MainContent: React.FC = () => {
         <LeftDrawer />
         <RightChatDrawer />
         <AmbientSoundControl />
+        <CommandPalette />
 
         {/* Bottom Floating Navigation Tab Bar */}
         <TabBar />

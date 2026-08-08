@@ -1,12 +1,11 @@
 import React from 'react'
 import { X, Sliders, Database, Home, Compass, Map, BookOpen, Bookmark, Hourglass, Dumbbell, UserRound, Feather } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
-import { preloadView } from '../lib/viewPreload'
+import { preloadView, type ViewName } from '../lib/viewPreload'
 import { useModalAccessibility } from '../lib/useModalAccessibility'
+import { ExperienceSettings } from './ExperienceSettings'
 
 // 1. Definição do tipo exato que o seu app espera
-type ViewName = "inicio" | "explorar" | "memoria" | "trilhas" | "perfil" | "schole" | "rotina" | "poiesis";
-
 interface NavItem {
   label: string
   icon: React.ElementType
@@ -35,6 +34,7 @@ export const LeftDrawer: React.FC = () => {
     { label: 'Trilhas', icon: Map, tab: 'trilhas' },
     { label: 'Acervo', icon: BookOpen, tab: 'inicio' },
     { label: 'Memória', icon: Bookmark, tab: 'memoria' },
+    { label: 'Studium', icon: Feather, tab: 'studium' },
     { label: 'Perfil', icon: UserRound, tab: 'perfil' },
   ]
 
@@ -157,6 +157,7 @@ export const LeftDrawer: React.FC = () => {
 
           {/* Settings */}
           <div className="border-t border-text-primary/15 pt-4 space-y-2">
+            <ExperienceSettings />
             <button
               type="button"
               onClick={() => handleNavClick('perfil')}

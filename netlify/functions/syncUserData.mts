@@ -3,7 +3,7 @@ import { db } from '../../db/index.js'
 import { userData } from '../../db/schema.js'
 import { requireUser } from './_auth.mjs'
 
-const COLLECTIONS = new Set(['media', 'learnings', 'chat', 'profile', 'trails', 'onboarding'])
+const COLLECTIONS = new Set(['media', 'learnings', 'chat', 'profile', 'trails', 'onboarding', 'studium'])
 
 export default async (request: Request) => {
   if (request.method !== 'POST') return Response.json({ error: 'Método não permitido.' }, { status: 405 })
