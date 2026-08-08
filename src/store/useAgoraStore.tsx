@@ -35,6 +35,9 @@ const EMPTY_PROFILE: UserProfile = {
   avatar_url: '',
   capa_url: '',
   tags_interesses: [],
+  formatos_preferidos: [],
+  objetivo_descoberta: '',
+  ritmo_estudo: '',
   eventos_regressivos: [],
 };
 
@@ -831,6 +834,8 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const fetchRecommendations = useCallback(async (): Promise<Recommendation[]> => {
     const interesses = [
       ...(userProfile.tags_interesses || []),
+      userProfile.objetivo_descoberta || '',
+      userProfile.ritmo_estudo || '',
       ...mediaItems.flatMap((item) => item.generos || []),
     ]
     const tags = [...new Set(interesses.map((tag) => tag.trim()).filter(Boolean))]
@@ -850,7 +855,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const response = await fetch('/api/getRecommendations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tags, existingTitles, tasteSignals }),
+        body: JSON.stringify({ tags, existingTitles, tasteSignals, preferredTypes: userProfile.formatos_preferidos || [] }),
       })
       const data = await response.json().catch(() => ({}))
       if (response.ok && Array.isArray(data.recommendations) && data.recommendations.length) {
@@ -860,8 +865,8 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       console.error('Erro ao buscar a curadoria do perfil:', error)
     }
 
-    const foco = tags[0] || 'literatura clássica'
-    return [
+    const foco = userProfile.objetivo_descoberta || tags[0] || 'literatura clássica'
+    const fallbackPool: Recommendation[] = [
       {
         id: `rec_fallback_${Date.now()}`,
         titulo: 'O Morro dos Ventos Uivantes',
@@ -872,7 +877,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         generos: ['Literatura Clássica', 'Romance'],
         url_capa: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=800&auto=format&fit=crop',
         fonte: 'Recomendação Curada Ágora',
-        motivoRecomendacao: `Uma leitura de densidade emocional e moral para ampliar seu repertório em ${foco}.`
+        motivoRecomendacao: `Uma leitura de densidade emocional e moral para seu objetivo: ${foco}.`
       },
       {
         id: `rec_fallback_${Date.now() + 1}`,
@@ -884,10 +889,27 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         generos: ['Filosofia Cristã', 'Teologia'],
         url_capa: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=800&auto=format&fit=crop',
         fonte: 'Recomendação Curada Ágora',
-        motivoRecomendacao: `Uma obra de interioridade que conversa com as perguntas presentes no seu percurso em ${foco}.`
-      }
-    ];
-  }, [userProfile.tags_interesses, mediaItems]);
+        motivoRecomendacao: `Uma obra de interioridade que conversa com seu percurso em ${foco}.`
+      },
+      {
+        id: `rec_fallback_${Date.now() + 2}`, titulo: 'Stalker', tipo: 'Filme', autor_criador: 'Andrei Tarkóvski', ano: 1979,
+        sinopse: 'Uma jornada contemplativa sobre desejo, fé e conhecimento.', generos: ['Cinema', 'Filosofia'], url_capa: '', fonte: 'Curadoria Ágora',
+        motivoRecomendacao: `Cinema contemplativo para quem escolheu um ritmo ${userProfile.ritmo_estudo || 'equilibrado'}.`,
+      },
+      {
+        id: `rec_fallback_${Date.now() + 3}`, titulo: 'The Good Place', tipo: 'Série', autor_criador: 'Michael Schur', ano: 2016,
+        sinopse: 'Comédia que transforma dilemas éticos em narrativa acessível.', generos: ['Ética', 'Comédia'], url_capa: '', fonte: 'Curadoria Ágora',
+        motivoRecomendacao: `Uma forma leve de explorar ética e virtudes dentro do objetivo ${foco}.`,
+      },
+      {
+        id: `rec_fallback_${Date.now() + 4}`, titulo: 'Pentiment', tipo: 'Jogo', autor_criador: 'Obsidian Entertainment', ano: 2022,
+        sinopse: 'Mistério histórico construído em manuscritos, escolhas e conflitos de consciência.', generos: ['História', 'Narrativa'], url_capa: '', fonte: 'Curadoria Ágora',
+        motivoRecomendacao: `Uma experiência interativa alinhada aos seus interesses em história e grandes narrativas.`,
+      },
+    ]
+    const preferred = userProfile.formatos_preferidos || []
+    return (preferred.length ? fallbackPool.filter((item) => preferred.includes(item.tipo)) : fallbackPool).slice(0, 4)
+  }, [userProfile.formatos_preferidos, userProfile.objetivo_descoberta, userProfile.ritmo_estudo, userProfile.tags_interesses, mediaItems]);
 
   const getEstatisticas = useCallback((): Statistics => {
     const totalItens = mediaItems.length;

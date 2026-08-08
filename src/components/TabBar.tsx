@@ -84,13 +84,13 @@ export const TabBar: React.FC = () => {
     }
   }, [])
 
-  const mainNavItems = [
+  const mainNavItems: Array<{ label: string; icon: React.ElementType; tab: ViewName }> = [
     { label: 'Início', icon: Home, tab: 'inicio' },
     { label: 'Explorar', icon: Compass, tab: 'explorar' },
     { label: 'Trilhas', icon: Map, tab: 'trilhas' },
   ]
 
-  const lifestyleItems = [
+  const lifestyleItems: Array<{ label: string; icon: React.ElementType; tab: ViewName }> = [
     { label: 'Memória', icon: Bookmark, tab: 'memoria' },
     { label: 'Scholé', icon: Hourglass, tab: 'schole' },
     { label: 'Rotina', icon: Dumbbell, tab: 'rotina' },
@@ -99,8 +99,8 @@ export const TabBar: React.FC = () => {
   return (
     <>
       {/* Mobile Dock - Bottom */}
-      <nav className="lg:hidden fixed inset-x-0 bottom-0 z-40 px-[max(0.75rem,env(safe-area-inset-left))] py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-        <div className="velocity-dock tab-bar-mobile relative flex items-center justify-between gap-1 px-2 py-2 rounded-2xl border border-border-primary">
+      <nav className="mobile-dock-shell lg:hidden fixed inset-x-0 bottom-0 z-40 flex justify-center px-[max(0.75rem,env(safe-area-inset-left))] py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+        <div className="velocity-dock tab-bar-mobile relative flex w-full max-w-[30rem] items-center justify-between gap-1 px-2 py-2 rounded-2xl border border-border-primary">
           {mainNavItems.map((item) => (
             <DockItem
               key={item.tab}

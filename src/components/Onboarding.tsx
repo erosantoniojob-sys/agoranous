@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   User,
   Sparkles,
@@ -16,7 +16,7 @@ import {
   Compass,
 } from 'lucide-react';
 import { useAgoraStore } from '../store/useAgoraStore';
-import { EventoRegressivo } from '../types/agora';
+import { EventoRegressivo, MediaType } from '../types/agora';
 import { convertFileToBase64 } from '../lib/fileUtils';
 
 export const Onboarding: React.FC = () => {
@@ -32,6 +32,9 @@ export const Onboarding: React.FC = () => {
   const [tags, setTags] = useState<string[]>(
     userProfile.tags_interesses || []
   );
+  const [formatos, setFormatos] = useState<MediaType[]>(userProfile.formatos_preferidos || []);
+  const [objetivo, setObjetivo] = useState(userProfile.objetivo_descoberta || 'Aprofundar ideias');
+  const [ritmo, setRitmo] = useState(userProfile.ritmo_estudo || 'Contemplativo');
   const [eventos, setEventos] = useState<EventoRegressivo[]>(
     userProfile.eventos_regressivos || []
   );
@@ -42,12 +45,18 @@ export const Onboarding: React.FC = () => {
   const [uploadError, setUploadError] = useState<string | null>(null);
 
   // Suggested Examples for Tags
-  const SUGGESTED_TAGS = [
-    'Filosofia',
-    'Literatura',
-    'História',
-    'Ciência',
+  const GOALS = [
+    { label: 'Aprofundar ideias', tags: ['Filosofia', 'Ensaios', 'Clássicos'] },
+    { label: 'Viver grandes histórias', tags: ['Literatura', 'Drama', 'Narrativa'] },
+    { label: 'Compreender o mundo', tags: ['História', 'Ciência', 'Sociedade'] },
+    { label: 'Cultivar virtudes', tags: ['Ética', 'Espiritualidade', 'Biografias'] },
   ];
+  const FORMATS: MediaType[] = ['Livro', 'Filme', 'Série', 'Jogo'];
+  const suggestedTags = useMemo(() => {
+    const goalTags = GOALS.find((item) => item.label === objetivo)?.tags || [];
+    const formatTags = formatos.flatMap((format) => ({ Livro: ['Literatura'], Filme: ['Cinema'], Série: ['Séries'], Jogo: ['Jogos'], App: [], Podcast: [], Curso: [] }[format]));
+    return [...new Set([...goalTags, ...formatTags, 'Filosofia', 'História', 'Teologia', 'Arte'])];
+  }, [formatos, objetivo]);
 
   // Suggested Examples for Counters
   const SUGGESTED_EVENTS = [
@@ -104,6 +113,10 @@ export const Onboarding: React.FC = () => {
     setTags(tags.filter((t) => t !== tagToRemove));
   };
 
+  const toggleFormat = (format: MediaType) => {
+    setFormatos((current) => current.includes(format) ? current.filter((item) => item !== format) : [...current, format]);
+  };
+
   // Event Handlers
   const handleAddSuggestedEvent = (ev: { titulo: string; dataAlvo: string }) => {
     if (eventos.some((e) => e.titulo === ev.titulo)) return;
@@ -141,7 +154,10 @@ export const Onboarding: React.FC = () => {
       biografia: biografia.trim(),
       avatar_url: avatarUrl,
       capa_url: capaUrl,
-      tags_interesses: tags,
+      tags_interesses: [...new Set([...tags, ...(GOALS.find((item) => item.label === objetivo)?.tags || [])])],
+      formatos_preferidos: formatos,
+      objetivo_descoberta: objetivo,
+      ritmo_estudo: ritmo,
       eventos_regressivos: eventos,
     });
     setActiveTab('inicio');
@@ -373,11 +389,30 @@ export const Onboarding: React.FC = () => {
               <div className="space-y-1">
                 <h2 className="font-serif font-bold text-2xl text-text-primary flex items-center gap-2">
                   <Tag className="w-6 h-6 text-accent-gold" />
-                  Interesses & Esferas do Conhecimento
+                  Que percurso deseja construir?
                 </h2>
                 <p className="text-xs text-text-secondary">
-                  Digite seus temas de interesse e pressione <kbd className="px-1.5 py-0.5 bg-bg-elevated border border-text-primary/20 rounded text-[10px] font-mono text-accent-gold">Enter</kbd> para adicionar.
+                  Suas respostas orientam as primeiras obras indicadas. Você poderá mudar tudo depois.
                 </p>
+              </div>
+
+              <div className="space-y-4">
+                <fieldset className="space-y-2">
+                  <legend className="text-[10px] font-bold uppercase tracking-widest text-text-secondary">O que você procura agora?</legend>
+                  <div className="grid grid-cols-2 gap-2">
+                    {GOALS.map((goal) => <button key={goal.label} type="button" onClick={() => setObjetivo(goal.label)} className={`rounded-xl border p-3 text-left text-xs transition-all ${objetivo === goal.label ? 'border-accent-gold bg-accent-gold/15 text-accent-gold shadow-[0_0_18px_rgba(212,175,55,.12)]' : 'border-text-primary/10 bg-bg-base/60 text-text-secondary hover:border-accent-gold/40'}`}>{goal.label}</button>)}
+                  </div>
+                </fieldset>
+
+                <fieldset className="space-y-2">
+                  <legend className="text-[10px] font-bold uppercase tracking-widest text-text-secondary">Quais formatos deseja descobrir?</legend>
+                  <div className="flex flex-wrap gap-2">{FORMATS.map((format) => <button key={format} type="button" aria-pressed={formatos.includes(format)} onClick={() => toggleFormat(format)} className={`rounded-full border px-3 py-1.5 text-xs ${formatos.includes(format) ? 'border-accent-gold bg-accent-gold text-bg-base' : 'border-text-primary/15 bg-bg-base text-text-secondary'}`}>{format}</button>)}</div>
+                </fieldset>
+
+                <fieldset className="space-y-2">
+                  <legend className="text-[10px] font-bold uppercase tracking-widest text-text-secondary">Qual ritmo combina com você?</legend>
+                  <div className="grid grid-cols-3 gap-2">{['Contemplativo', 'Equilibrado', 'Intenso'].map((option) => <button key={option} type="button" onClick={() => setRitmo(option)} className={`rounded-lg border px-2 py-2 text-[11px] ${ritmo === option ? 'border-accent-gold text-accent-gold' : 'border-text-primary/10 text-text-secondary'}`}>{option}</button>)}</div>
+                </fieldset>
               </div>
 
               {/* Tag Input Field */}
@@ -436,7 +471,7 @@ export const Onboarding: React.FC = () => {
                     Sugestões Rápidas (Clique para adicionar):
                   </span>
                   <div className="flex flex-wrap gap-2">
-                    {SUGGESTED_TAGS.map((sug, idx) => (
+                    {suggestedTags.map((sug, idx) => (
                       <button
                         key={idx}
                         type="button"

@@ -91,7 +91,7 @@ export const Trilhas: React.FC = () => {
     desc_puritano: ['m8'],
   }
 
-  const descobrirTrilhasList: TrilhaData[] = [
+  const descobrirTrilhasTemplates: TrilhaData[] = [
     {
       id: 'desc_filosofia_grega',
       titulo: 'Trilha de filosofia grega',
@@ -119,6 +119,7 @@ export const Trilhas: React.FC = () => {
       titulo: 'Trilha de clássicos da espiritualidade cristã',
       conteudosCount: 0,
       notasCount: 0,
+      progressoPercentual: 0,
       categoria: 'Espiritualidade',
       icon: Church,
       colorTheme: 'green',
@@ -135,7 +136,9 @@ export const Trilhas: React.FC = () => {
       colorTheme: 'orange',
       descricao: 'Jonathan Edwards, Richard Baxter e os grandes autores da tradição puritana.',
     },
-  ].map((template) => {
+  ]
+
+  const descobrirTrilhasList: TrilhaData[] = descobrirTrilhasTemplates.map((template) => {
     const mediaIds = discoverTrailMediaIds[template.id] ?? []
     const trailMedia = mediaItems.filter((item) => mediaIds.includes(item.id))
     const progressoPercentual = trailMedia.length > 0

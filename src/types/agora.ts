@@ -76,6 +76,9 @@ export interface UserProfile {
   avatar?: string;
   capa_url: string;
   tags_interesses: string[];
+  formatos_preferidos?: MediaType[];
+  objetivo_descoberta?: string;
+  ritmo_estudo?: string;
   eventos_regressivos: EventoRegressivo[];
   hasCompletedOnboarding?: boolean;
 }

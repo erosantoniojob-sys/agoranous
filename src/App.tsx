@@ -13,6 +13,7 @@ import { AmbientSoundControl } from './components/AmbientSoundControl'
 import { AmbientDepth } from './components/AmbientDepth'
 import { KineticGuide } from './components/KineticGuide'
 import { SurfaceDepth } from './components/SurfaceDepth'
+import { AgoraLoader } from './components/AgoraLoader'
 
 const DashboardView = lazy(() => import('./views/DashboardView').then((module) => ({ default: module.DashboardView })))
 const ExploreView = lazy(() => import('./views/ExploreView').then((module) => ({ default: module.ExploreView })))
@@ -24,9 +25,7 @@ const RoutineView = lazy(() => import('./views/RoutineView').then((module) => ({
 const PoiesisView = lazy(() => import('./views/PoiesisView').then((module) => ({ default: module.PoiesisView })))
 
 const ViewLoading: React.FC = () => (
-  <div className="flex min-h-[45vh] items-center justify-center" role="status" aria-live="polite">
-    <div className="flex items-center gap-3 text-sm text-text-secondary"><span className="h-5 w-5 animate-spin rounded-full border-2 border-accent-gold border-t-transparent" />Abrindo espaço…</div>
-  </div>
+  <div className="flex min-h-[45vh] items-center justify-center"><AgoraLoader compact message="Abrindo este espaço" /></div>
 )
 
 const MainContent: React.FC = () => {
@@ -35,13 +34,7 @@ const MainContent: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-bg-base text-text-primary flex items-center justify-center p-4 font-sans">
-        <div className="flex flex-col items-center gap-3 text-center">
-          <div className="w-12 h-12 rounded-full border-2 border-accent-gold border-t-transparent animate-spin" />
-          <span className="font-serif font-bold text-lg text-text-primary">Carregando Ágora...</span>
-          <span className="text-xs text-text-secondary">Sintonizando seu Segundo Cérebro</span>
-        </div>
-      </div>
+      <div className="min-h-screen bg-bg-base text-text-primary flex items-center justify-center p-4 font-sans"><AgoraLoader detail="Sintonizando seu segundo cérebro…" /></div>
     )
   }
 
@@ -51,12 +44,7 @@ const MainContent: React.FC = () => {
 
   if (!isDataReady) {
     return (
-      <div className="min-h-screen bg-bg-base text-text-primary flex items-center justify-center p-4 font-sans">
-        <div className="flex flex-col items-center gap-3 text-center">
-          <div className="w-12 h-12 rounded-full border-2 border-accent-gold border-t-transparent animate-spin" />
-          <span className="font-serif font-bold text-lg text-text-primary">Carregando seu acervo...</span>
-        </div>
-      </div>
+      <div className="min-h-screen bg-bg-base text-text-primary flex items-center justify-center p-4 font-sans"><AgoraLoader message="Reunindo seu acervo" detail="Recuperando memórias, trilhas e preferências…" /></div>
     )
   }
 
