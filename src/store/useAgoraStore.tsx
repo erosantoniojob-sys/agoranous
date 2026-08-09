@@ -32,6 +32,13 @@ export interface Recommendation {
   motivoRecomendacao: string;
 }
 
+export type LearningEnrichmentState = {
+  status: 'idle' | 'analyzing' | 'done' | 'error';
+  added: number;
+  analyzedWorks: number;
+  error?: string;
+};
+
 const EMPTY_PROFILE: UserProfile = {
   nome: '',
   biografia: '',
@@ -71,6 +78,15 @@ function readStoredArray<T>(key: string): T[] {
 
 function readStoredObject<T>(key: string): T | null {
   return readBrowserValue<T | null>(key, null)
+}
+
+function normalizeIdentity(value: string) {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase('pt-BR')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
 }
 
 // Chaves usadas pelas versões anteriores à sincronização por conta. Mantemos a
@@ -357,6 +373,8 @@ interface AgoraStoreContextType {
   completeOnboarding: (profileData?: Partial<UserProfile>) => void;
   resetOnboarding: () => void;
   syncStatus: 'local' | 'syncing' | 'synced' | 'error';
+  learningEnrichment: LearningEnrichmentState;
+  enrichExistingWorks: () => Promise<number>;
 }
 
 const AgoraStoreContext = createContext<AgoraStoreContextType | undefined>(undefined);
@@ -521,7 +539,13 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isLeftDrawerOpen, setIsLeftDrawerOpen] = useState<boolean>(false);
   const [isRightChatOpen, setIsRightChatOpen] = useState<boolean>(false);
   const [syncStatus, setSyncStatus] = useState<'local' | 'syncing' | 'synced' | 'error'>(isVisitor ? 'local' : 'synced');
+  const [learningEnrichment, setLearningEnrichment] = useState<LearningEnrichmentState>({
+    status: 'idle',
+    added: 0,
+    analyzedWorks: 0,
+  });
   const pendingSyncs = useRef(0)
+  const enrichmentAttemptedFor = useRef<string | null>(null)
 
   // FUNÇÃO UTILITÁRIA PARA SALVAR NA NUVEM (Usando API da Vercel)
   const syncToCloud = useCallback(async (collection: string, data: unknown) => {
@@ -559,6 +583,66 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setSyncStatus('local')
     }
   }, [isCloudHydrated, isVisitor, user?.id]);
+
+  const enrichExistingWorks = useCallback(async () => {
+    if (isVisitor || !user?.id || !isCloudHydrated) return 0
+
+    setLearningEnrichment((current) => ({ ...current, status: 'analyzing', error: undefined }))
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) throw new Error('Sessão autenticada não encontrada.')
+
+      const response = await fetch('/api/generateLearnings', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      })
+      const data = await response.json().catch(() => ({})) as {
+        error?: string;
+        learnings?: unknown;
+        added?: number;
+        analyzedWorks?: number;
+        totalWorks?: number;
+      }
+      if (!response.ok) throw new Error(data.error || `Falha ao analisar o acervo (${response.status}).`)
+
+      if (!Array.isArray(data.learnings)) throw new Error('A análise retornou um formato inesperado.')
+      const mergedLearnings = data.learnings.filter((item): item is Aprendizado => Boolean(
+        item
+        && typeof item === 'object'
+        && typeof item.id === 'string'
+        && typeof item.mediaId === 'string'
+        && typeof item.texto === 'string',
+      ))
+      setAprendizados(mergedLearnings)
+
+      const added = Number.isFinite(data.added) ? Number(data.added) : 0
+      const analyzedWorks = Number.isFinite(data.analyzedWorks)
+        ? Number(data.analyzedWorks)
+        : Number.isFinite(data.totalWorks)
+          ? Number(data.totalWorks)
+          : 0
+      setLearningEnrichment({ status: 'done', added, analyzedWorks })
+      return added
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Não foi possível analisar o acervo.'
+      setLearningEnrichment((current) => ({ ...current, status: 'error', error: message }))
+      return 0
+    }
+  }, [isCloudHydrated, isVisitor, user?.id])
+
+  useEffect(() => {
+    if (isVisitor || !user?.id || !isCloudHydrated) return
+
+    const identity = normalizeIdentity(`${userProfile.nome} ${user.name}`)
+    if (!identity.includes('eros') || !identity.includes('antonio')) return
+    if (enrichmentAttemptedFor.current === user.id) return
+
+    enrichmentAttemptedFor.current = user.id
+    void enrichExistingWorks()
+  }, [enrichExistingWorks, isCloudHydrated, isVisitor, user?.id, user?.name, userProfile.nome])
 
   // EFEITOS DE PERSISTÊNCIA
   useEffect(() => {
@@ -1029,6 +1113,8 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         completeOnboarding,
         resetOnboarding,
         syncStatus,
+        learningEnrichment,
+        enrichExistingWorks,
       }}
     >
       {children}
