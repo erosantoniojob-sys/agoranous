@@ -182,7 +182,7 @@ Objetivo de descoberta, formatos preferidos e ritmo de estudo são definidos na 
 
 O Guia explica a finalidade do aplicativo e apresenta ações possíveis conforme o acervo carregado, como retomar uma obra, abrir a Scholé ou criar uma trilha.
 
-As sugestões de percurso funcionam localmente, sem decisões automáticas, e usam regras simples baseadas em status, quantidade de obras e trilhas existentes. Para contas autenticadas, **Analisar todas as obras** consulta as fichas reais do acervo, gera duas lições concisas por obra com o Gemini, preserva as notas existentes e vincula cada resultado pelo identificador da obra. A operação é idempotente: executá-la novamente não deve duplicar as lições geradas pela mesma versão.
+As sugestões de percurso funcionam localmente, sem decisões automáticas, e usam regras simples baseadas em status, quantidade de obras e trilhas existentes. Para contas autenticadas, **Analisar todas as obras** consulta as fichas reais do acervo, gera duas lições concisas por obra com o Gemini quando ele está disponível — ou por uma leitura conservadora dos metadados como alternativa —, preserva as notas existentes e vincula cada resultado pelo identificador da obra. A operação é idempotente: executá-la novamente não deve duplicar as lições geradas pela mesma versão. Como proteção entre contas, a análise só começa após um clique explícito e usa o UUID da sessão autenticada, nunca o nome do perfil.
 
 ## 6. Fluxos principais
 
@@ -322,7 +322,7 @@ Evite editar a mesma conta simultaneamente em vários dispositivos: a sincroniza
 
 - O modo visitante não envia o acervo para o Supabase, mas consultas externas ainda precisam enviar o título pesquisado às fontes de catálogo.
 - Em uma conta, os dados sincronizados ficam no Supabase ligado à implantação do aplicativo.
-- O Guia da Ágora calcula sugestões de percurso no navegador. Ao executar a análise inteligente, a ficha bibliográfica das obras é enviada pela Function autenticada da Vercel ao Gemini; as notas pessoais existentes não são incluídas no pedido ao modelo.
+- O Guia da Ágora calcula sugestões de percurso no navegador. Ao executar a análise inteligente, a Function autenticada lê a ficha bibliográfica das obras; quando o Gemini está disponível, envia somente essa ficha ao modelo. As notas pessoais existentes não são incluídas no pedido.
 - Capas e imagens por URL são carregadas do endereço informado ou do catálogo externo.
 - Ao reproduzir uma playlist, o navegador se comunica com o YouTube.
 - Dados locais ficam no armazenamento do navegador e não devem ser tratados como armazenamento criptografado.

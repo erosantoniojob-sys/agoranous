@@ -36,7 +36,17 @@ export type LearningEnrichmentState = {
   status: 'idle' | 'analyzing' | 'done' | 'error';
   added: number;
   analyzedWorks: number;
+  totalWorks: number;
+  outcome?: 'added' | 'already_complete' | 'no_media';
+  source?: string;
   error?: string;
+};
+
+const EMPTY_LEARNING_ENRICHMENT: LearningEnrichmentState = {
+  status: 'idle',
+  added: 0,
+  analyzedWorks: 0,
+  totalWorks: 0,
 };
 
 const EMPTY_PROFILE: UserProfile = {
@@ -78,15 +88,6 @@ function readStoredArray<T>(key: string): T[] {
 
 function readStoredObject<T>(key: string): T | null {
   return readBrowserValue<T | null>(key, null)
-}
-
-function normalizeIdentity(value: string) {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLocaleLowerCase('pt-BR')
-    .replace(/[^a-z0-9]+/g, ' ')
-    .trim()
 }
 
 // Chaves usadas pelas versões anteriores à sincronização por conta. Mantemos a
@@ -539,13 +540,30 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isLeftDrawerOpen, setIsLeftDrawerOpen] = useState<boolean>(false);
   const [isRightChatOpen, setIsRightChatOpen] = useState<boolean>(false);
   const [syncStatus, setSyncStatus] = useState<'local' | 'syncing' | 'synced' | 'error'>(isVisitor ? 'local' : 'synced');
-  const [learningEnrichment, setLearningEnrichment] = useState<LearningEnrichmentState>({
-    status: 'idle',
-    added: 0,
-    analyzedWorks: 0,
-  });
+  const [learningEnrichment, setLearningEnrichment] = useState<LearningEnrichmentState>(EMPTY_LEARNING_ENRICHMENT);
+  const [serverLearningRevision, setServerLearningRevision] = useState(0)
   const pendingSyncs = useRef(0)
-  const enrichmentAttemptedFor = useRef<string | null>(null)
+  const handledServerLearningRevision = useRef(0)
+  const activeEnrichmentUserId = useRef<string | null>(user?.id || null)
+  const enrichmentRequest = useRef<{ userId: string; controller: AbortController } | null>(null)
+
+  useEffect(() => {
+    activeEnrichmentUserId.current = user?.id || null
+    const activeRequest = enrichmentRequest.current
+    if (activeRequest && activeRequest.userId !== user?.id) {
+      activeRequest.controller.abort()
+      enrichmentRequest.current = null
+    }
+    setLearningEnrichment(EMPTY_LEARNING_ENRICHMENT)
+
+    return () => {
+      const requestToCancel = enrichmentRequest.current
+      if (requestToCancel && requestToCancel.userId === user?.id) {
+        requestToCancel.controller.abort()
+        enrichmentRequest.current = null
+      }
+    }
+  }, [user?.id])
 
   // FUNÇÃO UTILITÁRIA PARA SALVAR NA NUVEM (Usando API da Vercel)
   const syncToCloud = useCallback(async (collection: string, data: unknown) => {
@@ -586,63 +604,93 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const enrichExistingWorks = useCallback(async () => {
     if (isVisitor || !user?.id || !isCloudHydrated) return 0
+    if (enrichmentRequest.current) return 0
+
+    const expectedUserId = user.id
+    const controller = new AbortController()
+    enrichmentRequest.current = { userId: expectedUserId, controller }
+    const isCurrentAccount = () => (
+      !controller.signal.aborted
+      && activeEnrichmentUserId.current === expectedUserId
+    )
 
     setLearningEnrichment((current) => ({ ...current, status: 'analyzing', error: undefined }))
 
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.access_token) throw new Error('Sessão autenticada não encontrada.')
+      if (!session?.access_token || session.user.id !== expectedUserId) {
+        throw new Error('A sessão ativa mudou. Abra novamente o Guia nesta conta.')
+      }
 
       const response = await fetch('/api/generateLearnings', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
+        signal: controller.signal,
       })
       const data = await response.json().catch(() => ({})) as {
         error?: string;
-        learnings?: unknown;
+        outcome?: unknown;
+        additions?: unknown;
         added?: number;
         analyzedWorks?: number;
         totalWorks?: number;
+        source?: string;
       }
       if (!response.ok) throw new Error(data.error || `Falha ao analisar o acervo (${response.status}).`)
+      if (!isCurrentAccount()) return 0
 
-      if (!Array.isArray(data.learnings)) throw new Error('A análise retornou um formato inesperado.')
-      const mergedLearnings = data.learnings.filter((item): item is Aprendizado => Boolean(
+      if (!['added', 'already_complete', 'no_media'].includes(String(data.outcome))) {
+        throw new Error('A análise retornou um resultado inesperado.')
+      }
+      if (!Array.isArray(data.additions)) throw new Error('A análise retornou um formato inesperado.')
+      const additions = data.additions.filter((item): item is Aprendizado => Boolean(
         item
         && typeof item === 'object'
         && typeof item.id === 'string'
         && typeof item.mediaId === 'string'
-        && typeof item.texto === 'string',
+        && typeof item.texto === 'string'
+        && typeof item.data === 'string',
       ))
-      setAprendizados(mergedLearnings)
+      if (additions.length !== data.additions.length) {
+        throw new Error('Uma das lições retornadas é inválida.')
+      }
 
-      const added = Number.isFinite(data.added) ? Number(data.added) : 0
+      if (additions.length) {
+        setAprendizados((current) => {
+          const currentIds = new Set(current.map((item) => item.id))
+          const uniqueAdditions = additions.filter((item) => !currentIds.has(item.id))
+          return uniqueAdditions.length ? [...uniqueAdditions, ...current] : current
+        })
+        // A Function já persistiu essas inclusões com controle de concorrência.
+        // A revisão evita que o efeito abaixo envie logo depois um snapshot antigo.
+        setServerLearningRevision((current) => current + 1)
+      }
+
+      const added = additions.length
       const analyzedWorks = Number.isFinite(data.analyzedWorks)
         ? Number(data.analyzedWorks)
-        : Number.isFinite(data.totalWorks)
-          ? Number(data.totalWorks)
-          : 0
-      setLearningEnrichment({ status: 'done', added, analyzedWorks })
+        : new Set(additions.map((item) => item.mediaId)).size
+      const totalWorks = Number.isFinite(data.totalWorks) ? Number(data.totalWorks) : 0
+      setLearningEnrichment({
+        status: 'done',
+        outcome: data.outcome as LearningEnrichmentState['outcome'],
+        added,
+        analyzedWorks,
+        totalWorks,
+        source: typeof data.source === 'string' ? data.source : undefined,
+      })
       return added
     } catch (error) {
+      if (controller.signal.aborted || !isCurrentAccount()) return 0
       const message = error instanceof Error ? error.message : 'Não foi possível analisar o acervo.'
       setLearningEnrichment((current) => ({ ...current, status: 'error', error: message }))
       return 0
+    } finally {
+      if (enrichmentRequest.current?.controller === controller) enrichmentRequest.current = null
     }
   }, [isCloudHydrated, isVisitor, user?.id])
-
-  useEffect(() => {
-    if (isVisitor || !user?.id || !isCloudHydrated) return
-
-    const identity = normalizeIdentity(`${userProfile.nome} ${user.name}`)
-    if (!identity.includes('eros') || !identity.includes('antonio')) return
-    if (enrichmentAttemptedFor.current === user.id) return
-
-    enrichmentAttemptedFor.current = user.id
-    void enrichExistingWorks()
-  }, [enrichExistingWorks, isCloudHydrated, isVisitor, user?.id, user?.name, userProfile.nome])
 
   // EFEITOS DE PERSISTÊNCIA
   useEffect(() => {
@@ -654,8 +702,12 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     if (!isDataReady) return;
     writeBrowserValue(storagePrefix + 'learnings', aprendizados);
+    if (serverLearningRevision !== handledServerLearningRevision.current) {
+      handledServerLearningRevision.current = serverLearningRevision
+      return
+    }
     syncToCloud('learnings', aprendizados);
-  }, [aprendizados, storagePrefix, syncToCloud, isDataReady]);
+  }, [aprendizados, serverLearningRevision, storagePrefix, syncToCloud, isDataReady]);
 
   useEffect(() => {
     if (!isDataReady) return;

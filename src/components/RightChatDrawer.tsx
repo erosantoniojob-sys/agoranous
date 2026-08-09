@@ -72,6 +72,7 @@ export const RightChatDrawer: React.FC = () => {
     customTrails,
     getEstatisticas,
     isVisitor,
+    isDataReady,
     learningEnrichment,
     enrichExistingWorks,
   } = useAgoraStore()
@@ -170,7 +171,7 @@ export const RightChatDrawer: React.FC = () => {
             </ol>
           </section>
 
-          <section aria-labelledby="guide-analysis-title" aria-live="polite" className="mt-5 rounded-2xl border border-accent-gold/25 bg-gradient-to-br from-bg-elevated to-bg-base/70 p-4">
+          <section aria-labelledby="guide-analysis-title" aria-live="polite" aria-busy={learningEnrichment.status === 'analyzing'} className="mt-5 rounded-2xl border border-accent-gold/25 bg-gradient-to-br from-bg-elevated to-bg-base/70 p-4">
             <div className="flex gap-3">
               <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-accent-gold/30 bg-accent-gold/10 text-accent-gold">
                 {learningEnrichment.status === 'analyzing'
@@ -187,7 +188,9 @@ export const RightChatDrawer: React.FC = () => {
                   <p className="mt-1.5 text-[11px] leading-relaxed text-text-secondary">Lendo as fichas do seu acervo e preparando lições sem alterar as obras nem apagar suas notas.</p>
                 ) : learningEnrichment.status === 'done' ? (
                   <p className="mt-1.5 text-[11px] leading-relaxed text-text-secondary">
-                    {learningEnrichment.added > 0
+                    {learningEnrichment.outcome === 'no_media'
+                      ? 'Nenhuma obra sincronizada foi encontrada nesta conta.'
+                      : learningEnrichment.added > 0
                       ? `${learningEnrichment.added} novas lições foram vinculadas a ${learningEnrichment.analyzedWorks} ${learningEnrichment.analyzedWorks === 1 ? 'obra' : 'obras'}.`
                       : 'As obras já estavam analisadas; nenhuma lição duplicada foi criada.'}
                   </p>
@@ -197,12 +200,20 @@ export const RightChatDrawer: React.FC = () => {
                   <p className="mt-1.5 text-[11px] leading-relaxed text-text-secondary">Cria duas lições concisas por obra usando as fichas reais da conta e preserva todos os aprendizados existentes.</p>
                 )}
 
-                {!isVisitor && mediaItems.length > 0 && ['idle', 'error'].includes(learningEnrichment.status) ? (
-                  <button type="button" onClick={() => { void enrichExistingWorks() }} className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-accent-gold/30 bg-accent-gold/10 px-3 py-2 text-[11px] font-semibold text-accent-gold hover:bg-accent-gold/15">
-                    {learningEnrichment.status === 'error' ? <RotateCcw className="h-3.5 w-3.5" /> : <Sparkles className="h-3.5 w-3.5" />}
-                    {learningEnrichment.status === 'error' ? 'Tentar novamente' : 'Analisar todas as obras'}
+                {!isVisitor && learningEnrichment.status !== 'analyzing' ? (
+                  <button type="button" disabled={!isDataReady} onClick={() => { void enrichExistingWorks() }} className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-accent-gold/30 bg-accent-gold/10 px-3 py-2 text-[11px] font-semibold text-accent-gold hover:bg-accent-gold/15 disabled:cursor-wait disabled:opacity-50">
+                    {learningEnrichment.status === 'error' || learningEnrichment.status === 'done' ? <RotateCcw className="h-3.5 w-3.5" /> : <Sparkles className="h-3.5 w-3.5" />}
+                    {!isDataReady
+                      ? 'Carregando acervo…'
+                      : learningEnrichment.status === 'error'
+                        ? 'Tentar novamente'
+                        : learningEnrichment.status === 'done'
+                          ? 'Verificar novas obras'
+                          : 'Analisar todas as obras'}
                   </button>
                 ) : null}
+
+                {learningEnrichment.status === 'done' && learningEnrichment.source ? <p className="mt-2 text-[10px] text-text-secondary">Método: {learningEnrichment.source}.</p> : null}
 
                 {isVisitor ? <p className="mt-2 text-[10px] text-text-secondary">Entre em uma conta para vincular lições com segurança.</p> : null}
               </div>
@@ -224,7 +235,7 @@ export const RightChatDrawer: React.FC = () => {
 
           <section aria-labelledby="guide-privacy-title" className="mt-5 rounded-xl border border-text-primary/10 bg-bg-base/45 p-3.5">
             <h4 id="guide-privacy-title" className="text-xs font-semibold text-text-primary">Dados e privacidade</h4>
-            <p className="mt-1.5 text-[11px] leading-relaxed text-text-secondary">As sugestões de percurso são calculadas no navegador. A análise inteligente envia apenas a ficha bibliográfica das obras pela Function autenticada da Vercel ao Gemini e grava o resultado com o RLS da sua conta. Em uma conta, acervo, perfil, trilhas, notas e Studium são sincronizados com o Supabase; Scholé, Rotina e Poíesis permanecem neste dispositivo. No modo visitante, todos os dados ficam locais.</p>
+            <p className="mt-1.5 text-[11px] leading-relaxed text-text-secondary">As sugestões de percurso são calculadas no navegador. Quando o Gemini está disponível, a análise inteligente envia apenas a ficha bibliográfica das obras por uma Function autenticada da Vercel; sem ele, usa uma leitura conservadora da ficha. O resultado é gravado com o RLS da sua conta. Em uma conta, acervo, perfil, trilhas, notas e Studium são sincronizados com o Supabase; Scholé, Rotina e Poíesis permanecem neste dispositivo. No modo visitante, todos os dados ficam locais.</p>
           </section>
         </div>
 

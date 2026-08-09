@@ -12,7 +12,7 @@ Consulte o [Guia de uso da Ágora](GUIA_DE_USO.md) para conhecer o início rápi
 
 - Vite para desenvolvimento e empacotamento do frontend
 - React, TypeScript e Tailwind CSS
-- Vercel Functions para busca, recomendações e sincronização
+- Vercel Functions para busca, recomendações, análise do acervo e sincronização
 - Supabase Auth e Postgres com RLS para persistência por usuário
 - Google Books, Open Library e iTunes Search como fontes públicas de metadados
 
@@ -46,7 +46,7 @@ Os dados são associados à conta Supabase autenticada e persistidos no Postgres
 - `SUPABASE_URL`: a mesma URL, usada somente pelas funções do servidor;
 - `SUPABASE_PUBLISHABLE_KEY`: chave pública usada pelas Functions para validar a sessão e respeitar RLS.
 
-Para ativar o enriquecimento de capas e sinopses com Gemini, configure também no ambiente das Functions:
+Para ativar o enriquecimento de capas e sinopses e a análise inteligente das obras com Gemini, configure também no ambiente das Functions:
 
 - `GEMINI_API_KEY`: chave criada no Google AI Studio, mantida somente no servidor;
 - `GEMINI_MODEL` (opcional): modelo utilizado na busca; o padrão é `gemini-2.5-flash-lite`;
