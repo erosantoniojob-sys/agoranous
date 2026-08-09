@@ -2,14 +2,14 @@
 
 ## Architecture
 
-Ágora is a client-side single-page application built with Vite. Netlify serves the generated static assets and rewrites unknown paths to `index.html` so a client-side router can resolve them.
+Ágora is a client-side single-page application built with Vite. Vercel serves the generated static assets, runs the `/api` Functions, and rewrites non-API paths to `index.html`.
 
 ## Key Paths
 
 - `index.html`: application HTML entry point
 - `src/main.tsx`: React/TypeScript entry point
 - `src/styles.css`: global visual system and responsive layout
-- `netlify.toml`: Netlify build, publish, runtime, and SPA redirect configuration
+- `vercel.json`: Vercel build, Functions, and SPA rewrite configuration
 - `dist/`: generated production output; never edit or commit it
 
 ## Conventions
@@ -22,7 +22,7 @@
 
 ## Deployment Decisions
 
-- Node.js 22 is pinned in both `package.json` and `netlify.toml` to keep local and hosted builds aligned.
-- Vite outputs production assets to `dist`, which is the Netlify publish directory.
+- Node.js 22 is pinned in `package.json` to keep local and hosted builds aligned.
+- Vite outputs production assets to `dist`, which is the Vercel output directory.
 - The catch-all redirect uses status 200 because this is an SPA rewrite, not a browser redirect.
-- No server-side persistence is configured. If shared or cross-device data is introduced, use Netlify platform storage rather than repository files or in-memory state.
+- Cross-device data uses Supabase Postgres with RLS; never store durable user data in repository files or in-memory Function state.

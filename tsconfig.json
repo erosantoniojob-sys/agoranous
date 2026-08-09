@@ -23,7 +23,7 @@
     /* Tipagens para o backend (Node) */
     "types": ["node"]
   },
-  "include": ["src", "db", "netlify/functions"]
+  "include": ["src", "api", "server", "db", "netlify/functions"]
 
 
 }
