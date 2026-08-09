@@ -18,10 +18,10 @@ Consulte o [Guia de uso da Ágora](GUIA_DE_USO.md) para conhecer o início rápi
 
 ## Executar localmente
 
-Requer Node.js 22 e npm.
+Requer Node.js 24 e npm.
 
 ```bash
-npm install
+npm ci
 npx vercel dev
 ```
 
@@ -31,9 +31,10 @@ O Vercel Dev disponibiliza o frontend e as Functions em `/api/*` no mesmo ambien
 
 O arquivo `vercel.json` define:
 
-- comando de build: `npm run build`
+- instalação reproduzível, incluindo as ferramentas de build: `npm ci --include=dev`
+- verificação e build: `npm run check`
 - diretório publicado: `dist`
-- redirecionamento de todas as rotas para `index.html`, permitindo navegação client-side sem erro 404
+- redirecionamento das rotas da SPA para `index.html`, preservando as Functions em `/api/*`
 
 Ao conectar o repositório à Vercel, essas opções são aplicadas automaticamente.
 
@@ -59,7 +60,8 @@ Depois, basta entrar com o mesmo e-mail e senha em cada dispositivo. Contas de v
 
 ```bash
 npm run typecheck
+npm run validate:deploy
 npm run check
 ```
 
-`typecheck` valida o frontend e as Functions. `check` também produz o build de produção.
+`validate:deploy` confere a versão do Node e do TypeScript, os exports HTTP e colisões entre Functions. `typecheck` valida o frontend e as Functions. `check` executa todas essas verificações e produz o build de produção.

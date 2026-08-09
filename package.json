@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "validate:deploy": "node scripts/validate-deploy.mjs",
+    "prebuild": "npm run validate:deploy",
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
@@ -12,18 +14,18 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
-    "@types/node": "^26.1.1",
+    "@types/node": "24.13.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.2.0",
     "autoprefixer": "^10.5.4",
     "postcss": "^8.5.23",
     "tailwindcss": "^4.3.3",
-    "typescript": "^7.0.2",
+    "typescript": "5.9.3",
     "vite": "^7.0.0"
   },
   "engines": {
-    "node": ">=22 <23"
+    "node": "24.x"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.8",
