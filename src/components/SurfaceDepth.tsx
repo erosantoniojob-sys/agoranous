@@ -1,57 +1,16 @@
 import { useEffect } from 'react'
 
-const surfaceSelector = '.journey-hero, .quote-landscape, .trail-landscape, .modern-surface, .shadow-3d-card'
+const surfaceSelector = '[data-depth-surface]'
 
 export function SurfaceDepth() {
   useEffect(() => {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const finePointer = window.matchMedia('(pointer: fine)')
-    if (reducedMotion.matches) return
-
-    if (!finePointer.matches) {
-      let mobileFrame = 0
-      const renderMobileDepth = () => {
-        mobileFrame = 0
-        const viewportCenter = window.innerHeight / 2
-        const surfaces = Array.from(document.querySelectorAll<HTMLElement>(surfaceSelector))
-
-        surfaces.forEach((surface) => {
-          const bounds = surface.getBoundingClientRect()
-          const isVisible = bounds.bottom > 0 && bounds.top < window.innerHeight
-          if (!isVisible) {
-            surface.classList.remove('depth-surface--mobile')
-            return
-          }
-
-          const center = bounds.top + bounds.height / 2
-          const distance = Math.max(-1, Math.min(1, (center - viewportCenter) / window.innerHeight))
-          surface.style.setProperty('--mobile-depth-rx', `${(-distance * 2.8).toFixed(2)}deg`)
-          surface.style.setProperty('--mobile-depth-z', `${((1 - Math.abs(distance)) * 5).toFixed(1)}px`)
-          surface.classList.add('depth-surface--mobile')
-        })
-      }
-
-      const scheduleMobileDepth = () => {
-        if (!mobileFrame) mobileFrame = window.requestAnimationFrame(renderMobileDepth)
-      }
-
-      renderMobileDepth()
-      window.addEventListener('scroll', scheduleMobileDepth, { passive: true })
-      window.addEventListener('resize', scheduleMobileDepth, { passive: true })
-      return () => {
-        window.removeEventListener('scroll', scheduleMobileDepth)
-        window.removeEventListener('resize', scheduleMobileDepth)
-        if (mobileFrame) window.cancelAnimationFrame(mobileFrame)
-        document.querySelectorAll<HTMLElement>(surfaceSelector).forEach((surface) => {
-          surface.classList.remove('depth-surface--mobile')
-          surface.style.removeProperty('--mobile-depth-rx')
-          surface.style.removeProperty('--mobile-depth-z')
-        })
-      }
-    }
+    const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)')
 
     let activeSurface: HTMLElement | null = null
+    let activeBounds: DOMRect | null = null
     let frame = 0
+    let boundsFrame = 0
     let pointerX = 0
     let pointerY = 0
 
@@ -61,30 +20,50 @@ export function SurfaceDepth() {
       surface?.style.removeProperty('--surface-ry')
       surface?.style.removeProperty('--surface-light-x')
       surface?.style.removeProperty('--surface-light-y')
+      surface?.style.removeProperty('--surface-x')
+      surface?.style.removeProperty('--surface-y')
     }
 
     const render = () => {
       frame = 0
-      if (!activeSurface) return
+      if (!activeSurface || !activeBounds) return
 
-      const bounds = activeSurface.getBoundingClientRect()
-      const x = Math.max(0, Math.min(1, (pointerX - bounds.left) / bounds.width))
-      const y = Math.max(0, Math.min(1, (pointerY - bounds.top) / bounds.height))
-      activeSurface.style.setProperty('--surface-rx', `${((0.5 - y) * 5).toFixed(2)}deg`)
-      activeSurface.style.setProperty('--surface-ry', `${((x - 0.5) * 6).toFixed(2)}deg`)
+      const mode = document.documentElement.dataset.effects ?? 'full'
+      const strength = mode === 'subtle' ? 0.48 : mode === 'off' ? 0 : 1
+      const x = Math.max(0, Math.min(1, (pointerX - activeBounds.left) / activeBounds.width))
+      const y = Math.max(0, Math.min(1, (pointerY - activeBounds.top) / activeBounds.height))
+      const normalizedX = (x - 0.5) * 2
+      const normalizedY = (y - 0.5) * 2
+      activeSurface.style.setProperty('--surface-rx', `${(-normalizedY * 2.4 * strength).toFixed(2)}deg`)
+      activeSurface.style.setProperty('--surface-ry', `${(normalizedX * 3.2 * strength).toFixed(2)}deg`)
       activeSurface.style.setProperty('--surface-light-x', `${(x * 100).toFixed(1)}%`)
       activeSurface.style.setProperty('--surface-light-y', `${(y * 100).toFixed(1)}%`)
+      activeSurface.style.setProperty('--surface-x', (normalizedX * strength).toFixed(3))
+      activeSurface.style.setProperty('--surface-y', (normalizedY * strength).toFixed(3))
     }
 
     const onPointerMove = (event: PointerEvent) => {
       pointerX = event.clientX
       pointerY = event.clientY
+      if (
+        reducedMotion.matches ||
+        !finePointer.matches ||
+        document.documentElement.dataset.effects === 'off' ||
+        document.documentElement.classList.contains('reading-mode') ||
+        document.querySelector('[aria-modal="true"]:not([aria-hidden="true"])')
+      ) {
+        reset(activeSurface)
+        activeSurface = null
+        activeBounds = null
+        return
+      }
       const nextSurface = (event.target as Element | null)?.closest<HTMLElement>(surfaceSelector) ?? null
 
       if (nextSurface !== activeSurface) {
         reset(activeSurface)
         activeSurface = nextSurface
-        activeSurface?.classList.add('depth-surface--active')
+        activeBounds = activeSurface?.getBoundingClientRect() ?? null
+        if (activeSurface) activeSurface.classList.add('depth-surface--active')
       }
       if (activeSurface && !frame) frame = window.requestAnimationFrame(render)
     }
@@ -92,14 +71,45 @@ export function SurfaceDepth() {
     const onPointerLeave = () => {
       reset(activeSurface)
       activeSurface = null
+      activeBounds = null
     }
+
+    const onViewportChange = () => {
+      if (!activeSurface || boundsFrame) return
+      boundsFrame = window.requestAnimationFrame(() => {
+        boundsFrame = 0
+        if (activeSurface) activeBounds = activeSurface.getBoundingClientRect()
+      })
+    }
+
+    const onPreferenceChange = () => {
+      if (
+        reducedMotion.matches ||
+        !finePointer.matches ||
+        document.documentElement.dataset.effects === 'off' ||
+        document.documentElement.classList.contains('reading-mode')
+      ) onPointerLeave()
+    }
+
+    const preferenceObserver = new MutationObserver(onPreferenceChange)
+    preferenceObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-effects'] })
 
     document.addEventListener('pointermove', onPointerMove, { passive: true })
     document.documentElement.addEventListener('pointerleave', onPointerLeave)
+    window.addEventListener('resize', onViewportChange, { passive: true })
+    window.addEventListener('scroll', onViewportChange, { passive: true })
+    reducedMotion.addEventListener('change', onPreferenceChange)
+    finePointer.addEventListener('change', onPreferenceChange)
     return () => {
       document.removeEventListener('pointermove', onPointerMove)
       document.documentElement.removeEventListener('pointerleave', onPointerLeave)
+      window.removeEventListener('resize', onViewportChange)
+      window.removeEventListener('scroll', onViewportChange)
+      reducedMotion.removeEventListener('change', onPreferenceChange)
+      finePointer.removeEventListener('change', onPreferenceChange)
+      preferenceObserver.disconnect()
       if (frame) window.cancelAnimationFrame(frame)
+      if (boundsFrame) window.cancelAnimationFrame(boundsFrame)
       reset(activeSurface)
     }
   }, [])

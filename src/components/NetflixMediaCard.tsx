@@ -26,6 +26,7 @@ export const NetflixMediaCard: React.FC<NetflixMediaCardProps> = ({ item, onClic
 
   return (
     <div
+      data-depth-surface="cover"
       onClick={onClick}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
@@ -36,8 +37,9 @@ export const NetflixMediaCard: React.FC<NetflixMediaCardProps> = ({ item, onClic
       tabIndex={0}
       role="button"
       aria-label={`Abrir ${item.titulo}`}
-      className="group relative aspect-[2/3] w-36 sm:w-44 flex-shrink-0 snap-start rounded-xl overflow-hidden cursor-pointer shadow-3d-card transition-all duration-300 hover:scale-105 hover:shadow-3d-gold focus:outline-none focus:ring-2 focus:ring-accent-gold"
+      className="group media-cover-depth relative aspect-[2/3] w-36 sm:w-44 flex-shrink-0 snap-start rounded-xl overflow-hidden cursor-pointer shadow-3d-card focus:outline-none focus:ring-2 focus:ring-accent-gold"
     >
+      <span className="depth-glare" aria-hidden="true" />
       {/* Base Image Cover without title or thick borders */}
       <CoverImage url={coverUrl} title={item.titulo} tipo={item.tipo} />
 
@@ -50,7 +52,7 @@ export const NetflixMediaCard: React.FC<NetflixMediaCardProps> = ({ item, onClic
       </div>
 
       {/* Overlay on hover/focus - title and quick info */}
-      <div className="absolute inset-0 bg-gradient-to-t from-bg-base via-bg-base/80 to-transparent opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity duration-300 p-3 flex flex-col justify-end gap-1.5 backdrop-blur-[2px]">
+      <div className="absolute inset-0 z-10 bg-gradient-to-t from-bg-base via-bg-base/80 to-transparent opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity duration-300 p-3 flex flex-col justify-end gap-1.5 backdrop-blur-[2px]">
         <div className="flex items-center justify-between gap-1">
           <span className="text-[10px] font-semibold text-accent-gold uppercase tracking-wider">
             {item.tipo}

@@ -11,6 +11,9 @@
   --color-accent-gold-bright: #E5C158;
   --color-text-primary: #F2F4F7;
   --color-text-secondary: #8A93A3;
+  --color-border-primary: rgba(242, 244, 247, 0.12);
+  --shadow-md-elevation: 0 14px 34px rgba(0, 0, 0, 0.3), 0 0 22px rgba(212, 175, 55, 0.08);
+  --shadow-lg-elevation: 0 22px 56px rgba(0, 0, 0, 0.38), inset 0 1px rgba(255, 255, 255, 0.08);
 
   /* Low saturation Dark Academia trail icon background colors */
   --color-trilha-blue: #16283D;
@@ -41,12 +44,33 @@
 :root[data-theme='enlightenment'] { --color-bg-base:#121822; --color-bg-surface:#202b3b; --color-bg-elevated:#303f54; --color-accent-gold:#d8bd71; }
 :root[data-theme='modernism'] { --color-bg-base:#0d1117; --color-bg-surface:#181f29; --color-bg-elevated:#252e3a; --color-accent-gold:#c7a94b; --font-serif:Inter, sans-serif; }
 
-.reading-mode .kinetic-guide,
 .reading-mode .ambient-depth,
+.reading-mode .agora-orrery,
 .reading-mode [data-ambient-control] { display:none; }
-.reading-mode .depth-surface--active,
-.reading-mode .depth-surface--mobile { transform:none !important; }
-.reading-mode .app-frame::before { opacity:.08; animation:none; }
+.reading-mode .depth-surface--active { transform:none !important; }
+.reading-mode #root::before,
+.reading-mode #root::after { animation:none; opacity:.2; }
+
+:root[data-effects='subtle'] .ambient-depth { opacity: .46; }
+:root[data-effects='subtle'] .agora-orrery { opacity: .46; }
+:root[data-effects='subtle'] #root::before { animation-duration: 52s; opacity: .62; }
+:root[data-effects='subtle'] #root::after { animation-duration: 32s; opacity: .38; }
+:root[data-effects='subtle'] .ambient-depth__dust,
+:root[data-effects='subtle'] .agora-orrery__meridian { animation-duration: 64s; }
+:root[data-effects='subtle'] .depth-surface--active > .depth-glare { opacity: .42; }
+:root[data-effects='subtle'] .depth-surface--active {
+  box-shadow: 0 24px 54px rgba(0, 0, 0, .32), 0 0 22px rgba(212, 175, 55, .06), inset 0 1px rgba(255, 255, 255, .1);
+}
+
+:root[data-effects='off'] .ambient-depth,
+:root[data-effects='off'] .agora-orrery { display: none; }
+:root[data-effects='off'] #root::before,
+:root[data-effects='off'] #root::after { animation: none; }
+:root[data-effects='off'] [data-depth-surface],
+:root[data-effects='off'] .depth-surface--active { transform: none !important; }
+:root[data-effects='off'] .depth-glare { display: none; }
+:root[data-effects='off'] .journey-hero__content,
+.reading-mode .journey-hero__content { transform: none; }
 
 @layer base {
   :root {
@@ -71,6 +95,8 @@
   }
 
   .app-frame {
+    position: relative;
+    z-index: 1;
     width: 100%;
     min-width: 0;
   }
@@ -94,11 +120,11 @@
   content: '';
   position: fixed;
   inset: 0;
-  z-index: -1;
   pointer-events: none;
 }
 
 #root::before {
+  z-index: -2;
   background-image:
     linear-gradient(180deg, rgba(4, 10, 18, 0.5) 0%, rgba(7, 16, 27, 0.82) 54%, #0b1420 100%),
     radial-gradient(ellipse at 75% 2%, rgba(222, 181, 73, 0.17), transparent 32%),
@@ -112,6 +138,7 @@
 }
 
 #root::after {
+  z-index: -1;
   background-image:
     radial-gradient(circle at 14% 28%, rgba(229, 193, 88, 0.55) 0 1px, transparent 1.8px),
     radial-gradient(circle at 74% 20%, rgba(248, 226, 163, 0.42) 0 1px, transparent 1.7px),
@@ -134,10 +161,38 @@
   --light-y: 32vh;
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: 0;
   overflow: hidden;
   pointer-events: none;
   contain: strict;
+  opacity: .82;
+  transition: opacity 600ms ease;
+}
+
+.ambient-depth__architecture {
+  position: absolute;
+  inset: -3%;
+  background:
+    linear-gradient(90deg, transparent 0 7%, rgba(226, 210, 162, 0.16) 7.15% 7.7%, transparent 7.9% 23%, rgba(226, 210, 162, 0.1) 23.15% 23.65%, transparent 23.9% 76%, rgba(226, 210, 162, 0.1) 76.15% 76.65%, transparent 76.9% 92%, rgba(226, 210, 162, 0.16) 92.15% 92.7%, transparent 92.9%),
+    linear-gradient(180deg, rgba(120, 170, 194, 0.045), transparent 43%, rgba(2, 7, 13, 0.22));
+  mask-image: linear-gradient(to bottom, #000, transparent 76%);
+  opacity: .54;
+  transform: translate3d(calc(var(--depth-x) * -4px), calc(var(--depth-y) * -3px), 0) scale(1.03);
+  will-change: transform;
+}
+
+.ambient-depth__beam {
+  position: absolute;
+  width: min(48vw, 46rem);
+  height: 140vh;
+  top: -32vh;
+  right: 4vw;
+  background: linear-gradient(90deg, transparent, rgba(229, 193, 88, 0.035) 46%, rgba(181, 217, 230, 0.055) 58%, transparent 78%);
+  filter: blur(14px);
+  opacity: .72;
+  transform: translate3d(calc(var(--depth-x) * 12px), calc(var(--depth-y) * 7px), 0) rotate(17deg);
+  transform-origin: 50% 0;
+  will-change: transform;
 }
 
 .ambient-depth__glow {
@@ -190,33 +245,25 @@
   transform: translate3d(calc(var(--depth-x) * -13px), calc(var(--depth-y) * -9px), 0) rotate(18deg);
 }
 
-.kinetic-guide {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  opacity: 0.82;
-  mix-blend-mode: screen;
-}
-
-/* Colunatas sugeridas e névoa azulada aprofundam a sensação de uma ágora noturna. */
-.app-frame::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  opacity: 0.22;
-  background:
-    linear-gradient(90deg, transparent 0 7%, rgba(226, 210, 162, 0.18) 7.2% 7.8%, transparent 8% 23%, rgba(226, 210, 162, 0.12) 23.2% 23.7%, transparent 24% 76%, rgba(226, 210, 162, 0.12) 76.2% 76.7%, transparent 77% 92%, rgba(226, 210, 162, 0.18) 92.2% 92.8%, transparent 93%),
-    linear-gradient(180deg, rgba(120, 170, 194, 0.07), transparent 38%, rgba(2, 7, 13, 0.32));
-  mask-image: linear-gradient(to bottom, #000, transparent 78%);
-  animation: agora-colonnade-breathe 19s ease-in-out infinite alternate;
+.ambient-depth__dust {
+  position: absolute;
+  inset: -4%;
+  opacity: .4;
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(248, 226, 163, .8) 0 1px, transparent 1.6px),
+    radial-gradient(circle at 31% 72%, rgba(229, 193, 88, .5) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 48% 35%, rgba(181, 217, 230, .55) 0 1px, transparent 1.4px),
+    radial-gradient(circle at 68% 63%, rgba(248, 226, 163, .6) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 83% 25%, rgba(229, 193, 88, .7) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 92% 79%, rgba(181, 217, 230, .42) 0 1px, transparent 1.4px);
+  background-size: 260px 220px, 340px 290px, 410px 360px, 470px 410px, 530px 460px, 610px 520px;
+  animation: agora-dust-drift 34s ease-in-out infinite alternate;
+  will-change: transform, opacity;
 }
 
 @keyframes agora-temple-drift {
-  from { transform: scale(1.04) translate3d(-0.5%, -0.35%, 0); background-position: center, center, 48% 28%; }
-  to { transform: scale(1.1) translate3d(0.7%, 0.5%, 0); background-position: center, center, 54% 35%; }
+  from { transform: scale(1.04) translate3d(-0.5%, -0.35%, 0); }
+  to { transform: scale(1.1) translate3d(0.7%, 0.5%, 0); }
 }
 
 @keyframes agora-starlight {
@@ -224,9 +271,9 @@
   to { opacity: 0.78; transform: translate3d(-0.7%, 0.45%, 0); }
 }
 
-@keyframes agora-colonnade-breathe {
-  from { opacity: 0.14; transform: scale(1); }
-  to { opacity: 0.28; transform: scale(1.025); }
+@keyframes agora-dust-drift {
+  from { opacity: .2; transform: translate3d(-.4%, -.2%, 0) scale(1); }
+  to { opacity: .5; transform: translate3d(.7%, .5%, 0) scale(1.015); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -235,53 +282,43 @@
     animation: none;
   }
 
-  .app-frame::before { animation: none; }
-
+  .ambient-depth__architecture,
+  .ambient-depth__beam,
   .ambient-depth__glow,
-  .ambient-depth__orbit {
+  .ambient-depth__orbit,
+  .ambient-depth__dust {
+    animation: none;
     transform: none;
-    will-change: auto;
-  }
-
-  .velocity-dock {
-    scale: 1;
-    rotate: 0deg;
-    translate: var(--dock-x, 0) 0;
     will-change: auto;
   }
 
   .agora-loader__orbit,
-  .agora-loader__point {
-    animation: none;
+  .agora-loader__point,
+  .agora-orrery__meridian {
+    animation: none !important;
   }
 
-  .kinetic-guide {
-    display: none;
-  }
-
-  .depth-surface--active,
-  .depth-surface--active > :not(.absolute) {
+  .depth-surface--active {
     transform: none;
     will-change: auto;
   }
+
+  .animate-fadeIn,
+  .animate-slideLeft { animation: none; }
 }
 
 @media (pointer: coarse) {
-  .kinetic-guide {
-    display: none;
-  }
-}
-
-@media (pointer: coarse) {
-  .ambient-depth__glow {
-    opacity: 0.65;
-  }
-
-  .velocity-dock {
-    scale: 1;
-    rotate: 0deg;
-    translate: var(--dock-x, 0) 0;
-  }
+  #root::before,
+  #root::after,
+  .ambient-depth__dust { animation: none !important; }
+  .ambient-depth { opacity: .46; }
+  .ambient-depth__glow { opacity: .55; }
+  .agora-orrery__meridian { animation: none !important; }
+  .ambient-depth__architecture,
+  .ambient-depth__beam,
+  .ambient-depth__glow,
+  .ambient-depth__orbit,
+  .ambient-depth__dust { will-change: auto; }
 }
 
 :focus-visible {
@@ -324,7 +361,9 @@
 }
 
 .journey-hero {
+  position: relative;
   isolation: isolate;
+  min-height: 11.75rem;
   border: 1px solid rgba(212, 175, 55, 0.32);
   background:
     radial-gradient(circle at 84% 12%, rgba(229, 193, 88, 0.24), transparent 25%),
@@ -332,51 +371,57 @@
   box-shadow: 0 22px 54px rgba(0, 0, 0, 0.26), inset 0 1px rgba(255, 255, 255, 0.08);
 }
 
-/* Profundidade interativa aplicada às superfícies editoriais. */
-.journey-hero,
-.quote-landscape,
-.trail-landscape,
-.modern-surface,
-.shadow-3d-card {
+/* Profundidade interativa somente nas superfícies editoriais escolhidas. */
+[data-depth-surface] {
+  --surface-x: 0;
+  --surface-y: 0;
+  --surface-light-x: 50%;
+  --surface-light-y: 50%;
   transform-style: preserve-3d;
   transform-origin: center;
   backface-visibility: hidden;
 }
 
 .depth-surface--active {
-  transform: perspective(1100px) rotateX(var(--surface-rx, 0deg)) rotateY(var(--surface-ry, 0deg)) scale(1.008);
+  transform: perspective(1200px) rotateX(var(--surface-rx, 0deg)) rotateY(var(--surface-ry, 0deg)) scale(1.004);
   border-color: rgba(229, 193, 88, 0.52) !important;
   box-shadow:
     0 30px 70px rgba(0, 0, 0, 0.38),
     0 0 34px rgba(212, 175, 55, 0.1),
     inset 0 1px rgba(255, 255, 255, 0.12);
-  transition: transform 90ms linear, border-color 220ms ease, box-shadow 220ms ease;
+  transition: transform 100ms linear, border-color 220ms ease, box-shadow 220ms ease;
   will-change: transform;
 }
 
-.depth-surface--active > :not(.absolute) {
-  transform: translateZ(24px);
-  transition: transform 180ms ease-out;
+.depth-glare {
+  position: absolute;
+  inset: -1px;
+  z-index: 4;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    26rem circle at var(--surface-light-x) var(--surface-light-y),
+    rgba(255, 241, 195, .18),
+    rgba(212, 175, 55, .055) 28%,
+    transparent 67%
+  );
+  mix-blend-mode: screen;
+  transition: opacity 260ms ease;
 }
 
-/* No touch, o scroll funciona como controle de câmera. O ângulo permanece
-   pequeno para conservar a leitura e a estabilidade da barra central. */
-.depth-surface--mobile {
-  transform: perspective(1050px) rotateX(var(--mobile-depth-rx, 0deg)) translateZ(var(--mobile-depth-z, 0));
-  box-shadow:
-    0 calc(16px + var(--mobile-depth-z, 0px)) 38px rgba(0, 0, 0, 0.3),
-    inset 0 1px rgba(255, 255, 255, 0.08);
-  transition: transform 160ms ease-out, box-shadow 220ms ease;
-  will-change: transform;
+.depth-surface--active > .depth-glare,
+[data-depth-surface]:focus-visible > .depth-glare {
+  opacity: .82;
 }
 
 @media (pointer: fine) {
-  .journey-hero,
-  .quote-landscape,
-  .trail-landscape,
-  .modern-surface,
-  .shadow-3d-card {
+  [data-depth-surface] {
     transition: transform 260ms cubic-bezier(.2,.75,.25,1), border-color 220ms ease, box-shadow 220ms ease;
+  }
+
+  [data-depth-surface].depth-surface--active {
+    transition: transform 100ms linear, border-color 220ms ease, box-shadow 220ms ease;
   }
 }
 
@@ -387,10 +432,132 @@
   height: 19rem;
   right: -5rem;
   bottom: -12rem;
-  z-index: -1;
+  z-index: 0;
   border: 1px solid rgba(212, 175, 55, 0.23);
   border-radius: 50%;
   box-shadow: 0 0 0 2.5rem rgba(212, 175, 55, 0.035), 0 0 0 5rem rgba(212, 175, 55, 0.025);
+}
+
+/* Astrolábio tridimensional: assinatura visual da área inicial. */
+.agora-orrery {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  right: clamp(7rem, 19vw, 17rem);
+  width: clamp(15rem, 26vw, 24rem);
+  aspect-ratio: 1;
+  pointer-events: none;
+  opacity: .76;
+  transform-style: preserve-3d;
+  transform: translate3d(
+    calc(var(--surface-x, 0) * 15px),
+    calc(-50% + var(--surface-y, 0) * 10px),
+    0
+  );
+  filter: drop-shadow(0 24px 28px rgba(0, 0, 0, .34));
+  transition: opacity 500ms ease, transform 180ms ease-out;
+}
+
+.journey-hero__content {
+  transform: translateZ(18px);
+}
+
+.agora-orrery__halo,
+.agora-orrery__meridian,
+.agora-orrery__axis,
+.agora-orrery__sun,
+.agora-orrery__base {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+}
+
+.agora-orrery__halo {
+  width: 78%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(229, 193, 88, .13), rgba(212, 175, 55, .035) 36%, transparent 69%);
+  transform: translate(-50%, -50%);
+  filter: blur(7px);
+}
+
+.agora-orrery__meridian {
+  --orbit-tilt: 68deg;
+  width: 82%;
+  aspect-ratio: 1;
+  border: 1px solid rgba(229, 193, 88, .52);
+  border-radius: 50%;
+  box-shadow: inset 0 0 20px rgba(212, 175, 55, .05), 0 0 12px rgba(212, 175, 55, .08);
+  transform-style: preserve-3d;
+  transform: translate(-50%, -50%) rotateX(var(--orbit-tilt)) rotateZ(0deg);
+  animation: agora-orrery-spin 31s linear infinite;
+}
+
+.agora-orrery__meridian::before,
+.agora-orrery__meridian::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(229, 193, 88, .22);
+}
+
+.agora-orrery__meridian::before { inset: 8%; }
+.agora-orrery__meridian::after { inset: 18%; border-style: dashed; }
+.agora-orrery__meridian--outer { --orbit-tilt: 68deg; animation-duration: 38s; }
+.agora-orrery__meridian--middle { --orbit-tilt: 81deg; width: 64%; animation-duration: 27s; animation-direction: reverse; }
+.agora-orrery__meridian--inner { --orbit-tilt: 55deg; width: 45%; animation-duration: 19s; }
+
+.agora-orrery__satellite {
+  position: absolute;
+  top: 50%;
+  right: -.22rem;
+  width: .46rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff6cf, var(--color-accent-gold) 45%, #6e4f0d 100%);
+  box-shadow: 0 0 14px rgba(229, 193, 88, .78);
+}
+
+.agora-orrery__satellite--two { width: .35rem; background: #a9cfdb; box-shadow: 0 0 12px rgba(169, 207, 219, .7); }
+.agora-orrery__satellite--three { width: .29rem; }
+
+.agora-orrery__axis {
+  width: 1px;
+  height: 88%;
+  background: linear-gradient(transparent, rgba(229, 193, 88, .62) 18% 82%, transparent);
+  transform: translate(-50%, -50%) rotate(19deg);
+  box-shadow: 0 0 8px rgba(229, 193, 88, .28);
+}
+
+.agora-orrery__sun {
+  width: 3rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff9df 0 8%, #e8c967 28%, #a06c13 66%, #3c2708 100%);
+  box-shadow: 0 0 16px rgba(255, 221, 117, .7), 0 0 52px rgba(212, 175, 55, .28), inset -8px -10px 13px rgba(28, 15, 2, .55);
+  transform: translate(-50%, -50%) translateZ(22px);
+}
+
+.agora-orrery__sun span {
+  position: absolute;
+  inset: -.65rem;
+  border: 1px solid rgba(229, 193, 88, .2);
+  border-radius: 50%;
+}
+
+.agora-orrery__base {
+  top: auto;
+  bottom: 2%;
+  width: 58%;
+  height: 16%;
+  border: solid rgba(229, 193, 88, .4);
+  border-width: 0 1px 1px;
+  border-radius: 0 0 50% 50%;
+  transform: translateX(-50%) perspective(300px) rotateX(58deg);
+}
+
+@keyframes agora-orrery-spin {
+  to { transform: translate(-50%, -50%) rotateX(var(--orbit-tilt)) rotateZ(360deg); }
 }
 
 .journey-stat {
@@ -469,8 +636,40 @@
     border-radius: 1.25rem;
   }
 
+  .journey-hero:has(.agora-orrery) {
+    min-height: 18rem;
+  }
+
+  .agora-orrery {
+    top: 37%;
+    right: -5.5rem;
+    width: 16rem;
+    opacity: .28;
+  }
+
+  :root[data-effects='subtle'] .agora-orrery {
+    opacity: .14;
+  }
+
+  :root[data-effects='off'] .journey-hero:has(.agora-orrery),
+  .reading-mode .journey-hero:has(.agora-orrery) {
+    min-height: auto;
+  }
+
   .journey-stat {
     min-width: 3.35rem;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .agora-orrery {
+    right: -2.5rem;
+    width: 18rem;
+    opacity: .36;
+  }
+
+  :root[data-effects='subtle'] .agora-orrery {
+    opacity: .2;
   }
 }
 
@@ -489,6 +688,60 @@
   backdrop-filter: blur(22px) saturate(1.06);
   transform: perspective(900px) rotateX(6deg);
   transform-style: preserve-3d;
+}
+
+.ambient-sound__mobile-toggle {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .ambient-sound {
+    width: auto;
+    padding: .5rem;
+    border-radius: 1rem;
+  }
+
+  .ambient-sound__desktop-icon,
+  .ambient-sound__panel {
+    display: none;
+  }
+
+  .ambient-sound .ambient-sound__mobile-toggle {
+    display: grid;
+  }
+
+  .ambient-sound--expanded {
+    width: min(92vw, 17rem);
+    padding: .75rem;
+  }
+
+  .ambient-sound--expanded .ambient-sound__panel,
+  .ambient-sound--expanded .ambient-sound__copy {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .ambient-sound--expanded .ambient-sound__panel {
+    display: block;
+  }
+
+  .ambient-sound--expanded .ambient-sound__copy select {
+    width: 100%;
+    max-width: 100%;
+    min-height: 2.75rem;
+    margin-top: .125rem;
+    padding: 0 .5rem;
+    border: 1px solid rgba(212, 175, 55, .18);
+    border-radius: .65rem;
+    background: rgba(7, 16, 25, .42);
+  }
+
+  .ambient-sound--expanded .ambient-sound__play,
+  .ambient-sound--expanded .ambient-sound__mute {
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+  }
 }
 
 .ambient-surface::before {
@@ -558,19 +811,13 @@
 .velocity-dock {
   --scroll-velocity: 0;
   --scroll-energy: 0;
-  --dock-x: 0;
   isolation: isolate;
   overflow: hidden;
-  scale: calc(1 + var(--scroll-energy) * 0.018)
-    calc(1 - var(--scroll-energy) * 0.025);
-  rotate: calc(var(--scroll-velocity) * -0.7deg);
-  translate: var(--dock-x) calc(var(--scroll-energy) * -3px);
   transition: border-color 220ms ease, box-shadow 220ms ease;
-  will-change: scale, rotate, translate;
-}
-
-.tab-bar-desktop {
-  --dock-x: -50%;
+  box-shadow:
+    0 18px 44px rgba(0, 0, 0, .36),
+    0 0 calc(var(--scroll-energy) * 28px) rgba(212, 175, 55, .2),
+    inset 0 1px rgba(255, 255, 255, .08);
 }
 
 .velocity-dock::before {
@@ -582,6 +829,43 @@
   background: linear-gradient(90deg, transparent 12%, rgba(229, 193, 88, 0.2), transparent 48%);
   opacity: calc(var(--scroll-energy) * 1.8);
   transform: translateX(calc(var(--scroll-velocity) * 24%));
+  transition: opacity 160ms linear;
+}
+
+.media-cover-depth {
+  transition: transform 280ms cubic-bezier(.2,.75,.25,1), box-shadow 260ms ease, border-color 260ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .media-cover-depth:hover,
+  .media-cover-depth:focus-visible {
+    transform: translateY(-6px) scale(1.025);
+    box-shadow: 0 24px 52px rgba(0, 0, 0, .44), 0 0 25px rgba(212, 175, 55, .18);
+  }
+
+  .media-cover-depth.depth-surface--active {
+    transform: perspective(900px) translateY(-6px) rotateX(var(--surface-rx, 0deg)) rotateY(var(--surface-ry, 0deg)) scale(1.025);
+  }
+}
+
+/* Utilitários editoriais usados pelas views e diálogos. */
+.animate-fadeIn { animation: agora-fade-in 360ms cubic-bezier(.2,.75,.25,1) backwards; }
+.animate-slideLeft { animation: agora-slide-left 320ms cubic-bezier(.2,.78,.25,1) backwards; }
+
+@keyframes agora-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes agora-slide-left {
+  from { opacity: 0; transform: translate3d(18px, 0, 0); }
+  to { opacity: 1; transform: none; }
+}
+
+html:has([aria-modal='true']:not([aria-hidden='true'])) [data-ambient-control] {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .modern-surface::after {
@@ -623,4 +907,51 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(212, 175, 55, 0.4);
+}
+
+/* Este bloco fica por último para não ser vencido por utilitários posteriores. */
+@media (prefers-reduced-motion: reduce) {
+  #root::before,
+  #root::after,
+  .ambient-depth__dust,
+  .agora-orrery__meridian,
+  .animate-fadeIn,
+  .animate-slideLeft {
+    animation: none !important;
+  }
+
+  [data-depth-surface],
+  [data-depth-surface]:hover,
+  [data-depth-surface]:focus-visible,
+  .depth-surface--active,
+  .media-cover-depth,
+  .media-cover-depth:hover,
+  .media-cover-depth:focus-visible,
+  .media-cover-depth img,
+  .journey-hero__content {
+    transform: none !important;
+    transition: none !important;
+    will-change: auto !important;
+  }
+
+  .depth-glare,
+  .velocity-dock::before {
+    opacity: 0 !important;
+    transition: none !important;
+  }
+
+  .agora-orrery,
+  .ambient-sound__play {
+    transition: none !important;
+  }
+
+  .ambient-sound__play:hover {
+    transform: none !important;
+  }
+}
+
+@media (pointer: coarse) {
+  .journey-hero__content {
+    transform: none;
+  }
 }

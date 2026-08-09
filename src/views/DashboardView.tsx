@@ -17,6 +17,7 @@ import {
 import { useAgoraStore } from '../store/useAgoraStore'
 import { NetflixMediaCard } from '../components/NetflixMediaCard'
 import { TrailSelectionModal } from '../components/TrailSelectionModal'
+import { AgoraOrrery } from '../components/AgoraOrrery'
 import dawnLandscape from '../assets/agora-dawn-landscape.jpg'
 
 const DailyQuoteCard = lazy(() => import('../components/DailyQuoteCard').then((module) => ({ default: module.DailyQuoteCard })))
@@ -77,8 +78,10 @@ export const DashboardView: React.FC = () => {
 
   return (
     <div className="space-y-8 pb-12 font-sans animate-fadeIn">
-      <section className="journey-hero overflow-hidden rounded-3xl px-5 py-6 sm:px-8 sm:py-8">
-        <div className="relative z-10 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+      <section data-depth-surface="hero" className="journey-hero overflow-hidden rounded-3xl px-5 py-6 sm:px-8 sm:py-8">
+        <AgoraOrrery />
+        <span className="depth-glare" aria-hidden="true" />
+        <div className="journey-hero__content relative z-10 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-xl">
             <p className="mb-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.22em] text-accent-gold">
               <Sparkles className="h-3.5 w-3.5" /> O fio da sua jornada
@@ -135,6 +138,7 @@ export const DashboardView: React.FC = () => {
 
         {customTrails.length === 0 ? (
           <div
+            data-depth-surface="feature"
             onClick={() => setIsTrailModalOpen(true)}
             className="trail-landscape relative overflow-hidden p-5 border border-accent-gold/30 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-3d-card hover:shadow-3d-gold transition-all cursor-pointer group"
             style={{ backgroundImage: `url(${dawnLandscape})` }}
@@ -168,7 +172,17 @@ export const DashboardView: React.FC = () => {
             {customTrails.slice(0, 2).map((trail) => (
               <div
                 key={trail.id}
+                data-depth-surface="feature"
                 onClick={() => setActiveTab('trilhas')}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    setActiveTab('trilhas')
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label={`Abrir trilha ${trail.nome}, ${trail.progresso_percentual || 0}% concluída, ${trail.mediaIds.length} conteúdos`}
                 className="p-4 bg-gradient-to-r from-bg-surface via-[#182838] to-bg-surface border border-white/5 hover:border-accent-gold/50 rounded-2xl space-y-2 shadow-3d-card hover:shadow-3d-gold transition-all cursor-pointer group"
               >
                 <div className="flex items-center justify-between gap-2">
@@ -356,7 +370,7 @@ export const DashboardView: React.FC = () => {
             </button>
           </div>
         ) : (
-          <div className="flex overflow-x-auto snap-x space-x-4 pb-4 pt-1 scrollbar-thin scrollbar-thumb-accent-gold/40 scrollbar-track-bg-base">
+          <div className="-mx-4 flex overflow-x-auto snap-x space-x-4 px-4 pb-4 pt-5 scrollbar-thin scrollbar-thumb-accent-gold/40 scrollbar-track-bg-base">
             {filteredMediaItems.map((item) => (
               <NetflixMediaCard
                 key={item.id}

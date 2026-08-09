@@ -11,7 +11,6 @@ import { LoginView } from './views/LoginView'
 import { Onboarding } from './components/Onboarding'
 import { AmbientSoundControl } from './components/AmbientSoundControl'
 import { AmbientDepth } from './components/AmbientDepth'
-import { KineticGuide } from './components/KineticGuide'
 import { SurfaceDepth } from './components/SurfaceDepth'
 import { AgoraLoader } from './components/AgoraLoader'
 import { CommandPalette } from './components/CommandPalette'
@@ -83,7 +82,6 @@ const MainContent: React.FC = () => {
   return (
     <>
       <AmbientDepth />
-      <KineticGuide />
       <SurfaceDepth />
       <div className="app-frame min-h-screen w-full min-w-0 flex bg-transparent text-text-primary font-sans selection:bg-accent-gold/30 selection:text-text-primary">
         {/* Main Content Area */}

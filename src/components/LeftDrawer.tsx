@@ -15,7 +15,7 @@ interface NavItem {
 export const LeftDrawer: React.FC = () => {
   const { isLeftDrawerOpen, setIsLeftDrawerOpen, setActiveTab, activeTab, mediaItems } = useAgoraStore()
 
-  const drawerRef = useModalAccessibility<HTMLElement>(isLeftDrawerOpen, () => setIsLeftDrawerOpen(false))
+  const drawerRef = useModalAccessibility<HTMLDivElement>(isLeftDrawerOpen, () => setIsLeftDrawerOpen(false))
 
   const handleBackup = () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(mediaItems, null, 2))
@@ -54,7 +54,7 @@ export const LeftDrawer: React.FC = () => {
       />
 
       {/* Sidebar */}
-      <aside
+      <div
         ref={drawerRef}
         id="menu-lateral"
         aria-label="Menu lateral principal"
@@ -176,7 +176,7 @@ export const LeftDrawer: React.FC = () => {
             </button>
           </div>
         </div>
-      </aside>
+      </div>
     </div>
   )
 }

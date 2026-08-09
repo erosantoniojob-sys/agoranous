@@ -874,7 +874,8 @@ export const DailyQuoteCard: React.FC = () => {
   }
 
   return (
-    <section className="quote-landscape relative overflow-hidden border border-accent-gold/30 rounded-2xl p-6 sm:p-7 shadow-3d-deep transition-all group" style={{ backgroundImage: `url(${dawnLandscape})` }}>
+    <section data-depth-surface="feature" className="quote-landscape relative overflow-hidden border border-accent-gold/30 rounded-2xl p-6 sm:p-7 shadow-3d-deep transition-all group" style={{ backgroundImage: `url(${dawnLandscape})` }}>
+      <span className="depth-glare" aria-hidden="true" />
       <div className="absolute inset-0 bg-gradient-to-r from-[#07131a]/[0.98] via-[#0b1820]/90 to-[#0b1420]/25" />
       {/* Soft golden glow in the background */}
       <div className="absolute -right-12 -top-12 w-56 h-56 bg-accent-gold/10 rounded-full blur-3xl pointer-events-none group-hover:bg-accent-gold/15 transition-all" />
