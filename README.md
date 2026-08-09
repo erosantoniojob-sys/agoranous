@@ -50,7 +50,8 @@ Para ativar o enriquecimento de capas e sinopses e a análise inteligente das ob
 
 - `GEMINI_API_KEY`: chave criada no Google AI Studio, mantida somente no servidor;
 - `GEMINI_MODEL` (opcional): modelo utilizado na busca; o padrão é `gemini-2.5-flash-lite`;
-- `GEMINI_DAILY_LIMIT` (opcional): máximo diário de enriquecimentos por IP; o padrão é `3`.
+- `GEMINI_DAILY_LIMIT` (opcional): máximo diário de enriquecimentos por IP; o padrão é `3`;
+- `GEMINI_LEARNING_DAILY_LIMIT` (opcional): máximo diário de análises de acervo por conta e IP; o padrão é `2`.
 
 Depois, basta entrar com o mesmo e-mail e senha em cada dispositivo. Contas de visitante permanecem locais por definição.
 

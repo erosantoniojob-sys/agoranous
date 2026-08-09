@@ -4,6 +4,7 @@ import { useAgoraStore } from '../store/useAgoraStore'
 import { RatingStars } from './RatingStars'
 import { CoverImage } from './CoverImage'
 import { MediaStatus } from '../types/agora'
+import { escapeHtml } from '../lib/escapeHtml'
 import { useModalAccessibility } from '../lib/useModalAccessibility'
 
 export const MediaDetailModal: React.FC = () => {
@@ -90,17 +91,29 @@ export const MediaDetailModal: React.FC = () => {
     const printWindow = window.open('', '_blank')
     if (!printWindow) return
 
-    const abntAuthor = (selectedMedia.autor_criador || 'AUTOR').toUpperCase()
-    const abntTitle = selectedMedia.titulo
+    const exportedAt = new Date()
+    const title = escapeHtml(selectedMedia.titulo)
+    const author = escapeHtml(selectedMedia.autor_criador || 'Não informado')
+    const abntAuthor = escapeHtml((selectedMedia.autor_criador || 'AUTOR').toUpperCase())
+    const type = escapeHtml(selectedMedia.tipo)
+    const year = escapeHtml(selectedMedia.ano || 'S.D.')
+    const releaseDate = escapeHtml(selectedMedia.data_lancamento_oficial || selectedMedia.ano || 'N/D')
+    const rating = escapeHtml(selectedMedia.avaliacao_numerica)
+    const researcher = escapeHtml(userProfile.nome || 'Convidado')
+    const synopsis = escapeHtml(selectedMedia.sinopse || 'Sem sinopse cadastrada.')
+    const source = escapeHtml(selectedMedia.fonte || 'Edição Acadêmica')
+    const referenceYear = escapeHtml(selectedMedia.ano || exportedAt.getFullYear())
+    const exportDate = escapeHtml(exportedAt.toLocaleDateString('pt-BR'))
+    const exportTime = escapeHtml(exportedAt.toLocaleTimeString('pt-BR'))
 
     const learningsHTML = itemLearnings.length > 0
       ? itemLearnings
           .map(
             (l, idx) => `
           <div style="margin-bottom: 20px; padding: 12px 16px; border-left: 3px solid #D4AF37; background: #f9f9f6;">
-            <h4 style="margin:0 0 6px 0; font-size: 13px; color: #111;">Capítulo ${idx + 1}: ${l.topico || 'Reflexão Pessoal'}</h4>
-            <p style="margin:0 0 8px 0; font-size: 12px; font-style: italic; color: #222;">"${l.texto}"</p>
-            <span style="font-size: 10px; color: #666;">Registrado em ${l.data}</span>
+            <h4 style="margin:0 0 6px 0; font-size: 13px; color: #111;">Capítulo ${escapeHtml(idx + 1)}: ${escapeHtml(l.topico || 'Reflexão Pessoal')}</h4>
+            <p style="margin:0 0 8px 0; font-size: 12px; font-style: italic; color: #222;">"${escapeHtml(l.texto)}"</p>
+            <span style="font-size: 10px; color: #666;">Registrado em ${escapeHtml(l.data)}</span>
           </div>`
           )
           .join('')
@@ -110,7 +123,7 @@ export const MediaDetailModal: React.FC = () => {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Dossiê ABNT - ${selectedMedia.titulo}</title>
+          <title>Dossiê ABNT - ${title}</title>
           <style>
             @page { size: A4; margin: 25mm 25mm 25mm 25mm; }
             body { font-family: "Times New Roman", Times, serif; color: #111; line-height: 1.5; font-size: 12pt; background: #fff; margin: 0; padding: 20px; }
@@ -129,17 +142,17 @@ export const MediaDetailModal: React.FC = () => {
           <div class="subtitle">DOSSIÊ ACADÊMICO DE CONHECIMENTO & APRENDIZADOS</div>
 
           <div class="meta-box">
-            <div class="meta-row"><span class="meta-label">TÍTULO DA OBRA:</span> ${selectedMedia.titulo}</div>
-            <div class="meta-row"><span class="meta-label">AUTOR / CRIADOR:</span> ${selectedMedia.autor_criador || 'Não informado'}</div>
-            <div class="meta-row"><span class="meta-label">CATEGORIA / TIPO:</span> ${selectedMedia.tipo} (${selectedMedia.ano || 'S.D.'})</div>
-            <div class="meta-row"><span class="meta-label">DATA DE LANÇAMENTO OFICIAL:</span> ${selectedMedia.data_lancamento_oficial || selectedMedia.ano || 'N/D'}</div>
-            <div class="meta-row"><span class="meta-label">AVALIAÇÃO NO SEGUNDO CÉREBRO:</span> ${selectedMedia.avaliacao_numerica} / 5.0 estrelas</div>
-            <div class="meta-row"><span class="meta-label">PESQUISADOR / ERUDITO:</span> ${userProfile.nome}</div>
+            <div class="meta-row"><span class="meta-label">TÍTULO DA OBRA:</span> ${title}</div>
+            <div class="meta-row"><span class="meta-label">AUTOR / CRIADOR:</span> ${author}</div>
+            <div class="meta-row"><span class="meta-label">CATEGORIA / TIPO:</span> ${type} (${year})</div>
+            <div class="meta-row"><span class="meta-label">DATA DE LANÇAMENTO OFICIAL:</span> ${releaseDate}</div>
+            <div class="meta-row"><span class="meta-label">AVALIAÇÃO NO SEGUNDO CÉREBRO:</span> ${rating} / 5.0 estrelas</div>
+            <div class="meta-row"><span class="meta-label">PESQUISADOR / ERUDITO:</span> ${researcher}</div>
           </div>
 
           <h2>1. SINOPSE E RESUMO EXECUTIVO</h2>
           <p style="text-align: justify; text-indent: 15mm; margin-top: 10px;">
-            ${selectedMedia.sinopse || 'Sem sinopse cadastrada.'}
+            ${synopsis}
           </p>
 
           <h2>2. TÓPICOS E APRENDIZADOS CENTRALIZADOS</h2>
@@ -147,11 +160,11 @@ export const MediaDetailModal: React.FC = () => {
 
           <h2>3. REFERÊNCIA BIBLIOGRÁFICA REGULAMENTAR (ABNT)</h2>
           <div class="abnt-citation">
-            ${abntAuthor}. <strong>${abntTitle}</strong>. ${selectedMedia.fonte || 'Edição Acadêmica'}: Ágora Segundo Cérebro, ${selectedMedia.ano || new Date().getFullYear()}.
+            ${abntAuthor}. <strong>${title}</strong>. ${source}: Ágora Segundo Cérebro, ${referenceYear}.
           </div>
 
           <div class="footer">
-            Dossiê gerado automaticamente pelo aplicativo Ágora em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}.
+            Dossiê gerado automaticamente pelo aplicativo Ágora em ${exportDate} às ${exportTime}.
           </div>
 
           <script>

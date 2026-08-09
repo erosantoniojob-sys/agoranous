@@ -20,6 +20,7 @@ import { useAgoraStore } from '../store/useAgoraStore'
 import { CoverImage } from '../components/CoverImage'
 import { Trilhas } from '../components/Trilhas'
 import { PhilosopherPortrait } from '../components/PhilosopherPortrait'
+import { escapeHtml } from '../lib/escapeHtml'
 
 export const TimelineView: React.FC = () => {
   const {
@@ -191,14 +192,24 @@ export const TimelineView: React.FC = () => {
     const printWindow = window.open('', '_blank')
     if (!printWindow) return
 
+    const exportedAt = new Date()
+    const researcher = escapeHtml(userProfile.nome || 'Convidado')
+    const biography = escapeHtml(userProfile.biografia || 'Sem biografia informada')
+    const totalItems = escapeHtml(stats.totalItens)
+    const totalLearnings = escapeHtml(stats.totalAprendizados)
+    const averageRating = escapeHtml(stats.mediaAvaliacao)
+    const referenceYear = escapeHtml(exportedAt.getFullYear())
+    const exportDate = escapeHtml(exportedAt.toLocaleDateString('pt-BR'))
+    const exportTime = escapeHtml(exportedAt.toLocaleTimeString('pt-BR'))
+
     const notesHTML = aprendizados.length > 0
       ? aprendizados
           .map(
             (l, idx) => `
           <div style="margin-bottom: 20px; padding: 14px 18px; border-left: 3px solid #D4AF37; background: #f9f9f6;">
-            <h4 style="margin:0 0 6px 0; font-size: 13px; color: #111; text-transform: uppercase;">Capítulo ${idx + 1}: ${l.topico || 'Reflexão Pessoal'}</h4>
-            <p style="margin:0 0 8px 0; font-size: 12px; font-style: italic; color: #222;">"${l.texto}"</p>
-            <span style="font-size: 10px; color: #666;">Registrado em ${l.data}</span>
+            <h4 style="margin:0 0 6px 0; font-size: 13px; color: #111; text-transform: uppercase;">Capítulo ${escapeHtml(idx + 1)}: ${escapeHtml(l.topico || 'Reflexão Pessoal')}</h4>
+            <p style="margin:0 0 8px 0; font-size: 12px; font-style: italic; color: #222;">"${escapeHtml(l.texto)}"</p>
+            <span style="font-size: 10px; color: #666;">Registrado em ${escapeHtml(l.data)}</span>
           </div>`
           )
           .join('')
@@ -208,7 +219,7 @@ export const TimelineView: React.FC = () => {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Dossiê Acadêmico ABNT - ${userProfile.nome || 'Convidado'}</title>
+          <title>Dossiê Acadêmico ABNT - ${researcher}</title>
           <style>
             @page { size: A4; margin: 25mm 25mm 25mm 25mm; }
             body { font-family: "Times New Roman", Times, serif; color: #111; line-height: 1.6; font-size: 12pt; background: #fff; margin: 0; padding: 20px; }
@@ -227,11 +238,11 @@ export const TimelineView: React.FC = () => {
           <div class="subtitle">DOSSIÊ COMPLETO DE CONHECIMENTO & APRENDIZADOS (ABNT)</div>
 
           <div class="meta-box">
-            <div class="meta-row"><span class="meta-label">PESQUISADOR / ERUDITO:</span> ${userProfile.nome || 'Convidado'}</div>
-            <div class="meta-row"><span class="meta-label">BIOGRAFIA / PERFIL:</span> ${userProfile.biografia || 'Sem biografia informada'}</div>
-            <div class="meta-row"><span class="meta-label">TOTAL DE OBRAS CATALOGADAS:</span> ${stats.totalItens} mídias</div>
-            <div class="meta-row"><span class="meta-label">TOTAL DE SÍNTESES E REFLEXÕES:</span> ${stats.totalAprendizados} notas</div>
-            <div class="meta-row"><span class="meta-label">MÉDIA DE AVALIAÇÃO DO ACERVO:</span> ${stats.mediaAvaliacao} / 5.0 estrelas</div>
+            <div class="meta-row"><span class="meta-label">PESQUISADOR / ERUDITO:</span> ${researcher}</div>
+            <div class="meta-row"><span class="meta-label">BIOGRAFIA / PERFIL:</span> ${biography}</div>
+            <div class="meta-row"><span class="meta-label">TOTAL DE OBRAS CATALOGADAS:</span> ${totalItems} mídias</div>
+            <div class="meta-row"><span class="meta-label">TOTAL DE SÍNTESES E REFLEXÕES:</span> ${totalLearnings} notas</div>
+            <div class="meta-row"><span class="meta-label">MÉDIA DE AVALIAÇÃO DO ACERVO:</span> ${averageRating} / 5.0 estrelas</div>
           </div>
 
           <h2>1. INTRODUÇÃO E ESTRUTURA DA MEMÓRIA</h2>
@@ -244,11 +255,11 @@ export const TimelineView: React.FC = () => {
 
           <h2>3. REFERÊNCIA BIBLIOGRÁFICA REGULAMENTAR (ABNT)</h2>
           <div class="abnt-citation">
-            ÁGORA: SEGUNDO CÉREBRO. <strong>Compêndio de Mídias, Trilhas e Aprendizados</strong>. Curadoria de ${userProfile.nome || 'Convidado'}. Rio de Janeiro: Plataforma Ágora, ${new Date().getFullYear()}.
+            ÁGORA: SEGUNDO CÉREBRO. <strong>Compêndio de Mídias, Trilhas e Aprendizados</strong>. Curadoria de ${researcher}. Rio de Janeiro: Plataforma Ágora, ${referenceYear}.
           </div>
 
           <div class="footer">
-            Dossiê emitido automaticamente pelo aplicativo Ágora em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}.
+            Dossiê emitido automaticamente pelo aplicativo Ágora em ${exportDate} às ${exportTime}.
           </div>
 
           <script>

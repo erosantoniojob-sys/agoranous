@@ -90,15 +90,19 @@ function readStoredObject<T>(key: string): T | null {
   return readBrowserValue<T | null>(key, null)
 }
 
-// Chaves usadas pelas versões anteriores à sincronização por conta. Mantemos a
-// leitura como migração: até a versão 1.6.6.1 os dados autenticados usavam o
-// prefixo sem o id da conta. Sem isso, uma atualização faria o acervo parecer
-// vazio mesmo que ele ainda estivesse salvo no navegador.
-const LEGACY_MEDIA_STORAGE_KEY = 'agora_media_items_v3'
-const LEGACY_ACCOUNT_STORAGE_PREFIX = 'agora_user_v5_'
+const GENERATED_LEARNING_ID_PREFIX = 'lesson_ai_v1_'
 
 function firstNonEmptyArray<T>(...values: T[][]): T[] {
   return values.find((value) => value.length > 0) || []
+}
+
+function mergeUniqueById<T extends { id: string }>(...collections: T[][]): T[] {
+  const seen = new Set<string>()
+  return collections.flatMap((collection) => collection.filter((item) => {
+    if (!item?.id || seen.has(item.id)) return false
+    seen.add(item.id)
+    return true
+  }))
 }
 
 const SEED_MEDIA: MediaItem[] = [
@@ -370,10 +374,12 @@ interface AgoraStoreContextType {
   restoreMediaItem: (id: string) => void;
   isVisitor: boolean;
   isDataReady: boolean;
+  isCloudReady: boolean;
   hasCompletedOnboarding: boolean;
   completeOnboarding: (profileData?: Partial<UserProfile>) => void;
   resetOnboarding: () => void;
   syncStatus: 'local' | 'syncing' | 'synced' | 'error';
+  retryCloudSync: () => void;
   learningEnrichment: LearningEnrichmentState;
   enrichExistingWorks: () => Promise<number>;
 }
@@ -390,7 +396,8 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     ? 'agora_guest_v5_'
     : `agora_user_v5_${user?.id || 'anonymous'}_`;
   const [hydratedUserId, setHydratedUserId] = useState<string | null>(null);
-  const isCloudHydrated = Boolean(user?.id && hydratedUserId === user.id);
+  const [cloudHydratedUserId, setCloudHydratedUserId] = useState<string | null>(null);
+  const isCloudHydrated = Boolean(user?.id && cloudHydratedUserId === user.id);
   const isDataReady = !user || hydratedUserId === user.id;
 
   // Os dados do visitante também pertencem ao navegador atual. Eles não são
@@ -423,40 +430,46 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     async function loadCloudData() {
       setHydratedUserId(null);
+      setCloudHydratedUserId(null);
       if (!isVisitor && user?.id) {
         try {
           const { data: { session } } = await supabase.auth.getSession();
-          if (!session?.access_token) throw new Error('Sessão não encontrada.');
+          if (!session?.access_token || session.user.id !== user.id) {
+            throw new Error('A sessão mudou durante a leitura do acervo.');
+          }
 
           const res = await fetch('/api/getUserData', {
             headers: { Authorization: `Bearer ${session.access_token}` },
           });
           if (res.ok) {
-            const cloudData = await res.json();
+            const cloudData = await res.json() as Record<string, unknown>;
             if (cancelled) return;
 
             const localMedia = readStoredArray<MediaItem>(keyPrefix + 'media');
-            const legacyAccountMedia = readStoredArray<MediaItem>(LEGACY_ACCOUNT_STORAGE_PREFIX + 'media');
-            const legacyMedia = readStoredArray<MediaItem>(LEGACY_MEDIA_STORAGE_KEY);
             const cloudMedia = Array.isArray(cloudData.media) ? cloudData.media as MediaItem[] : [];
-            // Uma resposta vazia nunca pode apagar uma cópia existente. A ordem
-            // também cobre o prefixo v5 anterior, que ainda não tinha user.id.
-            const recoveredMedia = firstNonEmptyArray(cloudMedia, localMedia, legacyAccountMedia, legacyMedia);
+            // O fallback local já usa uma chave vinculada ao UUID da conta.
+            // Dados legados globais nunca são importados automaticamente.
+            const recoveredMedia = firstNonEmptyArray(cloudMedia, localMedia);
 
             const localLearnings = readStoredArray<Aprendizado>(keyPrefix + 'learnings');
-            const legacyAccountLearnings = readStoredArray<Aprendizado>(LEGACY_ACCOUNT_STORAGE_PREFIX + 'learnings');
             const cloudLearnings = Array.isArray(cloudData.learnings) ? cloudData.learnings as Aprendizado[] : [];
+            const generatedLearnings = Array.isArray(cloudData.generated_learnings_v1)
+              ? cloudData.generated_learnings_v1 as Aprendizado[]
+              : [];
+            const recoveredMediaIds = new Set(recoveredMedia.map((item) => item.id));
+            const recoveredLearnings = mergeUniqueById(
+              generatedLearnings.filter((item) => recoveredMediaIds.has(item.mediaId)),
+              cloudLearnings,
+              localLearnings,
+            );
 
             const localTrails = readStoredArray<CustomTrail>(keyPrefix + 'trails');
-            const legacyAccountTrails = readStoredArray<CustomTrail>(LEGACY_ACCOUNT_STORAGE_PREFIX + 'trails');
             const cloudTrails = Array.isArray(cloudData.trails) ? cloudData.trails as CustomTrail[] : [];
 
             const localChat = readStoredArray<ChatMessage>(keyPrefix + 'chat');
-            const legacyAccountChat = readStoredArray<ChatMessage>(LEGACY_ACCOUNT_STORAGE_PREFIX + 'chat');
             const cloudChat = Array.isArray(cloudData.chat) ? cloudData.chat as ChatMessage[] : [];
 
             const localProfile = readStoredObject<UserProfile>(keyPrefix + 'profile');
-            const legacyAccountProfile = readStoredObject<UserProfile>(LEGACY_ACCOUNT_STORAGE_PREFIX + 'profile');
             const cloudProfile = cloudData.profile && typeof cloudData.profile === 'object'
               ? cloudData.profile as UserProfile
               : null;
@@ -464,21 +477,20 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               ? cloudProfile!
               : hasExistingUserData({ profile: localProfile || undefined })
                 ? localProfile!
-                : hasExistingUserData({ profile: legacyAccountProfile || undefined })
-                  ? legacyAccountProfile!
-                  : EMPTY_PROFILE;
+                : EMPTY_PROFILE;
 
             setMediaItems(recoveredMedia);
-            setAprendizados(firstNonEmptyArray(cloudLearnings, localLearnings, legacyAccountLearnings));
+            setAprendizados(recoveredLearnings);
             setUserProfile(recoveredProfile);
-            setCustomTrails(firstNonEmptyArray(cloudTrails, localTrails, legacyAccountTrails));
-            setChatMessages(firstNonEmptyArray(cloudChat, localChat, legacyAccountChat, SEED_CHAT));
+            setCustomTrails(firstNonEmptyArray(cloudTrails, localTrails));
+            setChatMessages(firstNonEmptyArray(cloudChat, localChat, SEED_CHAT));
             setDeletedMediaItems(readStoredArray<DeletedMediaItem>(keyPrefix + 'media_trash'))
             setHasCompletedOnboarding(Boolean(
               Boolean(cloudData.onboarding)
-                || hasExistingUserData({ media: recoveredMedia, learnings: firstNonEmptyArray(cloudLearnings, localLearnings, legacyAccountLearnings), trails: firstNonEmptyArray(cloudTrails, localTrails, legacyAccountTrails), profile: recoveredProfile })
+                || hasExistingUserData({ media: recoveredMedia, learnings: recoveredLearnings, trails: firstNonEmptyArray(cloudTrails, localTrails), profile: recoveredProfile })
                 || isLegacyDefaultProfile(recoveredProfile),
             ));
+            setCloudHydratedUserId(user.id);
             setHydratedUserId(user.id);
             return; 
           }
@@ -491,32 +503,24 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       // Fallback local se for visitante ou falha de rede
       if (cancelled) return;
       const localMedia = readStoredArray<MediaItem>(keyPrefix + 'media');
-      const legacyAccountMedia = !isVisitor ? readStoredArray<MediaItem>(LEGACY_ACCOUNT_STORAGE_PREFIX + 'media') : [];
-      const legacyMedia = !isVisitor ? readStoredArray<MediaItem>(LEGACY_MEDIA_STORAGE_KEY) : [];
-      const recoveredMedia = firstNonEmptyArray(localMedia, legacyAccountMedia, legacyMedia);
+      const recoveredMedia = localMedia;
       setMediaItems(recoveredMedia);
 
       const localLearnings = readStoredArray<Aprendizado>(keyPrefix + 'learnings');
-      const legacyAccountLearnings = !isVisitor ? readStoredArray<Aprendizado>(LEGACY_ACCOUNT_STORAGE_PREFIX + 'learnings') : [];
-      const recoveredLearnings = firstNonEmptyArray(localLearnings, legacyAccountLearnings);
+      const recoveredLearnings = localLearnings;
       setAprendizados(recoveredLearnings);
 
       const localChat = readStoredArray<ChatMessage>(keyPrefix + 'chat');
-      const legacyAccountChat = !isVisitor ? readStoredArray<ChatMessage>(LEGACY_ACCOUNT_STORAGE_PREFIX + 'chat') : [];
-      setChatMessages(firstNonEmptyArray(localChat, legacyAccountChat, isVisitor ? VISITOR_CHAT : SEED_CHAT));
+      setChatMessages(firstNonEmptyArray(localChat, isVisitor ? VISITOR_CHAT : SEED_CHAT));
 
       const localProfile = isVisitor ? EMPTY_PROFILE : readStoredObject<UserProfile>(keyPrefix + 'profile') || EMPTY_PROFILE;
-      const legacyAccountProfile = !isVisitor ? readStoredObject<UserProfile>(LEGACY_ACCOUNT_STORAGE_PREFIX + 'profile') : null;
       const recoveredProfile = hasExistingUserData({ profile: localProfile })
         ? localProfile
-        : hasExistingUserData({ profile: legacyAccountProfile || undefined })
-          ? legacyAccountProfile!
-          : EMPTY_PROFILE;
+        : EMPTY_PROFILE;
       setUserProfile(recoveredProfile);
 
       const localTrails = readStoredArray<CustomTrail>(keyPrefix + 'trails');
-      const legacyAccountTrails = !isVisitor ? readStoredArray<CustomTrail>(LEGACY_ACCOUNT_STORAGE_PREFIX + 'trails') : [];
-      const recoveredTrails = firstNonEmptyArray(localTrails, legacyAccountTrails);
+      const recoveredTrails = localTrails;
       setCustomTrails(recoveredTrails);
       setDeletedMediaItems(readStoredArray<DeletedMediaItem>(keyPrefix + 'media_trash'))
 
@@ -542,13 +546,19 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [syncStatus, setSyncStatus] = useState<'local' | 'syncing' | 'synced' | 'error'>(isVisitor ? 'local' : 'synced');
   const [learningEnrichment, setLearningEnrichment] = useState<LearningEnrichmentState>(EMPTY_LEARNING_ENRICHMENT);
   const [serverLearningRevision, setServerLearningRevision] = useState(0)
-  const pendingSyncs = useRef(0)
+  const syncQueues = useRef(new Map<string, {
+    userId: string;
+    collection: string;
+    data: unknown;
+    version: number;
+  }>())
+  const syncFailures = useRef(new Map<string, Set<string>>())
   const handledServerLearningRevision = useRef(0)
-  const activeEnrichmentUserId = useRef<string | null>(user?.id || null)
+  const activeUserIdRef = useRef<string | null>(user?.id || null)
   const enrichmentRequest = useRef<{ userId: string; controller: AbortController } | null>(null)
 
   useEffect(() => {
-    activeEnrichmentUserId.current = user?.id || null
+    activeUserIdRef.current = user?.id || null
     const activeRequest = enrichmentRequest.current
     if (activeRequest && activeRequest.userId !== user?.id) {
       activeRequest.controller.abort()
@@ -566,52 +576,137 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [user?.id])
 
   // FUNÇÃO UTILITÁRIA PARA SALVAR NA NUVEM (Usando API da Vercel)
-  const syncToCloud = useCallback(async (collection: string, data: unknown) => {
+  const syncToCloud = useCallback((collection: string, data: unknown) => {
     if (!isVisitor && user?.id && isCloudHydrated) {
-      pendingSyncs.current += 1
-      setSyncStatus('syncing')
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.access_token) throw new Error('Sessão não encontrada.');
-
-        const response = await fetch('/api/syncUserData', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({
-            collection,
-            data
-          })
-        });
-
-        if (!response.ok) {
-          const error = await response.json().catch(() => ({}));
-          throw new Error(error.error || `Falha ao sincronizar (${response.status}).`);
-        }
-        pendingSyncs.current -= 1
-        if (pendingSyncs.current === 0) setSyncStatus('synced')
-      } catch (err) {
-        pendingSyncs.current = Math.max(0, pendingSyncs.current - 1)
-        setSyncStatus('error')
-        console.error(`Erro ao sincronizar ${collection}:`, err);
+      const expectedUserId = user.id
+      const queueKey = `${expectedUserId}\u0000${collection}`
+      const queued = syncQueues.current.get(queueKey)
+      if (queued) {
+        queued.data = data
+        queued.version += 1
+        setSyncStatus('syncing')
+        return
       }
+
+      const entry = { userId: expectedUserId, collection, data, version: 1 }
+      syncQueues.current.set(queueKey, entry)
+      setSyncStatus('syncing')
+
+      void (async () => {
+        let latestSucceeded = false
+        try {
+          while (true) {
+            const attemptedVersion = entry.version
+            const snapshot = entry.data
+            try {
+              const { data: { session } } = await supabase.auth.getSession();
+              if (!session?.access_token || session.user.id !== expectedUserId) {
+                throw new Error('A sessão mudou durante a sincronização.');
+              }
+
+              const response = await fetch('/api/syncUserData', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${session.access_token}`,
+                },
+                body: JSON.stringify({ collection, data: snapshot }),
+              });
+
+              if (!response.ok) {
+                const error = await response.json().catch(() => ({}));
+                throw new Error(error.error || `Falha ao sincronizar (${response.status}).`);
+              }
+            } catch (error) {
+              // Se surgiu um snapshot mais novo enquanto este falhava, tenta
+              // diretamente o mais recente, sem publicar o antigo depois dele.
+              if (entry.version !== attemptedVersion && activeUserIdRef.current === expectedUserId) continue
+
+              const failures = syncFailures.current.get(expectedUserId) || new Set<string>()
+              failures.add(collection)
+              syncFailures.current.set(expectedUserId, failures)
+              console.error(`Erro ao sincronizar ${collection}:`, error)
+              break
+            }
+
+            if (entry.version !== attemptedVersion) continue
+
+            latestSucceeded = true
+            const failures = syncFailures.current.get(expectedUserId)
+            failures?.delete(collection)
+            if (failures?.size === 0) syncFailures.current.delete(expectedUserId)
+            break
+          }
+        } finally {
+          if (syncQueues.current.get(queueKey) === entry) syncQueues.current.delete(queueKey)
+          if (activeUserIdRef.current === expectedUserId) {
+            const stillSyncing = Array.from(syncQueues.current.values()).some((item) => item.userId === expectedUserId)
+            setSyncStatus(
+              stillSyncing
+                ? 'syncing'
+                : latestSucceeded && !syncFailures.current.get(expectedUserId)?.size
+                  ? 'synced'
+                  : 'error',
+            )
+          }
+        }
+      })()
     } else if (isVisitor) {
       setSyncStatus('local')
     }
   }, [isCloudHydrated, isVisitor, user?.id]);
+
+  const retryCloudSync = useCallback(() => {
+    if (isVisitor || !user?.id || !isCloudHydrated) return
+
+    const snapshots: Record<string, unknown> = {
+      media: mediaItems,
+      learnings: aprendizados.filter((item) => !item.id.startsWith(GENERATED_LEARNING_ID_PREFIX)),
+      chat: chatMessages,
+      profile: userProfile,
+      trails: customTrails,
+      onboarding: hasCompletedOnboarding,
+    }
+    const failedCollections = syncFailures.current.get(user.id)
+    const collectionsToRetry = failedCollections?.size
+      ? Array.from(failedCollections)
+      : Object.keys(snapshots)
+
+    for (const collection of collectionsToRetry) {
+      if (collection in snapshots) syncToCloud(collection, snapshots[collection])
+    }
+  }, [
+    aprendizados,
+    chatMessages,
+    customTrails,
+    hasCompletedOnboarding,
+    isCloudHydrated,
+    isVisitor,
+    mediaItems,
+    syncToCloud,
+    user?.id,
+    userProfile,
+  ])
 
   const enrichExistingWorks = useCallback(async () => {
     if (isVisitor || !user?.id || !isCloudHydrated) return 0
     if (enrichmentRequest.current) return 0
 
     const expectedUserId = user.id
+    const hasPendingSync = Array.from(syncQueues.current.values()).some((item) => item.userId === expectedUserId)
+    if (hasPendingSync || Boolean(syncFailures.current.get(expectedUserId)?.size)) {
+      setLearningEnrichment((current) => ({
+        ...current,
+        status: 'error',
+        error: 'Aguarde a sincronização terminar e tente novamente.',
+      }))
+      return 0
+    }
     const controller = new AbortController()
     enrichmentRequest.current = { userId: expectedUserId, controller }
     const isCurrentAccount = () => (
       !controller.signal.aborted
-      && activeEnrichmentUserId.current === expectedUserId
+      && activeUserIdRef.current === expectedUserId
     )
 
     setLearningEnrichment((current) => ({ ...current, status: 'analyzing', error: undefined }))
@@ -659,9 +754,8 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
       if (additions.length) {
         setAprendizados((current) => {
-          const currentIds = new Set(current.map((item) => item.id))
-          const uniqueAdditions = additions.filter((item) => !currentIds.has(item.id))
-          return uniqueAdditions.length ? [...uniqueAdditions, ...current] : current
+          const incomingIds = new Set(additions.map((item) => item.id))
+          return [...additions, ...current.filter((item) => !incomingIds.has(item.id))]
         })
         // A Function já persistiu essas inclusões com controle de concorrência.
         // A revisão evita que o efeito abaixo envie logo depois um snapshot antigo.
@@ -706,7 +800,9 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       handledServerLearningRevision.current = serverLearningRevision
       return
     }
-    syncToCloud('learnings', aprendizados);
+    // As lições automáticas têm uma coleção canônica própria, protegida contra
+    // snapshots antigos de outras abas. Aqui sincronizamos apenas notas humanas.
+    syncToCloud('learnings', aprendizados.filter((item) => !item.id.startsWith(GENERATED_LEARNING_ID_PREFIX)));
   }, [aprendizados, serverLearningRevision, storagePrefix, syncToCloud, isDataReady]);
 
   useEffect(() => {
@@ -1161,10 +1257,12 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         restoreMediaItem,
         isVisitor,
         isDataReady,
+        isCloudReady: isCloudHydrated,
         hasCompletedOnboarding,
         completeOnboarding,
         resetOnboarding,
         syncStatus,
+        retryCloudSync,
         learningEnrichment,
         enrichExistingWorks,
       }}

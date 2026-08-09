@@ -73,6 +73,9 @@ export const RightChatDrawer: React.FC = () => {
     getEstatisticas,
     isVisitor,
     isDataReady,
+    isCloudReady,
+    syncStatus,
+    retryCloudSync,
     learningEnrichment,
     enrichExistingWorks,
   } = useAgoraStore()
@@ -171,7 +174,7 @@ export const RightChatDrawer: React.FC = () => {
             </ol>
           </section>
 
-          <section aria-labelledby="guide-analysis-title" aria-live="polite" aria-busy={learningEnrichment.status === 'analyzing'} className="mt-5 rounded-2xl border border-accent-gold/25 bg-gradient-to-br from-bg-elevated to-bg-base/70 p-4">
+          <section aria-labelledby="guide-analysis-title" aria-busy={learningEnrichment.status === 'analyzing'} className="mt-5 rounded-2xl border border-accent-gold/25 bg-gradient-to-br from-bg-elevated to-bg-base/70 p-4">
             <div className="flex gap-3">
               <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-accent-gold/30 bg-accent-gold/10 text-accent-gold">
                 {learningEnrichment.status === 'analyzing'
@@ -184,38 +187,54 @@ export const RightChatDrawer: React.FC = () => {
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-gold">Análise do acervo</p>
                 <h4 id="guide-analysis-title" className="mt-1 font-serif text-base font-bold text-text-primary">Lições vinculadas às obras</h4>
 
-                {learningEnrichment.status === 'analyzing' ? (
-                  <p className="mt-1.5 text-[11px] leading-relaxed text-text-secondary">Lendo as fichas do seu acervo e preparando lições sem alterar as obras nem apagar suas notas.</p>
-                ) : learningEnrichment.status === 'done' ? (
-                  <p className="mt-1.5 text-[11px] leading-relaxed text-text-secondary">
-                    {learningEnrichment.outcome === 'no_media'
-                      ? 'Nenhuma obra sincronizada foi encontrada nesta conta.'
-                      : learningEnrichment.added > 0
-                      ? `${learningEnrichment.added} novas lições foram vinculadas a ${learningEnrichment.analyzedWorks} ${learningEnrichment.analyzedWorks === 1 ? 'obra' : 'obras'}.`
-                      : 'As obras já estavam analisadas; nenhuma lição duplicada foi criada.'}
-                  </p>
-                ) : learningEnrichment.status === 'error' ? (
-                  <p className="mt-1.5 text-[11px] leading-relaxed text-red-300">{learningEnrichment.error || 'Não foi possível concluir a análise agora.'}</p>
-                ) : (
-                  <p className="mt-1.5 text-[11px] leading-relaxed text-text-secondary">Cria duas lições concisas por obra usando as fichas reais da conta e preserva todos os aprendizados existentes.</p>
-                )}
+                <div role="status" aria-live="polite">
+                  {learningEnrichment.status === 'analyzing' ? (
+                    <p className="mt-1.5 text-[11px] leading-relaxed text-text-secondary">Lendo as fichas do seu acervo e preparando lições sem alterar as obras nem apagar suas notas.</p>
+                  ) : learningEnrichment.status === 'done' ? (
+                    <p className="mt-1.5 text-[11px] leading-relaxed text-text-secondary">
+                      {learningEnrichment.outcome === 'no_media'
+                        ? 'Nenhuma obra sincronizada foi encontrada nesta conta.'
+                        : learningEnrichment.added > 0
+                          ? `${learningEnrichment.added} lições foram vinculadas ou aprimoradas em ${learningEnrichment.analyzedWorks} ${learningEnrichment.analyzedWorks === 1 ? 'obra' : 'obras'}.`
+                          : 'As obras já estavam analisadas; nenhuma lição duplicada foi criada.'}
+                    </p>
+                  ) : learningEnrichment.status === 'error' ? (
+                    <p className="mt-1.5 text-[11px] leading-relaxed text-red-300">{learningEnrichment.error || 'Não foi possível concluir a análise agora.'}</p>
+                  ) : (
+                    <p className="mt-1.5 text-[11px] leading-relaxed text-text-secondary">Cria duas lições concisas por obra usando as fichas reais da conta e preserva todos os aprendizados existentes.</p>
+                  )}
+                </div>
 
-                {!isVisitor && learningEnrichment.status !== 'analyzing' ? (
-                  <button type="button" disabled={!isDataReady} onClick={() => { void enrichExistingWorks() }} className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-accent-gold/30 bg-accent-gold/10 px-3 py-2 text-[11px] font-semibold text-accent-gold hover:bg-accent-gold/15 disabled:cursor-wait disabled:opacity-50">
-                    {learningEnrichment.status === 'error' || learningEnrichment.status === 'done' ? <RotateCcw className="h-3.5 w-3.5" /> : <Sparkles className="h-3.5 w-3.5" />}
-                    {!isDataReady
-                      ? 'Carregando acervo…'
-                      : learningEnrichment.status === 'error'
-                        ? 'Tentar novamente'
-                        : learningEnrichment.status === 'done'
-                          ? 'Verificar novas obras'
-                          : 'Analisar todas as obras'}
+                {!isVisitor ? (
+                  <button type="button" disabled={!isDataReady || !isCloudReady || syncStatus === 'syncing' || learningEnrichment.status === 'analyzing'} onClick={() => { if (syncStatus === 'error') retryCloudSync(); else void enrichExistingWorks() }} className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-accent-gold/30 bg-accent-gold/10 px-3 py-2 text-[11px] font-semibold text-accent-gold hover:bg-accent-gold/15 disabled:cursor-wait disabled:opacity-50">
+                    {learningEnrichment.status === 'analyzing'
+                      ? <LoaderCircle className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none" />
+                      : learningEnrichment.status === 'error' || learningEnrichment.status === 'done'
+                        ? <RotateCcw className="h-3.5 w-3.5" />
+                        : <Sparkles className="h-3.5 w-3.5" />}
+                    {learningEnrichment.status === 'analyzing'
+                      ? 'Analisando…'
+                      : !isDataReady
+                        ? 'Carregando acervo…'
+                        : !isCloudReady
+                          ? 'Nuvem indisponível'
+                          : syncStatus === 'syncing'
+                            ? 'Sincronizando…'
+                            : syncStatus === 'error'
+                              ? 'Repetir sincronização'
+                              : learningEnrichment.status === 'error'
+                                ? 'Tentar novamente'
+                                : learningEnrichment.status === 'done'
+                                  ? 'Verificar novas obras'
+                                  : 'Analisar todas as obras'}
                   </button>
                 ) : null}
 
                 {learningEnrichment.status === 'done' && learningEnrichment.source ? <p className="mt-2 text-[10px] text-text-secondary">Método: {learningEnrichment.source}.</p> : null}
 
                 {isVisitor ? <p className="mt-2 text-[10px] text-text-secondary">Entre em uma conta para vincular lições com segurança.</p> : null}
+                {!isVisitor && isDataReady && !isCloudReady ? <p className="mt-2 text-[10px] text-red-300">Recarregue a página para confirmar a conexão segura com o acervo.</p> : null}
+                {!isVisitor && isCloudReady && syncStatus === 'error' ? <p className="mt-2 text-[10px] text-red-300">Repita a sincronização antes de iniciar a análise.</p> : null}
               </div>
             </div>
           </section>
