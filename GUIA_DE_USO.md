@@ -60,7 +60,7 @@ No modo visitante, os registros permanecem no navegador atual. Eles não são en
 - **Barra inferior:** oferece atalhos para as áreas mais usadas. No computador, ela também mostra Poíesis, Studium e Rotina.
 - **Adicionar:** abre a busca externa e o cadastro de obras.
 - **Busca do cabeçalho:** abre a consulta de catálogo para localizar e adicionar uma obra. Para pesquisar dentro do acervo já salvo, use **Explorar** ou `Ctrl+K`.
-- **Guia da Ágora:** abre orientações e próximos passos calculados localmente a partir do acervo carregado. Esse painel não usa IA.
+- **Guia da Ágora:** abre orientações e próximos passos calculados localmente a partir do acervo carregado. A ação separada **Analisar todas as obras** usa IA para criar lições vinculadas.
 - **Perfil:** abre a personalização da conta e dos interesses.
 - **Sair:** encerra a sessão atual.
 - **`Ctrl+K` ou `⌘K`:** abre a paleta de comandos. Nela é possível navegar, adicionar uma obra ou localizar rapidamente um título do acervo.
@@ -182,7 +182,7 @@ Objetivo de descoberta, formatos preferidos e ritmo de estudo são definidos na 
 
 O Guia explica a finalidade do aplicativo e apresenta ações possíveis conforme o acervo carregado, como retomar uma obra, abrir a Scholé ou criar uma trilha.
 
-Ele funciona localmente, sem modelo de IA e sem decisões automáticas. Suas sugestões são regras simples baseadas em status, quantidade de obras e trilhas existentes.
+As sugestões de percurso funcionam localmente, sem decisões automáticas, e usam regras simples baseadas em status, quantidade de obras e trilhas existentes. Para contas autenticadas, **Analisar todas as obras** consulta as fichas reais do acervo, gera duas lições concisas por obra com o Gemini, preserva as notas existentes e vincula cada resultado pelo identificador da obra. A operação é idempotente: executá-la novamente não deve duplicar as lições geradas pela mesma versão.
 
 ## 6. Fluxos principais
 
@@ -266,7 +266,7 @@ As recomendações não representam uma análise completa do gosto pessoal e pod
 - Dados sem capa ou sinopse não significam que a obra não exista.
 - Sempre revise a ficha antes de catalogar.
 - Confirme datas, edições, autoria, citações e referências em uma fonte primária antes de trabalhos acadêmicos.
-- O **Guia da Ágora** não usa IA.
+- As sugestões de percurso do **Guia da Ágora** não usam IA; somente a ação identificada como análise inteligente envia fichas bibliográficas ao Gemini.
 - Referências ABNT, APA, Chicago, BibTeX e dossiês são gerados a partir dos dados cadastrados; eles não passam por validação bibliográfica automática.
 
 ## 8. Som e aparência
@@ -322,7 +322,7 @@ Evite editar a mesma conta simultaneamente em vários dispositivos: a sincroniza
 
 - O modo visitante não envia o acervo para o Supabase, mas consultas externas ainda precisam enviar o título pesquisado às fontes de catálogo.
 - Em uma conta, os dados sincronizados ficam no Supabase ligado à implantação do aplicativo.
-- O Guia da Ágora calcula sugestões no navegador.
+- O Guia da Ágora calcula sugestões de percurso no navegador. Ao executar a análise inteligente, a ficha bibliográfica das obras é enviada pela Function autenticada da Vercel ao Gemini; as notas pessoais existentes não são incluídas no pedido ao modelo.
 - Capas e imagens por URL são carregadas do endereço informado ou do catálogo externo.
 - Ao reproduzir uma playlist, o navegador se comunica com o YouTube.
 - Dados locais ficam no armazenamento do navegador e não devem ser tratados como armazenamento criptografado.

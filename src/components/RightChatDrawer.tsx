@@ -1,5 +1,5 @@
 import React from 'react'
-import { ArrowRight, BookOpen, Compass, Map, Sparkles, Target, Timer, X } from 'lucide-react'
+import { ArrowRight, BookOpen, Brain, CheckCircle2, Compass, LoaderCircle, Map, RotateCcw, Sparkles, Target, Timer, X } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
 import { useModalAccessibility } from '../lib/useModalAccessibility'
 
@@ -71,6 +71,9 @@ export const RightChatDrawer: React.FC = () => {
     mediaItems,
     customTrails,
     getEstatisticas,
+    isVisitor,
+    learningEnrichment,
+    enrichExistingWorks,
   } = useAgoraStore()
   const drawerRef = useModalAccessibility<HTMLElement>(isRightChatOpen, () => setIsRightChatOpen(false))
 
@@ -137,7 +140,7 @@ export const RightChatDrawer: React.FC = () => {
         <header className="flex items-center justify-between border-b border-text-primary/10 bg-bg-elevated/80 p-4">
           <div className="flex items-center gap-3">
             <div className="grid h-9 w-9 place-items-center rounded-xl border border-accent-gold/40 bg-bg-base text-accent-gold"><Compass className="h-5 w-5" /></div>
-            <div><h3 id="guide-title" className="flex items-center gap-1.5 font-serif text-sm font-bold text-text-primary">Guia da Ágora <Sparkles className="h-3.5 w-3.5 text-accent-gold" /></h3><p className="text-[10px] text-text-secondary">Orientação local · sem IA ou token</p></div>
+            <div><h3 id="guide-title" className="flex items-center gap-1.5 font-serif text-sm font-bold text-text-primary">Guia da Ágora <Sparkles className="h-3.5 w-3.5 text-accent-gold" /></h3><p className="text-[10px] text-text-secondary">Orientação local · IA apenas na análise de obras</p></div>
           </div>
           <button type="button" onClick={() => setIsRightChatOpen(false)} className="rounded-lg p-1.5 text-text-secondary hover:bg-bg-base hover:text-text-primary" aria-label="Fechar"><X className="h-5 w-5" /></button>
         </header>
@@ -167,6 +170,45 @@ export const RightChatDrawer: React.FC = () => {
             </ol>
           </section>
 
+          <section aria-labelledby="guide-analysis-title" aria-live="polite" className="mt-5 rounded-2xl border border-accent-gold/25 bg-gradient-to-br from-bg-elevated to-bg-base/70 p-4">
+            <div className="flex gap-3">
+              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-accent-gold/30 bg-accent-gold/10 text-accent-gold">
+                {learningEnrichment.status === 'analyzing'
+                  ? <LoaderCircle className="h-4 w-4 animate-spin motion-reduce:animate-none" />
+                  : learningEnrichment.status === 'done'
+                    ? <CheckCircle2 className="h-4 w-4" />
+                    : <Brain className="h-4 w-4" />}
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-gold">Análise do acervo</p>
+                <h4 id="guide-analysis-title" className="mt-1 font-serif text-base font-bold text-text-primary">Lições vinculadas às obras</h4>
+
+                {learningEnrichment.status === 'analyzing' ? (
+                  <p className="mt-1.5 text-[11px] leading-relaxed text-text-secondary">Lendo as fichas do seu acervo e preparando lições sem alterar as obras nem apagar suas notas.</p>
+                ) : learningEnrichment.status === 'done' ? (
+                  <p className="mt-1.5 text-[11px] leading-relaxed text-text-secondary">
+                    {learningEnrichment.added > 0
+                      ? `${learningEnrichment.added} novas lições foram vinculadas a ${learningEnrichment.analyzedWorks} ${learningEnrichment.analyzedWorks === 1 ? 'obra' : 'obras'}.`
+                      : 'As obras já estavam analisadas; nenhuma lição duplicada foi criada.'}
+                  </p>
+                ) : learningEnrichment.status === 'error' ? (
+                  <p className="mt-1.5 text-[11px] leading-relaxed text-red-300">{learningEnrichment.error || 'Não foi possível concluir a análise agora.'}</p>
+                ) : (
+                  <p className="mt-1.5 text-[11px] leading-relaxed text-text-secondary">Cria duas lições concisas por obra usando as fichas reais da conta e preserva todos os aprendizados existentes.</p>
+                )}
+
+                {!isVisitor && mediaItems.length > 0 && ['idle', 'error'].includes(learningEnrichment.status) ? (
+                  <button type="button" onClick={() => { void enrichExistingWorks() }} className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-accent-gold/30 bg-accent-gold/10 px-3 py-2 text-[11px] font-semibold text-accent-gold hover:bg-accent-gold/15">
+                    {learningEnrichment.status === 'error' ? <RotateCcw className="h-3.5 w-3.5" /> : <Sparkles className="h-3.5 w-3.5" />}
+                    {learningEnrichment.status === 'error' ? 'Tentar novamente' : 'Analisar todas as obras'}
+                  </button>
+                ) : null}
+
+                {isVisitor ? <p className="mt-2 text-[10px] text-text-secondary">Entre em uma conta para vincular lições com segurança.</p> : null}
+              </div>
+            </div>
+          </section>
+
           <section className="mt-5 rounded-2xl border border-accent-gold/20 bg-bg-elevated/45 p-4">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent-gold">Orientação para agora</p>
             <h4 className="mt-2 font-serif text-xl font-bold text-text-primary">Uma direção por vez.</h4>
@@ -182,11 +224,11 @@ export const RightChatDrawer: React.FC = () => {
 
           <section aria-labelledby="guide-privacy-title" className="mt-5 rounded-xl border border-text-primary/10 bg-bg-base/45 p-3.5">
             <h4 id="guide-privacy-title" className="text-xs font-semibold text-text-primary">Dados e privacidade</h4>
-            <p className="mt-1.5 text-[11px] leading-relaxed text-text-secondary">Este painel calcula as sugestões com os dados já carregados no navegador. Em uma conta, acervo, perfil, trilhas, notas e Studium são sincronizados com o Supabase; Scholé, Rotina e Poíesis permanecem neste dispositivo. No modo visitante, todos os dados ficam locais. As consultas de obras usam Functions da Vercel e identificam a fonte no resultado.</p>
+            <p className="mt-1.5 text-[11px] leading-relaxed text-text-secondary">As sugestões de percurso são calculadas no navegador. A análise inteligente envia apenas a ficha bibliográfica das obras pela Function autenticada da Vercel ao Gemini e grava o resultado com o RLS da sua conta. Em uma conta, acervo, perfil, trilhas, notas e Studium são sincronizados com o Supabase; Scholé, Rotina e Poíesis permanecem neste dispositivo. No modo visitante, todos os dados ficam locais.</p>
           </section>
         </div>
 
-        <footer className="border-t border-text-primary/10 bg-bg-elevated/60 p-4 text-center text-[10px] text-text-secondary">Guia local · sem decisões automáticas · suas escolhas continuam sob seu controle.</footer>
+        <footer className="border-t border-text-primary/10 bg-bg-elevated/60 p-4 text-center text-[10px] text-text-secondary">Guia local · análise autenticada · suas escolhas continuam sob seu controle.</footer>
       </aside>
     </div>
   )
