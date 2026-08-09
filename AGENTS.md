@@ -24,5 +24,5 @@
 
 - Node.js 22 is pinned in `package.json` to keep local and hosted builds aligned.
 - Vite outputs production assets to `dist`, which is the Vercel output directory.
-- The catch-all redirect uses status 200 because this is an SPA rewrite, not a browser redirect.
+- The catch-all rewrite sends non-API application routes to `index.html` so the client-side router can resolve them.
 - Cross-device data uses Supabase Postgres with RLS; never store durable user data in repository files or in-memory Function state.

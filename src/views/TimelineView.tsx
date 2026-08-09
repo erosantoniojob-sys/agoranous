@@ -244,7 +244,7 @@ export const TimelineView: React.FC = () => {
 
           <h2>3. REFERÊNCIA BIBLIOGRÁFICA REGULAMENTAR (ABNT)</h2>
           <div class="abnt-citation">
-            ÁGORA: SEGUNDO CÉREBRO. <strong>Compêndio de Mídias, Trilhas e Aprendizados</strong>. Curadoria de ${userProfile.nome || 'Convidado'}. Rio de Janeiro: Plataforma Netlify, ${new Date().getFullYear()}.
+            ÁGORA: SEGUNDO CÉREBRO. <strong>Compêndio de Mídias, Trilhas e Aprendizados</strong>. Curadoria de ${userProfile.nome || 'Convidado'}. Rio de Janeiro: Plataforma Ágora, ${new Date().getFullYear()}.
           </div>
 
           <div class="footer">

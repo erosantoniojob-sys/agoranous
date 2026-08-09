@@ -1,39 +1,109 @@
-const MEDIA_TYPES = new Set(['Livro', 'Filme', 'Série', 'Jogo'])
+type MediaType = 'Livro' | 'Filme' | 'Série' | 'Jogo'
+type EntertainmentType = Exclude<MediaType, 'Livro'>
+
+type SearchMediaResult = {
+  titulo: string
+  tipo: MediaType
+  autor_criador: string
+  ano: number | null
+  data_lancamento_oficial: string
+  sinopse: string
+  generos: string[]
+  url_capa_oficial: string
+  url_capa: string
+  fonte: string
+}
+
+type GeminiMetadata = Pick<SearchMediaResult, 'titulo' | 'autor_criador' | 'ano' | 'sinopse'>
+type RateBucket = { startedAt: number; count: number }
+type CachedEnrichment = { createdAt: number; value: GeminiMetadata }
+
+type GoogleBooksResponse = {
+  items?: Array<{
+    volumeInfo?: {
+      title?: string
+      authors?: string[]
+      publishedDate?: string
+      description?: string
+      categories?: string[]
+      imageLinks?: { thumbnail?: string; smallThumbnail?: string }
+    }
+  }>
+}
+
+type OpenLibraryResponse = {
+  docs?: Array<{
+    title?: string
+    author_name?: string[]
+    first_publish_year?: number
+    cover_i?: number
+    subject?: string[]
+  }>
+}
+
+type ITunesResponse = {
+  results?: Array<{
+    trackName?: string
+    collectionName?: string
+    artistName?: string
+    sellerName?: string
+    releaseDate?: string
+    longDescription?: string
+    description?: string
+    primaryGenreName?: string
+    artworkUrl100?: string
+  }>
+}
+
+type GeminiResponse = {
+  candidates?: Array<{
+    content?: { parts?: Array<{ text?: string }> }
+  }>
+}
+
+const MEDIA_TYPES = new Set<MediaType>(['Livro', 'Filme', 'Série', 'Jogo'])
+const ENTERTAINMENT_MEDIA: Record<EntertainmentType, string> = {
+  Filme: 'movie',
+  Série: 'tvShow',
+  Jogo: 'software',
+}
 const DAY_MS = 24 * 60 * 60 * 1000
 const GEMINI_CACHE_MS = 12 * 60 * 60 * 1000
 const geminiDailyLimit = Math.max(0, Number.parseInt(process.env.GEMINI_DAILY_LIMIT || '3', 10) || 3)
 const geminiModel = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite'
-const rateBuckets = new Map()
-const enrichmentCache = new Map()
+const rateBuckets = new Map<string, RateBucket>()
+const enrichmentCache = new Map<string, CachedEnrichment>()
 
-function cleanText(value = '', maxLength = 650) {
+const DEFAULT_HEADERS = {
+  'User-Agent': 'AgoraCatalog/1.0 (https://seu-app.com; contato@seu-app.com)',
+  Accept: 'application/json',
+}
+
+function isMediaType(value: unknown): value is MediaType {
+  return typeof value === 'string' && MEDIA_TYPES.has(value as MediaType)
+}
+
+function cleanText(value: unknown = '', maxLength = 650): string {
   const text = String(value).replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()
   if (text.length <= maxLength) return text
   return `${text.slice(0, maxLength).trimEnd()}…`
 }
 
-function yearFrom(value) {
+function yearFrom(value: unknown): number | null {
   const year = Number.parseInt(String(value || '').slice(0, 4), 10)
   return Number.isInteger(year) ? year : null
 }
 
-const DEFAULT_HEADERS = {
-  'User-Agent': 'AgoraCatalog/1.0 (https://seu-app.com; contato@seu-app.com)',
-  'Accept': 'application/json',
+function clientIdentifier(request: Request): string {
+  const forwarded = request.headers.get('x-forwarded-for') || request.headers.get('x-vercel-forwarded-for')
+  return String(forwarded || 'anonymous').split(',')[0].trim()
 }
 
-function clientIdentifier(req) {
-  const forwarded = req.headers['x-forwarded-for'] || req.headers['x-vercel-forwarded-for']
-  return String(Array.isArray(forwarded) ? forwarded[0] : forwarded || req.socket?.remoteAddress || 'anonymous')
-    .split(',')[0]
-    .trim()
-}
-
-function canUseGemini(req) {
+function canUseGemini(request: Request): boolean {
   if (!process.env.GEMINI_API_KEY || geminiDailyLimit === 0) return false
 
   const now = Date.now()
-  const identifier = clientIdentifier(req)
+  const identifier = clientIdentifier(request)
   const bucket = rateBuckets.get(identifier)
   if (!bucket || now - bucket.startedAt >= DAY_MS) {
     rateBuckets.set(identifier, { startedAt: now, count: 1 })
@@ -44,26 +114,45 @@ function canUseGemini(req) {
   return true
 }
 
-function synopsisMissing(result) {
+function synopsisMissing(result: SearchMediaResult | null | undefined): boolean {
   const synopsis = result?.sinopse?.trim() || ''
   return !synopsis || /^(sinopse não disponível|ficha oficial|ficha catalogada)/i.test(synopsis)
 }
 
-function parseGeminiJson(raw) {
+function parseGeminiJson(raw: unknown): GeminiMetadata | null {
   const cleaned = String(raw || '').replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
+
   try {
-    const value = JSON.parse(cleaned)
-    return value && typeof value === 'object' ? value : null
+    const parsed: unknown = JSON.parse(cleaned)
+    if (!parsed || typeof parsed !== 'object') return null
+
+    const value = parsed as Record<string, unknown>
+    if (typeof value.titulo !== 'string' || typeof value.sinopse !== 'string') return null
+
+    return {
+      titulo: cleanText(value.titulo, 160),
+      autor_criador: cleanText(value.autor_criador, 160),
+      ano: Number.isInteger(value.ano) ? value.ano as number : yearFrom(value.ano),
+      sinopse: cleanText(value.sinopse, 650),
+    }
   } catch {
     return null
   }
 }
 
-async function enrichMetadata(req, query, tipo, currentResult) {
+async function enrichMetadata(
+  request: Request,
+  query: string,
+  tipo: MediaType,
+  currentResult: SearchMediaResult | null,
+): Promise<GeminiMetadata | null> {
   const cacheKey = `${tipo}:${query.toLocaleLowerCase('pt-BR')}`
   const cached = enrichmentCache.get(cacheKey)
   if (cached && Date.now() - cached.createdAt < GEMINI_CACHE_MS) return cached.value
-  if (!canUseGemini(req)) return null
+  if (!canUseGemini(request)) return null
+
+  const geminiApiKey = process.env.GEMINI_API_KEY
+  if (!geminiApiKey) return null
 
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(geminiModel)}:generateContent`,
@@ -71,7 +160,7 @@ async function enrichMetadata(req, query, tipo, currentResult) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-goog-api-key': process.env.GEMINI_API_KEY,
+        'x-goog-api-key': geminiApiKey,
       },
       signal: AbortSignal.timeout(12000),
       body: JSON.stringify({
@@ -91,27 +180,21 @@ async function enrichMetadata(req, query, tipo, currentResult) {
   )
 
   if (!response.ok) throw new Error(`Gemini retornou status ${response.status}`)
-  const data = await response.json()
-  const raw = data?.candidates?.[0]?.content?.parts?.map((part) => part.text || '').join('')
-  const parsed = parseGeminiJson(raw)
-  if (!parsed?.titulo || !parsed?.sinopse) return null
+  const data = await response.json() as GeminiResponse
+  const raw = data.candidates?.[0]?.content?.parts?.map((part) => part.text || '').join('')
+  const value = parseGeminiJson(raw)
+  if (!value?.titulo || !value.sinopse) return null
 
-  const value = {
-    titulo: cleanText(parsed.titulo, 160),
-    autor_criador: cleanText(parsed.autor_criador, 160),
-    ano: Number.isInteger(parsed.ano) ? parsed.ano : yearFrom(parsed.ano),
-    sinopse: cleanText(parsed.sinopse, 650),
-  }
   enrichmentCache.set(cacheKey, { createdAt: Date.now(), value })
   return value
 }
 
-async function searchBook(query) {
+async function searchBook(query: string): Promise<SearchMediaResult | null> {
   const url = new URL('https://www.googleapis.com/books/v1/volumes')
   url.searchParams.set('q', `intitle:${query}`)
   url.searchParams.set('maxResults', '1')
   url.searchParams.set('printType', 'books')
-  url.searchParams.set('langRestrict', 'pt') // Força prioridade para resultados em português
+  url.searchParams.set('langRestrict', 'pt')
 
   const response = await fetch(url, {
     signal: AbortSignal.timeout(5000),
@@ -119,16 +202,16 @@ async function searchBook(query) {
   })
   if (!response.ok) throw new Error(`Google Books retornou status ${response.status}`)
 
-  const volume = (await response.json()).items?.[0]?.volumeInfo
+  const data = await response.json() as GoogleBooksResponse
+  const volume = data.items?.[0]?.volumeInfo
   if (!volume) return null
 
-  // Trata e eleva a qualidade da imagem da capa
   let cover = volume.imageLinks?.thumbnail || volume.imageLinks?.smallThumbnail || ''
   if (cover) {
     cover = cover
       .replace('http://', 'https://')
-      .replace('&edge=curl', '') // Remove o efeito visual de folha dobrada
-      .replace('zoom=1', 'zoom=2') // Aumenta a resolução do thumbnail
+      .replace('&edge=curl', '')
+      .replace('zoom=1', 'zoom=2')
   }
 
   return {
@@ -145,7 +228,7 @@ async function searchBook(query) {
   }
 }
 
-async function searchOpenLibraryBook(query) {
+async function searchOpenLibraryBook(query: string): Promise<SearchMediaResult | null> {
   const url = new URL('https://openlibrary.org/search.json')
   url.searchParams.set('title', query)
   url.searchParams.set('limit', '1')
@@ -157,7 +240,8 @@ async function searchOpenLibraryBook(query) {
   })
   if (!response.ok) throw new Error(`Open Library retornou status ${response.status}`)
 
-  const item = (await response.json()).docs?.[0]
+  const data = await response.json() as OpenLibraryResponse
+  const item = data.docs?.[0]
   if (!item?.title) return null
 
   const cover = item.cover_i ? `https://covers.openlibrary.org/b/id/${item.cover_i}-L.jpg` : ''
@@ -175,11 +259,10 @@ async function searchOpenLibraryBook(query) {
   }
 }
 
-async function searchEntertainment(query, tipo) {
-  const media = { Filme: 'movie', Série: 'tvShow', Jogo: 'software' }[tipo]
+async function searchEntertainment(query: string, tipo: EntertainmentType): Promise<SearchMediaResult | null> {
   const url = new URL('https://itunes.apple.com/search')
   url.searchParams.set('term', query)
-  url.searchParams.set('media', media)
+  url.searchParams.set('media', ENTERTAINMENT_MEDIA[tipo])
   url.searchParams.set('limit', '1')
   url.searchParams.set('country', 'br')
   url.searchParams.set('lang', 'pt_br')
@@ -190,7 +273,8 @@ async function searchEntertainment(query, tipo) {
   })
   if (!response.ok) throw new Error(`iTunes Search retornou status ${response.status}`)
 
-  const item = (await response.json()).results?.[0]
+  const data = await response.json() as ITunesResponse
+  const item = data.results?.[0]
   if (!item) return null
 
   const cover = item.artworkUrl100?.replace(/\d+x\d+bb/, '600x600bb') || ''
@@ -210,32 +294,43 @@ async function searchEntertainment(query, tipo) {
   }
 }
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Método não permitido.' })
+export async function handleSearchMedia(request: Request): Promise<Response> {
+  if (request.method !== 'POST') {
+    return Response.json({ error: 'Método não permitido.' }, { status: 405 })
+  }
 
-  const query = typeof req.body?.query === 'string' ? req.body.query.trim() : ''
-  const tipo = req.body?.tipo
+  const body = await request.json().catch(() => ({})) as { query?: unknown; tipo?: unknown }
+  const query = typeof body.query === 'string' ? body.query.trim() : ''
+  const tipo = body.tipo
 
-  if (query.length < 2) return res.status(400).json({ error: 'Informe um título com pelo menos 2 caracteres.' })
-  if (!MEDIA_TYPES.has(tipo)) return res.status(400).json({ error: 'Categoria inválida.' })
+  if (query.length < 2) {
+    return Response.json({ error: 'Informe um título com pelo menos 2 caracteres.' }, { status: 400 })
+  }
+  if (!isMediaType(tipo)) {
+    return Response.json({ error: 'Categoria inválida.' }, { status: 400 })
+  }
 
   try {
-    let result = null
+    let result: SearchMediaResult | null = null
 
     if (tipo === 'Livro') {
-      // 1. Tenta buscar no Google Books em Português
       try {
         result = await searchBook(query)
-      } catch (googleError) {
-        console.warn('Google Books indisponível ou tempo limite excedido:', googleError.message)
+      } catch (error) {
+        console.warn(
+          'Google Books indisponível ou tempo limite excedido:',
+          error instanceof Error ? error.message : 'Erro desconhecido',
+        )
       }
 
-      // 2. Se falhar ou não encontrar, usa Open Library como fallback seguro
       if (!result) {
         try {
           result = await searchOpenLibraryBook(query)
-        } catch (openLibError) {
-          console.warn('Open Library indisponível ou tempo limite excedido:', openLibError.message)
+        } catch (error) {
+          console.warn(
+            'Open Library indisponível ou tempo limite excedido:',
+            error instanceof Error ? error.message : 'Erro desconhecido',
+          )
         }
       }
     } else {
@@ -244,7 +339,7 @@ export default async function handler(req, res) {
 
     if (!result || !result.url_capa || synopsisMissing(result)) {
       try {
-        const enrichment = await enrichMetadata(req, query, tipo, result)
+        const enrichment = await enrichMetadata(request, query, tipo, result)
         if (enrichment) {
           let coverResult = result
           if (!coverResult?.url_capa && enrichment.titulo.toLocaleLowerCase('pt-BR') !== query.toLocaleLowerCase('pt-BR')) {
@@ -252,8 +347,11 @@ export default async function handler(req, res) {
               coverResult = tipo === 'Livro'
                 ? (await searchBook(enrichment.titulo)) || (await searchOpenLibraryBook(enrichment.titulo))
                 : await searchEntertainment(enrichment.titulo, tipo)
-            } catch (coverError) {
-              console.warn('Busca de capa após identificação do Gemini falhou:', coverError.message)
+            } catch (error) {
+              console.warn(
+                'Busca de capa após identificação do Gemini falhou:',
+                error instanceof Error ? error.message : 'Erro desconhecido',
+              )
             }
           }
 
@@ -264,23 +362,31 @@ export default async function handler(req, res) {
             autor_criador: coverResult?.autor_criador || enrichment.autor_criador || 'Criador não informado',
             ano: coverResult?.ano ?? enrichment.ano,
             data_lancamento_oficial: coverResult?.data_lancamento_oficial || (enrichment.ano ? String(enrichment.ano) : ''),
-            sinopse: synopsisMissing(coverResult) ? enrichment.sinopse : coverResult.sinopse,
+            sinopse: synopsisMissing(coverResult) ? enrichment.sinopse : coverResult!.sinopse,
             generos: coverResult?.generos || [],
             url_capa_oficial: coverResult?.url_capa_oficial || '',
             url_capa: coverResult?.url_capa || '',
             fonte: `${coverResult?.fonte ? `${coverResult.fonte} + ` : ''}Gemini`,
           }
         }
-      } catch (geminiError) {
-        console.warn('Enriquecimento Gemini indisponível:', geminiError.message)
+      } catch (error) {
+        console.warn(
+          'Enriquecimento Gemini indisponível:',
+          error instanceof Error ? error.message : 'Erro desconhecido',
+        )
       }
     }
 
-    if (!result) return res.status(404).json({ error: 'Nenhuma obra encontrada para esse título.' })
+    if (!result) {
+      return Response.json({ error: 'Nenhuma obra encontrada para esse título.' }, { status: 404 })
+    }
 
-    return res.status(200).json(result)
+    return Response.json(result)
   } catch (error) {
     console.error('Erro na rota /api/searchMedia:', error)
-    return res.status(502).json({ error: 'Não foi possível consultar a fonte agora. Tente novamente.' })
+    return Response.json(
+      { error: 'Não foi possível consultar a fonte agora. Tente novamente.' },
+      { status: 502 },
+    )
   }
 }

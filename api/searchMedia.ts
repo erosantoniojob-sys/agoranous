@@ -1,1 +1,1 @@
-export { default as POST } from '../netlify/functions/searchMedia.mjs'
+export { handleSearchMedia as POST } from '../server/searchMedia.js'

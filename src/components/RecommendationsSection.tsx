@@ -46,7 +46,7 @@ export const RecommendationsSection: React.FC = () => {
       autor_criador: rec.autor_criador,
       ano: rec.ano,
       generos: rec.generos,
-      fonte: rec.fonte || 'Recomendação Netlify',
+      fonte: rec.fonte || 'Curadoria Ágora',
     })
 
     setAddedIds((prev) => new Set(prev).add(rec.id))

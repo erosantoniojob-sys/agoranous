@@ -2,13 +2,19 @@
 
 Ágora é uma aplicação web para catalogar livros, filmes, séries e jogos, concebida com uma estética Dark Academia. A busca inteligente consulta fontes públicas, normaliza os metadados encontrados e permite guardar cada obra em uma biblioteca pessoal.
 
+## Finalidade e instruções de uso
+
+A Ágora transforma repertório cultural em uma jornada de formação: reúne obras, registra progresso e aprendizados, conecta temas em trilhas e apoia práticas de foco, memória e produção intelectual.
+
+Consulte o [Guia de uso da Ágora](GUIA_DE_USO.md) para conhecer o início rápido, cada área da interface, os fluxos principais, a sincronização e os limites das buscas inteligentes.
+
 ## Tecnologias
 
 - Vite para desenvolvimento e empacotamento do frontend
 - React, TypeScript e Tailwind CSS
 - Vercel Functions para busca, recomendações e sincronização
 - Supabase Auth e Postgres com RLS para persistência por usuário
-- Google Books, Wikidata e Wikipédia como fontes públicas de metadados
+- Google Books, Open Library e iTunes Search como fontes públicas de metadados
 
 ## Executar localmente
 
@@ -55,4 +61,4 @@ npm run typecheck
 npm run check
 ```
 
-`typecheck` valida o frontend, as Functions e o schema do banco. `check` também produz o build de produção.
+`typecheck` valida o frontend e as Functions. `check` também produz o build de produção.

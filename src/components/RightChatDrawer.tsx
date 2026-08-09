@@ -11,6 +11,58 @@ type GuideAction = {
   actionLabel: string
 }
 
+type GuideInfo = {
+  title: string
+  description: string
+  icon: React.ElementType
+}
+
+const PURPOSES: GuideInfo[] = [
+  {
+    title: 'Reunir',
+    description: 'Organize livros, filmes, séries e jogos em um único acervo pessoal.',
+    icon: BookOpen,
+  },
+  {
+    title: 'Conectar',
+    description: 'Transforme obras, temas e perguntas em trilhas de formação.',
+    icon: Map,
+  },
+  {
+    title: 'Praticar',
+    description: 'Converta intenção em sessões de foco, registros e constância.',
+    icon: Target,
+  },
+]
+
+const GUIDE_STEPS: GuideInfo[] = [
+  {
+    title: 'Defina sua direção',
+    description: 'Complete o perfil com seus interesses, formatos preferidos e objetivo de estudo.',
+    icon: Compass,
+  },
+  {
+    title: 'Adicione uma obra',
+    description: 'Use “Adicionar” ou “Explorar”, pesquise o título, confira a ficha e salve no acervo.',
+    icon: BookOpen,
+  },
+  {
+    title: 'Registre o percurso',
+    description: 'Atualize status, progresso, avaliação e aprendizados enquanto lê, assiste ou joga.',
+    icon: Target,
+  },
+  {
+    title: 'Conecte e aprofunde',
+    description: 'Crie trilhas temáticas, use o Studium para investigar e a Poíesis para produzir.',
+    icon: Map,
+  },
+  {
+    title: 'Retome com intenção',
+    description: 'Consulte a Memória, abra a Scholé para focar e use a Rotina para cultivar constância.',
+    icon: Timer,
+  },
+]
+
 export const RightChatDrawer: React.FC = () => {
   const {
     isRightChatOpen,
@@ -91,10 +143,34 @@ export const RightChatDrawer: React.FC = () => {
         </header>
 
         <div className="flex-1 overflow-y-auto p-4">
-          <section className="rounded-2xl border border-accent-gold/20 bg-gradient-to-br from-accent-gold/10 to-transparent p-4">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent-gold">Próximo passo</p>
+          <section aria-labelledby="guide-purpose-title" className="rounded-2xl border border-accent-gold/20 bg-gradient-to-br from-accent-gold/10 to-transparent p-4">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent-gold">Finalidade</p>
+            <h4 id="guide-purpose-title" className="mt-2 font-serif text-xl font-bold text-text-primary">Transformar repertório em formação.</h4>
+            <p className="mt-2 text-xs leading-relaxed text-text-secondary">A Ágora é um segundo cérebro para guardar obras, registrar o que elas despertam e construir uma vida intelectual com direção. Ela não substitui a leitura ou a contemplação: ajuda você a lembrá-las, conectá-las e praticá-las.</p>
+
+            <div className="mt-4 grid gap-2">
+              {PURPOSES.map((item) => {
+                const Icon = item.icon
+                return <div key={item.title} className="flex gap-3 rounded-xl border border-text-primary/10 bg-bg-base/35 p-3"><div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-bg-base text-accent-gold"><Icon className="h-4 w-4" /></div><div><h5 className="text-xs font-semibold text-text-primary">{item.title}</h5><p className="mt-0.5 text-[11px] leading-relaxed text-text-secondary">{item.description}</p></div></div>
+              })}
+            </div>
+          </section>
+
+          <section aria-labelledby="guide-steps-title" className="mt-5">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent-gold">Instruções de uso</p>
+            <h4 id="guide-steps-title" className="mt-1 font-serif text-lg font-bold text-text-primary">Um percurso simples</h4>
+            <ol className="mt-3 space-y-3">
+              {GUIDE_STEPS.map((step, index) => {
+                const Icon = step.icon
+                return <li key={step.title} className="flex gap-3"><div className="relative grid h-8 w-8 shrink-0 place-items-center rounded-full border border-accent-gold/30 bg-accent-gold/10 text-accent-gold"><Icon className="h-3.5 w-3.5" /><span className="sr-only">Etapa {index + 1}</span></div><div><h5 className="text-xs font-semibold text-text-primary">{index + 1}. {step.title}</h5><p className="mt-0.5 text-[11px] leading-relaxed text-text-secondary">{step.description}</p></div></li>
+              })}
+            </ol>
+          </section>
+
+          <section className="mt-5 rounded-2xl border border-accent-gold/20 bg-bg-elevated/45 p-4">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent-gold">Orientação para agora</p>
             <h4 className="mt-2 font-serif text-xl font-bold text-text-primary">Uma direção por vez.</h4>
-            <p className="mt-2 text-xs leading-relaxed text-text-secondary">O Guia organiza o que já está no seu acervo e sugere uma ação concreta. Nenhuma informação sai do seu navegador.</p>
+            <p className="mt-2 text-xs leading-relaxed text-text-secondary">Com base no acervo carregado, o Guia sugere uma ação concreta para você continuar.</p>
           </section>
 
           <section className="mt-5 space-y-2" aria-label="Sugestões do Guia">
@@ -103,9 +179,14 @@ export const RightChatDrawer: React.FC = () => {
               return <article key={item.title} className="rounded-xl border border-text-primary/10 bg-bg-elevated/45 p-3.5 transition-colors hover:border-accent-gold/30"><div className="flex gap-3"><div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-bg-base text-accent-gold"><Icon className="h-4 w-4" /></div><div className="min-w-0"><h5 className="text-xs font-semibold text-text-primary">{item.title}</h5><p className="mt-1 text-[11px] leading-relaxed text-text-secondary">{item.description}</p><button type="button" onClick={() => navigate(item.action)} className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-accent-gold hover:text-accent-gold-bright">{item.actionLabel}<ArrowRight className="h-3.5 w-3.5" /></button></div></div></article>
             })}
           </section>
+
+          <section aria-labelledby="guide-privacy-title" className="mt-5 rounded-xl border border-text-primary/10 bg-bg-base/45 p-3.5">
+            <h4 id="guide-privacy-title" className="text-xs font-semibold text-text-primary">Dados e privacidade</h4>
+            <p className="mt-1.5 text-[11px] leading-relaxed text-text-secondary">Este painel calcula as sugestões com os dados já carregados no navegador. Em uma conta, acervo, perfil, trilhas, notas e Studium são sincronizados com o Supabase; Scholé, Rotina e Poíesis permanecem neste dispositivo. No modo visitante, todos os dados ficam locais. As consultas de obras usam Functions da Vercel e identificam a fonte no resultado.</p>
+          </section>
         </div>
 
-        <footer className="border-t border-text-primary/10 bg-bg-elevated/60 p-4 text-center text-[10px] text-text-secondary">Guia local — suas escolhas continuam sob seu controle.</footer>
+        <footer className="border-t border-text-primary/10 bg-bg-elevated/60 p-4 text-center text-[10px] text-text-secondary">Guia local · sem decisões automáticas · suas escolhas continuam sob seu controle.</footer>
       </aside>
     </div>
   )

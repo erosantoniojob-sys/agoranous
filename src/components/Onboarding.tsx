@@ -313,7 +313,7 @@ export const Onboarding: React.FC = () => {
                   Identidade Visual do Erudito
                 </h2>
                 <p className="text-xs text-text-secondary">
-                  Faça o upload de uma foto do seu dispositivo para salvar offline em seu perfil.
+                  Faça o upload de uma foto do seu dispositivo para usar em seu perfil. Em uma conta, ela acompanha os dados sincronizados; no modo visitante, permanece local.
                 </p>
               </div>
 
@@ -371,7 +371,7 @@ export const Onboarding: React.FC = () => {
                         Clique para selecionar ou arraste uma foto aqui
                       </p>
                       <p className="text-[10px] text-text-secondary">
-                        Formatos suportados: JPG, PNG, WEBP (Convertido para Base64 offline)
+                        Formatos suportados: JPG, PNG, WEBP (convertidos localmente antes de salvar)
                       </p>
                     </div>
                   </div>
@@ -565,6 +565,11 @@ export const Onboarding: React.FC = () => {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              <div className="flex gap-3 rounded-xl border border-accent-gold/20 bg-accent-gold/5 p-3 text-xs text-text-secondary">
+                <Compass className="mt-0.5 h-4 w-4 shrink-0 text-accent-gold" />
+                <p>Depois de entrar, abra <strong className="text-text-primary">Guia da Ágora</strong> no cabeçalho para consultar a finalidade, o percurso de uso e seu próximo passo.</p>
               </div>
             </div>
           )}

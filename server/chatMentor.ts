@@ -1,12 +1,10 @@
-import type { Config } from '@netlify/functions'
-
 type ChatMessage = {
   sender: 'user' | 'mentor'
   text: string
   timestamp?: string
 }
 
-export default async (request: Request) => {
+export async function handleChatMentor(request: Request) {
   if (request.method !== 'POST') {
     return Response.json({ error: 'Método não permitido.' }, { status: 405 })
   }
@@ -73,7 +71,7 @@ Com base nos registros do seu perfil (obras de Dostoiévski, clássicos gregos, 
 Para aprofundar um tema, consulte sobre a dinâmica de personagens em Dostoiévski, o modelo de 6 funções de cosmovisão, os diálogos socráticos ou táticas de simulação esportiva.
 
 REFERÊNCIA BIBLIOGRÁFICA REGULAMENTAR (ABNT):
-ÁGORA: SEGUNDO CÉREBRO. *Manual de Memória e Aprendizados*. Curadoria de Eros Antônio. Rio de Janeiro: Plataforma Netlify, 2026.`
+ÁGORA: SEGUNDO CÉREBRO. *Manual de Memória e Aprendizados*. Curadoria de Eros Antônio. Rio de Janeiro: Ágora, 2026.`
     }
 
     return Response.json({
@@ -86,6 +84,4 @@ REFERÊNCIA BIBLIOGRÁFICA REGULAMENTAR (ABNT):
   }
 }
 
-export const config: Config = {
-  path: ['/api/chatMentor', '/.netlify/functions/chatMentor'],
-}
+

@@ -1,1 +1,1 @@
-export { default as POST } from '../netlify/functions/getRecommendations.mjs'
+export { handleGetRecommendations as POST } from '../server/getRecommendations.js'

@@ -1,1 +1,1 @@
-export { default as POST } from '../netlify/functions/chatMentor.mjs'
+export { handleChatMentor as POST } from '../server/chatMentor.js'

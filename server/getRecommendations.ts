@@ -1,5 +1,3 @@
-import type { Config } from '@netlify/functions'
-
 type MediaType = 'Livro' | 'Filme' | 'Série' | 'Jogo'
 
 type RecommendationItem = {
@@ -101,6 +99,7 @@ async function fetchBook(candidate: Candidate): Promise<RecommendationItem | nul
   })
   const response = await fetch(`https://openlibrary.org/search.json?${query.toString()}`, {
     headers: { 'User-Agent': 'Agora/1.0 (personal study catalog)' },
+    signal: AbortSignal.timeout(8000),
   })
   if (!response.ok) return null
   const data = await response.json() as { docs?: OpenLibraryDoc[] }
@@ -149,9 +148,13 @@ function recommendationReason(item: ReturnType<typeof selectCandidates>[number])
   return 'Uma escolha para ampliar seu repertório, respeitando os formatos que você mais aprecia.'
 }
 
-export default async (request: Request) => {
+export async function handleGetRecommendations(request: Request) {
+  if (request.method !== 'POST') {
+    return Response.json({ error: 'Método não permitido.' }, { status: 405 })
+  }
+
   try {
-    const body = request.method === 'POST' ? await request.json().catch(() => ({})) as { tags?: string[]; existingTitles?: string[]; tasteSignals?: TasteSignal[] } : {}
+    const body = await request.json().catch(() => ({})) as { tags?: string[]; existingTitles?: string[]; tasteSignals?: TasteSignal[] }
     const tags = Array.isArray(body.tags) ? body.tags.slice(0, 12) : ['Filosofia', 'Literatura Clássica', 'Teologia']
     const existingTitles = Array.isArray(body.existingTitles) ? body.existingTitles.slice(0, 100) : []
     const tasteSignals = Array.isArray(body.tasteSignals) ? body.tasteSignals.slice(0, 100) : []
@@ -176,6 +179,3 @@ export default async (request: Request) => {
   }
 }
 
-export const config: Config = {
-  path: ['/api/getRecommendations', '/.netlify/functions/getRecommendations'],
-}
