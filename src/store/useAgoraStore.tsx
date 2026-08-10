@@ -523,6 +523,11 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const recoveredTrails = localTrails;
       setCustomTrails(recoveredTrails);
       setDeletedMediaItems(readStoredArray<DeletedMediaItem>(keyPrefix + 'media_trash'))
+      if (!isVisitor && user?.id) {
+        // Mesmo se a leitura remota falhar, liberamos a gravação para a
+        // conta autenticada assim que o cache local estiver pronto.
+        setCloudHydratedUserId(user.id);
+      }
 
       const storedOnboarding = readStoredObject<boolean>(keyPrefix + 'has_completed_onboarding');
       setHasCompletedOnboarding(Boolean(
