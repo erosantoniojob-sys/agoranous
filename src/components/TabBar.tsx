@@ -90,10 +90,18 @@ export const TabBar: React.FC = () => {
     { label: 'Trilhas', icon: Map, tab: 'trilhas' },
   ]
 
+  const memoryItem = { label: 'Memória', icon: Bookmark, tab: 'memoria' as const }
+
   const lifestyleItems: Array<{ label: string; icon: React.ElementType; tab: ViewName }> = [
-    { label: 'Memória', icon: Bookmark, tab: 'memoria' },
     { label: 'Scholé', icon: Hourglass, tab: 'schole' },
     { label: 'Rotina', icon: Dumbbell, tab: 'rotina' },
+  ]
+
+  const desktopLeftItems = [...mainNavItems, memoryItem]
+  const desktopRightItems: Array<{ label: string; icon: React.ElementType; tab: ViewName }> = [
+    ...lifestyleItems,
+    { label: 'Poíesis', icon: Feather, tab: 'poiesis' },
+    { label: 'Studium', icon: Brain, tab: 'studium' },
   ]
 
   return (
@@ -142,7 +150,7 @@ export const TabBar: React.FC = () => {
 
       {/* Desktop Dock - Bottom Center */}
       <nav className="velocity-dock tab-bar-desktop hidden lg:flex fixed bottom-6 left-1/2 z-40 -translate-x-1/2 items-center gap-2 px-4 py-3 rounded-2xl shadow-lg-elevation">
-        {mainNavItems.map((item) => (
+        {desktopLeftItems.map((item) => (
           <DockItem
             key={item.tab}
             label={item.label}
@@ -152,22 +160,6 @@ export const TabBar: React.FC = () => {
             onClick={() => setActiveTab(item.tab)}
           />
         ))}
-
-        <DockItem
-          label="Poíesis"
-          icon={Feather}
-          active={activeTab === 'poiesis'}
-          view="poiesis"
-          onClick={() => setActiveTab('poiesis')}
-        />
-
-        <DockItem
-          label="Studium"
-          icon={Brain}
-          active={activeTab === 'studium'}
-          view="studium"
-          onClick={() => setActiveTab('studium')}
-        />
 
         <div className="w-px h-8 bg-border-primary/50" />
 
@@ -183,7 +175,7 @@ export const TabBar: React.FC = () => {
 
         <div className="w-px h-8 bg-border-primary/50" />
 
-        {lifestyleItems.map((item) => (
+        {desktopRightItems.map((item) => (
           <DockItem
             key={item.tab}
             label={item.label}
