@@ -90,6 +90,14 @@ function readStoredObject<T>(key: string): T | null {
   return readBrowserValue<T | null>(key, null)
 }
 
+function hasCloudCollection(data: Record<string, unknown>, collection: string) {
+  return Object.prototype.hasOwnProperty.call(data, collection)
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+}
+
 const GENERATED_LEARNING_ID_PREFIX = 'lesson_ai_v1_'
 
 function firstNonEmptyArray<T>(...values: T[][]): T[] {
@@ -398,7 +406,11 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [hydratedUserId, setHydratedUserId] = useState<string | null>(null);
   const [cloudHydratedUserId, setCloudHydratedUserId] = useState<string | null>(null);
   const isCloudHydrated = Boolean(user?.id && cloudHydratedUserId === user.id);
-  const isDataReady = !user || hydratedUserId === user.id;
+  // Sem uma conta (ou enquanto ela ainda muda), nenhum estado transitório deve
+  // ser persistido sob a chave "anonymous".
+  const isDataReady = Boolean(user?.id && hydratedUserId === user.id);
+  const [syncStatus, setSyncStatus] = useState<'local' | 'syncing' | 'synced' | 'error'>(isVisitor ? 'local' : 'synced');
+  const [cloudReloadRevision, setCloudReloadRevision] = useState(0);
 
   // Os dados do visitante também pertencem ao navegador atual. Eles não são
   // enviados à nuvem, mas precisam sobreviver a recargas e reabertura do app.
@@ -432,6 +444,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setHydratedUserId(null);
       setCloudHydratedUserId(null);
       if (!isVisitor && user?.id) {
+        setSyncStatus('syncing');
         try {
           const { data: { session } } = await supabase.auth.getSession();
           if (!session?.access_token || session.user.id !== user.id) {
@@ -442,14 +455,16 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             headers: { Authorization: `Bearer ${session.access_token}` },
           });
           if (res.ok) {
-            const cloudData = await res.json() as Record<string, unknown>;
+            const responseData = await res.json() as unknown;
+            if (!isRecord(responseData)) throw new Error('A nuvem retornou dados em formato inválido.');
+            const cloudData = responseData;
             if (cancelled) return;
 
             const localMedia = readStoredArray<MediaItem>(keyPrefix + 'media');
             const cloudMedia = Array.isArray(cloudData.media) ? cloudData.media as MediaItem[] : [];
-            // O fallback local já usa uma chave vinculada ao UUID da conta.
-            // Dados legados globais nunca são importados automaticamente.
-            const recoveredMedia = firstNonEmptyArray(cloudMedia, localMedia);
+            // Uma coleção remota existente, mesmo vazia, é autoritativa. Isso
+            // evita ressuscitar itens excluídos a partir de um cache antigo.
+            const recoveredMedia = hasCloudCollection(cloudData, 'media') ? cloudMedia : localMedia;
 
             const localLearnings = readStoredArray<Aprendizado>(keyPrefix + 'learnings');
             const cloudLearnings = Array.isArray(cloudData.learnings) ? cloudData.learnings as Aprendizado[] : [];
@@ -459,8 +474,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             const recoveredMediaIds = new Set(recoveredMedia.map((item) => item.id));
             const recoveredLearnings = mergeUniqueById(
               generatedLearnings.filter((item) => recoveredMediaIds.has(item.mediaId)),
-              cloudLearnings,
-              localLearnings,
+              hasCloudCollection(cloudData, 'learnings') ? cloudLearnings : localLearnings,
             );
 
             const localTrails = readStoredArray<CustomTrail>(keyPrefix + 'trails');
@@ -470,11 +484,11 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             const cloudChat = Array.isArray(cloudData.chat) ? cloudData.chat as ChatMessage[] : [];
 
             const localProfile = readStoredObject<UserProfile>(keyPrefix + 'profile');
-            const cloudProfile = cloudData.profile && typeof cloudData.profile === 'object'
-              ? cloudData.profile as UserProfile
-              : null;
-            const recoveredProfile = hasExistingUserData({ profile: cloudProfile || undefined })
-              ? cloudProfile!
+            const cloudProfile = isRecord(cloudData.profile)
+              ? { ...EMPTY_PROFILE, ...cloudData.profile } as UserProfile
+              : EMPTY_PROFILE;
+            const recoveredProfile = hasCloudCollection(cloudData, 'profile')
+              ? cloudProfile
               : hasExistingUserData({ profile: localProfile || undefined })
                 ? localProfile!
                 : EMPTY_PROFILE;
@@ -482,12 +496,12 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setMediaItems(recoveredMedia);
             setAprendizados(recoveredLearnings);
             setUserProfile(recoveredProfile);
-            setCustomTrails(firstNonEmptyArray(cloudTrails, localTrails));
-            setChatMessages(firstNonEmptyArray(cloudChat, localChat, SEED_CHAT));
+            setCustomTrails(hasCloudCollection(cloudData, 'trails') ? cloudTrails : localTrails);
+            setChatMessages(hasCloudCollection(cloudData, 'chat') ? cloudChat : firstNonEmptyArray(localChat, SEED_CHAT));
             setDeletedMediaItems(readStoredArray<DeletedMediaItem>(keyPrefix + 'media_trash'))
             setHasCompletedOnboarding(Boolean(
               Boolean(cloudData.onboarding)
-                || hasExistingUserData({ media: recoveredMedia, learnings: recoveredLearnings, trails: firstNonEmptyArray(cloudTrails, localTrails), profile: recoveredProfile })
+                || hasExistingUserData({ media: recoveredMedia, learnings: recoveredLearnings, trails: hasCloudCollection(cloudData, 'trails') ? cloudTrails : localTrails, profile: recoveredProfile })
                 || isLegacyDefaultProfile(recoveredProfile),
             ));
             setCloudHydratedUserId(user.id);
@@ -496,7 +510,13 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           }
           throw new Error(`Falha ao buscar dados sincronizados (${res.status}).`);
         } catch (error) {
-          console.error("Erro ao buscar da nuvem. Usando cache local.", error);
+          // Não marque a nuvem como pronta após uma falha. Caso o cache tenha
+          // sido limpo, liberá-la aqui enviaria coleções vazias e apagaria a
+          // cópia remota que ainda poderia ser recuperada.
+          if (!cancelled) {
+            setSyncStatus('error');
+            console.error("Erro ao buscar da nuvem. Mantendo somente o cache local até uma nova tentativa.", error);
+          }
         }
       }
 
@@ -523,11 +543,6 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const recoveredTrails = localTrails;
       setCustomTrails(recoveredTrails);
       setDeletedMediaItems(readStoredArray<DeletedMediaItem>(keyPrefix + 'media_trash'))
-      if (!isVisitor && user?.id) {
-        // Mesmo se a leitura remota falhar, liberamos a gravação para a
-        // conta autenticada assim que o cache local estiver pronto.
-        setCloudHydratedUserId(user.id);
-      }
 
       const storedOnboarding = readStoredObject<boolean>(keyPrefix + 'has_completed_onboarding');
       setHasCompletedOnboarding(Boolean(
@@ -540,7 +555,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     loadCloudData();
     return () => { cancelled = true; };
-  }, [isVisitor, storagePrefix, user?.id]);
+  }, [cloudReloadRevision, isVisitor, storagePrefix, user?.id]);
 
   const [activeTab, setActiveTab] = useState<ViewName>('inicio');
   const [selectedFilter, setSelectedFilter] = useState<string>('Todos');
@@ -548,7 +563,6 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [isLeftDrawerOpen, setIsLeftDrawerOpen] = useState<boolean>(false);
   const [isRightChatOpen, setIsRightChatOpen] = useState<boolean>(false);
-  const [syncStatus, setSyncStatus] = useState<'local' | 'syncing' | 'synced' | 'error'>(isVisitor ? 'local' : 'synced');
   const [learningEnrichment, setLearningEnrichment] = useState<LearningEnrichmentState>(EMPTY_LEARNING_ENRICHMENT);
   const [serverLearningRevision, setServerLearningRevision] = useState(0)
   const syncQueues = useRef(new Map<string, {
@@ -662,7 +676,15 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [isCloudHydrated, isVisitor, user?.id]);
 
   const retryCloudSync = useCallback(() => {
-    if (isVisitor || !user?.id || !isCloudHydrated) return
+    if (isVisitor || !user?.id) return
+
+    // Uma falha durante a leitura precisa ser resolvida com uma nova leitura,
+    // nunca com o upload do fallback local.
+    if (!isCloudHydrated) {
+      setSyncStatus('syncing')
+      setCloudReloadRevision((current) => current + 1)
+      return
+    }
 
     const snapshots: Record<string, unknown> = {
       media: mediaItems,

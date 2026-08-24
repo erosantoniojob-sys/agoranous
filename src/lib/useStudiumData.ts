@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { readBrowserValue, writeBrowserValue } from './browserStorage'
 import type { CommonplaceEntry, DiscoveryItem, EssayDraft, IntellectualJournalEntry, ReadingSession, StudiumData } from '../types/studium'
 import { supabase, useAuth } from '../context/AuthContext'
@@ -11,36 +11,88 @@ export function useStudiumData() {
   const { user } = useAuth()
   const storageKey = KEY + (user?.id || 'anonymous')
   const isVisitor = !user || user.id.startsWith('guest_')
-  const [hydrated, setHydrated] = useState(false)
+  const [hydratedStorageKey, setHydratedStorageKey] = useState<string | null>(null)
+  const cloudReadyStorageKey = useRef<string | null>(null)
+  const hydrationRun = useRef(0)
   const [data, setData] = useState<StudiumData>(() => ({ ...EMPTY, ...readBrowserValue<Partial<StudiumData>>(storageKey, {}) }))
+
   useEffect(() => {
+    const run = ++hydrationRun.current
     let cancelled = false
+    const isCurrent = () => !cancelled && hydrationRun.current === run
     const local = { ...EMPTY, ...readBrowserValue<Partial<StudiumData>>(storageKey, {}) }
-    if (isVisitor) { setData(local); setHydrated(true); return }
+
+    // Nunca reutilize a permissão de sincronização da conta anterior. O efeito
+    // de persistência roda depois deste e também consulta esta ref, o que evita
+    // publicar um estado transitório enquanto a nova conta ainda é carregada.
+    cloudReadyStorageKey.current = null
+    setHydratedStorageKey(null)
+
+    if (isVisitor) {
+      setData(local)
+      setHydratedStorageKey(storageKey)
+      return
+    }
+
+    const expectedUserId = user?.id
     void supabase.auth.getSession().then(async ({ data: sessionData }) => {
-      const token = sessionData.session?.access_token
-      if (!token) { if (!cancelled) { setData(local); setHydrated(true) } return }
+      const session = sessionData.session
+      const token = session?.access_token
+      if (!token || session.user.id !== expectedUserId) {
+        if (isCurrent()) {
+          setData(local)
+          setHydratedStorageKey(storageKey)
+        }
+        return
+      }
+
       try {
         const response = await fetch('/api/getUserData', { headers: { Authorization: `Bearer ${token}` } })
-        const cloud = response.ok ? await response.json() as { studium?: Partial<StudiumData> } : {}
-        const hasCloud = cloud.studium && Object.values(cloud.studium).some(value => Array.isArray(value) && value.length)
-        if (!cancelled) setData({ ...EMPTY, ...(hasCloud ? cloud.studium : local) })
+        if (!response.ok) throw new Error(`Falha ao recuperar o Studium (${response.status}).`)
+
+        const responseData = await response.json() as unknown
+        if (!responseData || typeof responseData !== 'object' || Array.isArray(responseData)) {
+          throw new Error('A nuvem retornou o Studium em formato inválido.')
+        }
+        const cloud = responseData as { studium?: Partial<StudiumData> }
+        const hasCloud = Object.prototype.hasOwnProperty.call(cloud, 'studium')
+        if (hasCloud && (!cloud.studium || typeof cloud.studium !== 'object' || Array.isArray(cloud.studium))) {
+          throw new Error('A cópia remota do Studium é inválida.')
+        }
+        if (isCurrent()) {
+          // Uma coleção existente, mesmo com todas as listas vazias, é a fonte
+          // de verdade; só recorremos ao cache se a coleção ainda não existe.
+          setData({ ...EMPTY, ...(hasCloud ? cloud.studium : local) })
+          // Só uma leitura remota válida para a própria conta pode liberar POST.
+          cloudReadyStorageKey.current = storageKey
+          setHydratedStorageKey(storageKey)
+        }
       } catch {
-        if (!cancelled) setData(local)
-      } finally { if (!cancelled) setHydrated(true) }
+        if (isCurrent()) {
+          setData(local)
+          setHydratedStorageKey(storageKey)
+        }
+      }
     })
+
     return () => { cancelled = true }
-  }, [isVisitor, storageKey])
+  }, [isVisitor, storageKey, user?.id])
+
   useEffect(() => {
-    if (!hydrated) return
+    if (hydratedStorageKey !== storageKey) return
     writeBrowserValue(storageKey, data)
     if (isVisitor) return
+    if (cloudReadyStorageKey.current !== storageKey) return
+
     const timer = window.setTimeout(() => { void supabase.auth.getSession().then(({ data: sessionData }) => {
-      const token = sessionData.session?.access_token
-      if (token) void fetch('/api/syncUserData', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ collection: 'studium', data }) })
+      const session = sessionData.session
+      const token = session?.access_token
+      if (token && session.user.id === user?.id && cloudReadyStorageKey.current === storageKey) {
+        void fetch('/api/syncUserData', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ collection: 'studium', data }) })
+      }
     }) }, 650)
     return () => window.clearTimeout(timer)
-  }, [data, hydrated, isVisitor, storageKey])
+  }, [data, hydratedStorageKey, isVisitor, storageKey, user?.id])
 
   const record = useCallback((action: string, label: string) => ({ id: id('history'), action, label, timestamp: new Date().toISOString() }), [])
 

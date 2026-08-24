@@ -206,7 +206,7 @@ export const RightChatDrawer: React.FC = () => {
                 </div>
 
                 {!isVisitor ? (
-                  <button type="button" disabled={!isDataReady || !isCloudReady || syncStatus === 'syncing' || learningEnrichment.status === 'analyzing'} onClick={() => { if (syncStatus === 'error') retryCloudSync(); else void enrichExistingWorks() }} className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-accent-gold/30 bg-accent-gold/10 px-3 py-2 text-[11px] font-semibold text-accent-gold hover:bg-accent-gold/15 disabled:cursor-wait disabled:opacity-50">
+                  <button type="button" disabled={!isDataReady || syncStatus === 'syncing' || learningEnrichment.status === 'analyzing' || (!isCloudReady && syncStatus !== 'error')} onClick={() => { if (syncStatus === 'error') retryCloudSync(); else void enrichExistingWorks() }} className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-accent-gold/30 bg-accent-gold/10 px-3 py-2 text-[11px] font-semibold text-accent-gold hover:bg-accent-gold/15 disabled:cursor-wait disabled:opacity-50">
                     {learningEnrichment.status === 'analyzing'
                       ? <LoaderCircle className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none" />
                       : learningEnrichment.status === 'error' || learningEnrichment.status === 'done'
@@ -216,12 +216,12 @@ export const RightChatDrawer: React.FC = () => {
                       ? 'Analisando…'
                       : !isDataReady
                         ? 'Carregando acervo…'
-                        : !isCloudReady
-                          ? 'Nuvem indisponível'
-                          : syncStatus === 'syncing'
+                        : syncStatus === 'syncing'
                             ? 'Sincronizando…'
                             : syncStatus === 'error'
-                              ? 'Repetir sincronização'
+                              ? 'Tentar recuperar da nuvem'
+                              : !isCloudReady
+                                ? 'Nuvem indisponível'
                               : learningEnrichment.status === 'error'
                                 ? 'Tentar novamente'
                                 : learningEnrichment.status === 'done'
@@ -233,7 +233,7 @@ export const RightChatDrawer: React.FC = () => {
                 {learningEnrichment.status === 'done' && learningEnrichment.source ? <p className="mt-2 text-[10px] text-text-secondary">Método: {learningEnrichment.source}.</p> : null}
 
                 {isVisitor ? <p className="mt-2 text-[10px] text-text-secondary">Entre em uma conta para vincular lições com segurança.</p> : null}
-                {!isVisitor && isDataReady && !isCloudReady ? <p className="mt-2 text-[10px] text-red-300">Recarregue a página para confirmar a conexão segura com o acervo.</p> : null}
+                {!isVisitor && isDataReady && !isCloudReady ? <p className="mt-2 text-[10px] text-red-300">Nenhum cache local será enviado até a nuvem responder; tente recuperar a conexão antes de sincronizar alterações.</p> : null}
                 {!isVisitor && isCloudReady && syncStatus === 'error' ? <p className="mt-2 text-[10px] text-red-300">Repita a sincronização antes de iniciar a análise.</p> : null}
               </div>
             </div>

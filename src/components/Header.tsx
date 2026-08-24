@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { ClassicArchLogoIcon } from './ClassicArchLogo'
 
 export const Header: React.FC = () => {
-  const { setIsSearchOpen, isLeftDrawerOpen, setIsLeftDrawerOpen, setIsRightChatOpen, setActiveTab, userProfile, syncStatus } = useAgoraStore()
+  const { setIsSearchOpen, isLeftDrawerOpen, setIsLeftDrawerOpen, setIsRightChatOpen, setActiveTab, userProfile, syncStatus, retryCloudSync, isVisitor } = useAgoraStore()
   const { logout } = useAuth()
   const syncMeta = {
     local: { label: 'Salvo neste navegador', Icon: HardDrive, color: 'text-text-secondary' },
@@ -63,9 +63,15 @@ export const Header: React.FC = () => {
                 {getDynamicGreeting()}
               </p>
             </div>
-            <span className={`hidden xl:inline-flex items-center gap-1 text-[10px] ${syncMeta.color}`} title={syncMeta.label} aria-live="polite">
-              <SyncIcon className="h-3.5 w-3.5" /> {syncMeta.label}
-            </span>
+            {syncStatus === 'error' && !isVisitor ? (
+              <button type="button" onClick={retryCloudSync} className={`hidden xl:inline-flex items-center gap-1 text-[10px] ${syncMeta.color} hover:underline`} title="Tentar recuperar os dados da nuvem" aria-label="Tentar recuperar os dados da nuvem" aria-live="polite">
+                <SyncIcon className="h-3.5 w-3.5" /> Tentar recuperar
+              </button>
+            ) : (
+              <span className={`hidden xl:inline-flex items-center gap-1 text-[10px] ${syncMeta.color}`} title={syncMeta.label} aria-live="polite">
+                <SyncIcon className="h-3.5 w-3.5" /> {syncMeta.label}
+              </span>
+            )}
           </div>
 
           {/* Right Mobile Actions */}
