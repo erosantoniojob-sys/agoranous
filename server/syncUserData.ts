@@ -1,6 +1,6 @@
 import { requireSupabaseUser } from './supabaseAuth.js'
 
-const COLLECTIONS = new Set(['media', 'learnings', 'chat', 'profile', 'trails', 'onboarding', 'studium'])
+const COLLECTIONS = new Set(['media', 'learnings', 'chat', 'profile', 'trails', 'onboarding', 'studium', 'journey'])
 
 export async function handleSyncUserData(request: Request) {
   if (request.method !== 'POST') {

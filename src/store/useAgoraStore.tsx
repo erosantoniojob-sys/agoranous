@@ -15,6 +15,17 @@ import {
 } from '../types/agora';
 import { supabase, useAuth } from '../context/AuthContext';
 import { readBrowserValue, writeBrowserValue } from '../lib/browserStorage';
+import {
+  DAILY_MISSIONS,
+  calculateLegacyCatalogXp,
+  completionEventType,
+  createEmptyJourneyState,
+  createXpEvent,
+  missionKey,
+  normalizeJourneyState,
+  type JourneyEventType,
+  type JourneyState,
+} from '../lib/journeyProgress';
 import type { ViewName } from '../lib/viewPreload';
 
 export interface Recommendation {
@@ -349,6 +360,7 @@ interface AgoraStoreContextType {
   userProfile: UserProfile;
   customTrails: CustomTrail[];
   customCategories: Category[];
+  journey: JourneyState;
   knowledgeNodes: KnowledgeNode[];
   activeTab: ViewName;
   setActiveTab: (tab: ViewName) => void;
@@ -386,6 +398,7 @@ interface AgoraStoreContextType {
   hasCompletedOnboarding: boolean;
   completeOnboarding: (profileData?: Partial<UserProfile>) => void;
   resetOnboarding: () => void;
+  completeDailyMission: (missionId: string) => void;
   syncStatus: 'local' | 'syncing' | 'synced' | 'error';
   retryCloudSync: () => void;
   learningEnrichment: LearningEnrichmentState;
@@ -427,6 +440,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [userProfile, setUserProfile] = useState<UserProfile>(() => readStoredObject<UserProfile>(storagePrefix + 'profile') || EMPTY_PROFILE);
 
   const [customTrails, setCustomTrails] = useState<CustomTrail[]>(() => readStoredArray(storagePrefix + 'trails'));
+  const [journey, setJourney] = useState<JourneyState>(() => normalizeJourneyState(readStoredObject<unknown>(storagePrefix + 'journey')));
   const [deletedMediaItems, setDeletedMediaItems] = useState<DeletedMediaItem[]>(() => {
     const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000
     return readStoredArray<DeletedMediaItem>(storagePrefix + 'media_trash').filter(item => new Date(item.deletedAt).getTime() > cutoff)
@@ -480,6 +494,10 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             const localTrails = readStoredArray<CustomTrail>(keyPrefix + 'trails');
             const cloudTrails = Array.isArray(cloudData.trails) ? cloudData.trails as CustomTrail[] : [];
 
+            const localJourney = normalizeJourneyState(readStoredObject<unknown>(keyPrefix + 'journey'));
+            const cloudJourney = normalizeJourneyState(cloudData.journey);
+            const recoveredJourney = hasCloudCollection(cloudData, 'journey') ? cloudJourney : localJourney;
+
             const localChat = readStoredArray<ChatMessage>(keyPrefix + 'chat');
             const cloudChat = Array.isArray(cloudData.chat) ? cloudData.chat as ChatMessage[] : [];
 
@@ -497,6 +515,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setAprendizados(recoveredLearnings);
             setUserProfile(recoveredProfile);
             setCustomTrails(hasCloudCollection(cloudData, 'trails') ? cloudTrails : localTrails);
+            setJourney(recoveredJourney);
             setChatMessages(hasCloudCollection(cloudData, 'chat') ? cloudChat : firstNonEmptyArray(localChat, SEED_CHAT));
             setDeletedMediaItems(readStoredArray<DeletedMediaItem>(keyPrefix + 'media_trash'))
             setHasCompletedOnboarding(Boolean(
@@ -542,6 +561,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const localTrails = readStoredArray<CustomTrail>(keyPrefix + 'trails');
       const recoveredTrails = localTrails;
       setCustomTrails(recoveredTrails);
+      setJourney(normalizeJourneyState(readStoredObject<unknown>(keyPrefix + 'journey')))
       setDeletedMediaItems(readStoredArray<DeletedMediaItem>(keyPrefix + 'media_trash'))
 
       const storedOnboarding = readStoredObject<boolean>(keyPrefix + 'has_completed_onboarding');
@@ -692,6 +712,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       chat: chatMessages,
       profile: userProfile,
       trails: customTrails,
+      journey,
       onboarding: hasCompletedOnboarding,
     }
     const failedCollections = syncFailures.current.get(user.id)
@@ -710,6 +731,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     isCloudHydrated,
     isVisitor,
     mediaItems,
+    journey,
     syncToCloud,
     user?.id,
     userProfile,
@@ -853,6 +875,12 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   useEffect(() => {
     if (!isDataReady) return;
+    writeBrowserValue(storagePrefix + 'journey', journey);
+    syncToCloud('journey', journey);
+  }, [journey, storagePrefix, syncToCloud, isDataReady]);
+
+  useEffect(() => {
+    if (!isDataReady) return;
     writeBrowserValue(storagePrefix + 'has_completed_onboarding', hasCompletedOnboarding);
     syncToCloud('onboarding', hasCompletedOnboarding);
   }, [hasCompletedOnboarding, storagePrefix, syncToCloud, isDataReady]);
@@ -861,6 +889,48 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (!isDataReady) return
     writeBrowserValue(storagePrefix + 'media_trash', deletedMediaItems)
   }, [deletedMediaItems, isDataReady, storagePrefix])
+
+  // Contas criadas antes do sistema de eventos recebem um único marco
+  // histórico. Depois disso, todo XP novo nasce de uma ação identificável.
+  useEffect(() => {
+    if (!isDataReady || journey.legacyMigrationApplied || journey.events.length > 0) return
+    const xp = calculateLegacyCatalogXp(mediaItems, aprendizados, customTrails)
+    if (!xp) return
+
+    setJourney((current) => {
+      if (current.legacyMigrationApplied || current.events.length > 0) return current
+      return {
+        ...current,
+        legacyMigrationApplied: true,
+        events: [createXpEvent('legacy_catalog', 'Memória fundadora do acervo', { sourceId: 'legacy-catalog', xp }), ...current.events],
+      }
+    })
+  }, [aprendizados, customTrails, isDataReady, journey.events.length, journey.legacyMigrationApplied, mediaItems])
+
+  const awardXp = useCallback((type: JourneyEventType, label: string, sourceId?: string, xp?: number) => {
+    setJourney((current) => ({
+      ...current,
+      events: [createXpEvent(type, label, { sourceId, xp }), ...current.events],
+    }))
+  }, [])
+
+  const completeDailyMission = useCallback((missionId: string) => {
+    const mission = DAILY_MISSIONS.find((item) => item.id === missionId)
+    if (!mission) return
+
+    setJourney((current) => {
+      const key = missionKey(mission.id)
+      if (current.completedMissionKeys.includes(key)) return current
+      return {
+        ...current,
+        completedMissionKeys: [key, ...current.completedMissionKeys],
+        events: [
+          createXpEvent('daily_mission', `Missão concluída: ${mission.title}`, { sourceId: key, xp: mission.xp }),
+          ...current.events,
+        ],
+      }
+    })
+  }, [])
 
   const completeOnboarding = useCallback((profileData?: Partial<UserProfile>) => {
     if (profileData) {
@@ -893,11 +963,13 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       data_lancamento_oficial: item.data_lancamento_oficial || (item.ano ? `${item.ano}-01-01` : '2024-01-01'),
     };
     setMediaItems((prev) => [newMediaItem, ...prev]);
+    awardXp('media_added', `Nova obra: ${newMediaItem.titulo}`, newMediaItem.id)
     return newMediaItem;
-  }, [mediaItems]);
+  }, [awardXp, mediaItems]);
 
   const updateMediaStatusAndRating = useCallback(
     (id: string, status: MediaStatus, avaliacao: number, progresso?: number) => {
+      const previousMedia = mediaItems.find((item) => item.id === id)
       setMediaItems((prev) =>
         prev.map((item) => {
           if (item.id !== id) return item;
@@ -914,11 +986,20 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 avaliacao_numerica: Math.max(0, Math.min(5, avaliacao)),
                 progresso_percentual: progresso ?? (status === 'Concluído' ? 100 : prev.progresso_percentual || 45),
               }
-            : null
+          : null
         );
       }
+
+      const wasActive = previousMedia && ['Lendo', 'Assistindo', 'Jogando', 'Concluído'].includes(previousMedia.status)
+      const isActive = ['Lendo', 'Assistindo', 'Jogando', 'Concluído'].includes(status)
+      if (previousMedia && !wasActive && isActive) {
+        awardXp('media_started', `Começou: ${previousMedia.titulo}`, previousMedia.id)
+      }
+      if (previousMedia && previousMedia.status !== 'Concluído' && status === 'Concluído') {
+        awardXp(completionEventType(previousMedia.tipo), `Concluiu: ${previousMedia.titulo}`, previousMedia.id)
+      }
     },
-    [selectedMedia]
+    [awardXp, mediaItems, selectedMedia]
   );
 
   const addAprendizado = useCallback((mediaId: string, texto: string, topico?: string): Aprendizado => {
@@ -930,8 +1011,9 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       data: new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }),
     };
     setAprendizados((prev) => [newAprendizado, ...prev]);
+    awardXp('learning_added', 'Registrou uma nota no acervo', newAprendizado.id)
     return newAprendizado;
-  }, []);
+  }, [awardXp]);
 
   const addCustomTrail = useCallback(
     (nome: string, descricao: string, mediaIds: string[], categoria?: string): CustomTrail => {
@@ -945,18 +1027,24 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         progresso_percentual: mediaIds.length > 0 ? 50 : 0,
       };
       setCustomTrails((prev) => [newTrail, ...prev]);
+      awardXp('trail_created', `Iniciou a trilha: ${newTrail.nome}`, newTrail.id)
       return newTrail;
     },
-    []
+    [awardXp]
   );
 
   const updateCustomTrail = useCallback(
     (id: string, updatedData: Partial<CustomTrail>) => {
+      const currentTrail = customTrails.find((trail) => trail.id === id)
       setCustomTrails((prev) =>
         prev.map((trail) => (trail.id === id ? { ...trail, ...updatedData } : trail))
       );
+
+      if (currentTrail && currentTrail.progresso_percentual < 100 && (updatedData.progresso_percentual ?? currentTrail.progresso_percentual) >= 100) {
+        awardXp('trail_completed', `Concluiu a trilha: ${currentTrail.nome}`, currentTrail.id)
+      }
     },
-    []
+    [awardXp, customTrails]
   );
 
   const deleteCustomTrail = useCallback((id: string) => {
@@ -1251,6 +1339,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         userProfile,
         customTrails,
         customCategories,
+        journey,
         knowledgeNodes: KNOWLEDGE_NODES,
         activeTab,
         setActiveTab,
@@ -1288,6 +1377,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         hasCompletedOnboarding,
         completeOnboarding,
         resetOnboarding,
+        completeDailyMission,
         syncStatus,
         retryCloudSync,
         learningEnrichment,
