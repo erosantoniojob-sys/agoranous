@@ -981,13 +981,13 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // EFEITOS DE PERSISTÊNCIA
   useEffect(() => {
-    if (!isDataReady) return;
+    if (!canPersistData) return;
     writeBrowserValue(storagePrefix + 'media', mediaItems);
     syncToCloud('media', mediaItems);
-  }, [mediaItems, storagePrefix, syncToCloud, isDataReady]);
+  }, [canPersistData, mediaItems, storagePrefix, syncToCloud]);
 
   useEffect(() => {
-    if (!isDataReady) return;
+    if (!canPersistData) return;
     writeBrowserValue(storagePrefix + 'learnings', aprendizados);
     if (serverLearningRevision !== handledServerLearningRevision.current) {
       handledServerLearningRevision.current = serverLearningRevision
@@ -996,48 +996,48 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // As lições automáticas têm uma coleção canônica própria, protegida contra
     // snapshots antigos de outras abas. Aqui sincronizamos apenas notas humanas.
     syncToCloud('learnings', aprendizados.filter((item) => !item.id.startsWith(GENERATED_LEARNING_ID_PREFIX)));
-  }, [aprendizados, serverLearningRevision, storagePrefix, syncToCloud, isDataReady]);
+  }, [aprendizados, canPersistData, serverLearningRevision, storagePrefix, syncToCloud]);
 
   useEffect(() => {
-    if (!isDataReady) return;
+    if (!canPersistData) return;
     writeBrowserValue(storagePrefix + 'chat', chatMessages);
     syncToCloud('chat', chatMessages);
-  }, [chatMessages, storagePrefix, syncToCloud, isDataReady]);
+  }, [canPersistData, chatMessages, storagePrefix, syncToCloud]);
 
   useEffect(() => {
-    if (isDataReady && !isVisitor) {
+    if (canPersistData && !isVisitor) {
       writeBrowserValue(storagePrefix + 'profile', userProfile);
       syncToCloud('profile', userProfile);
     }
-  }, [userProfile, storagePrefix, isVisitor, syncToCloud, isDataReady]);
+  }, [canPersistData, isVisitor, storagePrefix, syncToCloud, userProfile]);
 
   useEffect(() => {
-    if (!isDataReady) return;
+    if (!canPersistData) return;
     writeBrowserValue(storagePrefix + 'trails', customTrails);
     syncToCloud('trails', customTrails);
-  }, [customTrails, storagePrefix, syncToCloud, isDataReady]);
+  }, [canPersistData, customTrails, storagePrefix, syncToCloud]);
 
   useEffect(() => {
-    if (!isDataReady) return;
+    if (!canPersistData) return;
     writeBrowserValue(storagePrefix + 'journey', journey);
     syncToCloud('journey', journey);
-  }, [journey, storagePrefix, syncToCloud, isDataReady]);
+  }, [canPersistData, journey, storagePrefix, syncToCloud]);
 
   useEffect(() => {
-    if (!isDataReady) return;
+    if (!canPersistData) return;
     writeBrowserValue(storagePrefix + 'has_completed_onboarding', hasCompletedOnboarding);
     syncToCloud('onboarding', hasCompletedOnboarding);
-  }, [hasCompletedOnboarding, storagePrefix, syncToCloud, isDataReady]);
+  }, [canPersistData, hasCompletedOnboarding, storagePrefix, syncToCloud]);
 
   useEffect(() => {
-    if (!isDataReady) return
+    if (!canPersistData) return
     writeBrowserValue(storagePrefix + 'media_trash', deletedMediaItems)
-  }, [deletedMediaItems, isDataReady, storagePrefix])
+  }, [canPersistData, deletedMediaItems, storagePrefix])
 
   // Contas criadas antes do sistema de eventos recebem um único marco
   // histórico. Depois disso, todo XP novo nasce de uma ação identificável.
   useEffect(() => {
-    if (!isDataReady || journey.legacyMigrationApplied || journey.events.length > 0) return
+    if (!canPersistData || journey.legacyMigrationApplied || journey.events.length > 0) return
     const xp = calculateLegacyCatalogXp(mediaItems, aprendizados, customTrails)
     if (!xp) return
 
@@ -1049,7 +1049,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         events: [createXpEvent('legacy_catalog', 'Memória fundadora do acervo', { sourceId: 'legacy-catalog', xp }), ...current.events],
       }
     })
-  }, [aprendizados, customTrails, isDataReady, journey.events.length, journey.legacyMigrationApplied, mediaItems])
+  }, [aprendizados, canPersistData, customTrails, journey.events.length, journey.legacyMigrationApplied, mediaItems])
 
   const awardXp = useCallback((type: JourneyEventType, label: string, sourceId?: string, xp?: number) => {
     setJourney((current) => {
@@ -1525,6 +1525,9 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         isDataReady,
         isCloudReady: isCloudHydrated,
         cloudError,
+        localRecovery: activeLocalRecovery,
+        recoverLocalData,
+        discardLocalRecovery,
         hasCompletedOnboarding,
         completeOnboarding,
         resetOnboarding,

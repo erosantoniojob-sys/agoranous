@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from 'react'
-import { CloudAlert, RotateCcw } from 'lucide-react'
+import { ArchiveRestore, CloudAlert, RotateCcw } from 'lucide-react'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { AgoraProvider, useAgoraStore } from './store/useAgoraStore'
 import { Header } from './components/Header'
@@ -44,9 +44,61 @@ const CloudRecovery: React.FC<{ error: string | null; onRetry: () => void }> = (
   </div>
 )
 
+const LocalDataRecovery: React.FC<{
+  mediaCount: number
+  learningCount: number
+  trailCount: number
+  sourceLabel: string
+  onRecover: () => void
+  onDiscard: () => void
+}> = ({ mediaCount, learningCount, trailCount, sourceLabel, onRecover, onDiscard }) => {
+  const recoveredParts = [
+    mediaCount > 0 ? `${mediaCount} ${mediaCount === 1 ? 'obra' : 'obras'}` : '',
+    learningCount > 0 ? `${learningCount} ${learningCount === 1 ? 'nota' : 'notas'}` : '',
+    trailCount > 0 ? `${trailCount} ${trailCount === 1 ? 'trilha' : 'trilhas'}` : '',
+  ].filter(Boolean)
+
+  const discard = () => {
+    const confirmed = window.confirm('Descartar esta cópia local e continuar somente com os dados da nuvem? Essa escolha não pode ser desfeita neste navegador.')
+    if (confirmed) onDiscard()
+  }
+
+  return (
+    <div className="min-h-screen bg-bg-base text-text-primary flex items-center justify-center p-4 font-sans">
+      <section aria-labelledby="local-recovery-title" className="w-full max-w-lg rounded-2xl border border-accent-gold/30 bg-bg-surface p-6 text-center shadow-2xl">
+        <div className="mx-auto grid h-12 w-12 place-items-center rounded-xl border border-accent-gold/35 bg-accent-gold/10 text-accent-gold"><ArchiveRestore className="h-6 w-6" /></div>
+        <h1 id="local-recovery-title" className="mt-4 font-serif text-xl font-bold">Encontramos uma cópia recuperável</h1>
+        <p className="mt-2 text-sm leading-relaxed text-text-secondary">
+          A nuvem não contém todos os dados de {sourceLabel}. Podemos restaurar {recoveredParts.join(', ')} sem apagar o que já veio da nuvem.
+        </p>
+        <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-center">
+          <button type="button" onClick={onRecover} className="inline-flex items-center justify-center gap-2 rounded-xl bg-accent-gold px-4 py-2.5 text-xs font-semibold text-bg-base transition-colors hover:bg-accent-gold-bright focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold">
+            <ArchiveRestore className="h-4 w-4" /> Recuperar cópia local
+          </button>
+          <button type="button" onClick={discard} className="rounded-xl border border-red-300/20 px-4 py-2.5 text-xs font-semibold text-red-200 transition-colors hover:bg-red-950/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300">
+            Usar apenas a nuvem
+          </button>
+        </div>
+      </section>
+    </div>
+  )
+}
+
 const MainContent: React.FC = () => {
   const { user, isLoading } = useAuth()
-  const { activeTab, cloudError, hasCompletedOnboarding, isVisitor, isDataReady, isCloudReady, syncStatus, retryCloudSync } = useAgoraStore()
+  const {
+    activeTab,
+    cloudError,
+    discardLocalRecovery,
+    hasCompletedOnboarding,
+    isVisitor,
+    isDataReady,
+    isCloudReady,
+    localRecovery,
+    recoverLocalData,
+    retryCloudSync,
+    syncStatus,
+  } = useAgoraStore()
 
   if (isLoading) {
     return (
@@ -61,6 +113,19 @@ const MainContent: React.FC = () => {
   if (!isDataReady) {
     return (
       <div className="min-h-screen bg-bg-base text-text-primary flex items-center justify-center p-4 font-sans"><AgoraLoader message="Reunindo seu acervo" detail="Recuperando memórias, trilhas e preferências…" /></div>
+    )
+  }
+
+  if (localRecovery) {
+    return (
+      <LocalDataRecovery
+        mediaCount={localRecovery.mediaCount}
+        learningCount={localRecovery.learningCount}
+        trailCount={localRecovery.trailCount}
+        sourceLabel={localRecovery.sourceLabel}
+        onRecover={recoverLocalData}
+        onDiscard={discardLocalRecovery}
+      />
     )
   }
 
