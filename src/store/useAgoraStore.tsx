@@ -395,6 +395,7 @@ interface AgoraStoreContextType {
   isVisitor: boolean;
   isDataReady: boolean;
   isCloudReady: boolean;
+  cloudError: string | null;
   hasCompletedOnboarding: boolean;
   completeOnboarding: (profileData?: Partial<UserProfile>) => void;
   resetOnboarding: () => void;
@@ -423,6 +424,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // ser persistido sob a chave "anonymous".
   const isDataReady = Boolean(user?.id && hydratedUserId === user.id);
   const [syncStatus, setSyncStatus] = useState<'local' | 'syncing' | 'synced' | 'error'>(isVisitor ? 'local' : 'synced');
+  const [cloudError, setCloudError] = useState<string | null>(null);
   const [cloudReloadRevision, setCloudReloadRevision] = useState(0);
 
   // Os dados do visitante também pertencem ao navegador atual. Eles não são
@@ -457,6 +459,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     async function loadCloudData() {
       setHydratedUserId(null);
       setCloudHydratedUserId(null);
+      setCloudError(null)
       if (!isVisitor && user?.id) {
         setSyncStatus('syncing');
         try {
@@ -527,13 +530,18 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setHydratedUserId(user.id);
             return; 
           }
-          throw new Error(`Falha ao buscar dados sincronizados (${res.status}).`);
+          const responseError = await res.json().catch(() => null)
+          const message = isRecord(responseError) && typeof responseError.error === 'string'
+            ? responseError.error
+            : `Falha ao buscar dados sincronizados (${res.status}).`
+          throw new Error(message);
         } catch (error) {
           // Não marque a nuvem como pronta após uma falha. Caso o cache tenha
           // sido limpo, liberá-la aqui enviaria coleções vazias e apagaria a
           // cópia remota que ainda poderia ser recuperada.
           if (!cancelled) {
             setSyncStatus('error');
+            setCloudError(error instanceof Error ? error.message : 'Não foi possível recuperar a cópia sincronizada.');
             console.error("Erro ao buscar da nuvem. Mantendo somente o cache local até uma nova tentativa.", error);
           }
         }
@@ -702,7 +710,16 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // nunca com o upload do fallback local.
     if (!isCloudHydrated) {
       setSyncStatus('syncing')
-      setCloudReloadRevision((current) => current + 1)
+      setCloudError(null)
+      void (async () => {
+        const { data, error } = await supabase.auth.refreshSession()
+        if (error || !data.session || data.session.user.id !== user.id) {
+          setSyncStatus('error')
+          setCloudError('Sua sessão expirou ou não pôde ser renovada. Entre novamente e tente recuperar o acervo.')
+          return
+        }
+        setCloudReloadRevision((current) => current + 1)
+      })()
       return
     }
 
@@ -908,10 +925,16 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [aprendizados, customTrails, isDataReady, journey.events.length, journey.legacyMigrationApplied, mediaItems])
 
   const awardXp = useCallback((type: JourneyEventType, label: string, sourceId?: string, xp?: number) => {
-    setJourney((current) => ({
-      ...current,
-      events: [createXpEvent(type, label, { sourceId, xp }), ...current.events],
-    }))
+    setJourney((current) => {
+      // Uma mesma transição de domínio (por exemplo, concluir a mesma obra)
+      // só pode gerar XP uma vez. Eventos sem fonte continuam livres para
+      // representar ações realmente distintas.
+      if (sourceId && current.events.some((event) => event.type === type && event.sourceId === sourceId)) return current
+      return {
+        ...current,
+        events: [createXpEvent(type, label, { sourceId, xp }), ...current.events],
+      }
+    })
   }, [])
 
   const completeDailyMission = useCallback((missionId: string) => {
@@ -1374,6 +1397,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         isVisitor,
         isDataReady,
         isCloudReady: isCloudHydrated,
+        cloudError,
         hasCompletedOnboarding,
         completeOnboarding,
         resetOnboarding,

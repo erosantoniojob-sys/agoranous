@@ -1,39 +1,64 @@
 import React, { useEffect } from 'react'
-import { Bookmark, Brain, Compass, Dumbbell, Feather, Home, Hourglass, Map, Plus } from 'lucide-react'
+import { Bookmark, Brain, Compass, Dumbbell, Feather, Home, Hourglass, Map, Menu, Plus, UserRound } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
-import { ViewName, preloadView } from '../lib/viewPreload'
+import { preloadView, type ViewName } from '../lib/viewPreload'
 
-type NavItemProps = {
+type NavEntry = {
   label: string
   icon: React.ElementType
-  active: boolean
-  onClick: () => void
-  view: ViewName
+  tab: ViewName
 }
 
-const DockItem: React.FC<NavItemProps> = ({ label, icon: Icon, active, onClick, view }) => (
+type NavButtonProps = NavEntry & {
+  active: boolean
+  onClick: () => void
+}
+
+const MobileNavButton: React.FC<NavButtonProps> = ({ label, icon: Icon, tab, active, onClick }) => (
   <button
     type="button"
     onClick={onClick}
-    onPointerEnter={() => preloadView(view)}
-    onFocus={() => preloadView(view)}
-    aria-label={label}
+    onPointerEnter={() => preloadView(tab)}
+    onFocus={() => preloadView(tab)}
     aria-current={active ? 'page' : undefined}
-    className={`group relative flex min-w-10 flex-col items-center justify-center gap-1 p-2 rounded-lg transition-all duration-250 ease-out ${
-      active
-        ? 'bg-accent-gold/15 text-accent-gold'
-        : 'text-text-secondary hover:text-text-primary hover:bg-border-primary/30'
-    }`}
-    title={label}
+    className={`mobile-nav-item ${active ? 'is-active' : ''}`}
   >
-    <Icon className="w-5 h-5" />
-    <span className="text-[9px] font-semibold leading-none lg:hidden">{label}</span>
+    <Icon className="h-[1.15rem] w-[1.15rem]" />
+    <span>{label}</span>
   </button>
 )
 
+const RailNavButton: React.FC<NavButtonProps> = ({ label, icon: Icon, tab, active, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    onPointerEnter={() => preloadView(tab)}
+    onFocus={() => preloadView(tab)}
+    aria-current={active ? 'page' : undefined}
+    className={`nav-rail__item ${active ? 'is-active' : ''}`}
+    title={label}
+  >
+    <Icon className="h-[1.1rem] w-[1.1rem]" />
+    <span>{label}</span>
+  </button>
+)
+
+const mainNav: NavEntry[] = [
+  { label: 'Minha jornada', icon: Home, tab: 'inicio' },
+  { label: 'Explorar', icon: Compass, tab: 'explorar' },
+  { label: 'Trilhas', icon: Map, tab: 'trilhas' },
+  { label: 'Memória', icon: Bookmark, tab: 'memoria' },
+]
+
+const cultivationNav: NavEntry[] = [
+  { label: 'Studium', icon: Brain, tab: 'studium' },
+  { label: 'Scholé', icon: Hourglass, tab: 'schole' },
+  { label: 'Rotina', icon: Dumbbell, tab: 'rotina' },
+  { label: 'Poíesis', icon: Feather, tab: 'poiesis' },
+]
+
 export const TabBar: React.FC = () => {
-  const { activeTab, setActiveTab, setIsSearchOpen } = useAgoraStore()
-  const openAddMedia = () => setIsSearchOpen(true)
+  const { activeTab, setActiveTab, setIsLeftDrawerOpen, setIsSearchOpen } = useAgoraStore()
 
   useEffect(() => {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -56,9 +81,8 @@ export const TabBar: React.FC = () => {
         dock.style.setProperty('--scroll-energy', energy)
       })
 
-      if (Math.abs(currentVelocity) > 0.003 || Math.abs(targetVelocity) > 0.003) {
-        frame = window.requestAnimationFrame(render)
-      } else {
+      if (Math.abs(currentVelocity) > 0.003 || Math.abs(targetVelocity) > 0.003) frame = window.requestAnimationFrame(render)
+      else {
         docks.forEach((dock) => {
           dock.style.setProperty('--scroll-velocity', '0')
           dock.style.setProperty('--scroll-energy', '0')
@@ -84,107 +108,39 @@ export const TabBar: React.FC = () => {
     }
   }, [])
 
-  const mainNavItems: Array<{ label: string; icon: React.ElementType; tab: ViewName }> = [
-    { label: 'Início', icon: Home, tab: 'inicio' },
-    { label: 'Explorar', icon: Compass, tab: 'explorar' },
-    { label: 'Trilhas', icon: Map, tab: 'trilhas' },
-  ]
-
-  const memoryItem = { label: 'Memória', icon: Bookmark, tab: 'memoria' as const }
-
-  const lifestyleItems: Array<{ label: string; icon: React.ElementType; tab: ViewName }> = [
-    { label: 'Scholé', icon: Hourglass, tab: 'schole' },
-    { label: 'Rotina', icon: Dumbbell, tab: 'rotina' },
-  ]
-
-  const desktopLeftItems = [...mainNavItems, memoryItem]
-  const desktopRightItems: Array<{ label: string; icon: React.ElementType; tab: ViewName }> = [
-    ...lifestyleItems,
-    { label: 'Poíesis', icon: Feather, tab: 'poiesis' },
-    { label: 'Studium', icon: Brain, tab: 'studium' },
-  ]
+  const openCreate = () => setIsSearchOpen(true)
 
   return (
     <>
-      {/* Mobile Dock - Bottom */}
-      <nav className="mobile-dock-shell lg:hidden fixed inset-x-0 bottom-0 z-40 flex justify-center px-[max(0.75rem,env(safe-area-inset-left))] py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-        <div className="velocity-dock tab-bar-mobile relative flex w-full max-w-[30rem] items-center justify-between gap-1 px-2 py-2 rounded-2xl border border-border-primary">
-          {mainNavItems.map((item) => (
-            <DockItem
-              key={item.tab}
-              label={item.label}
-              icon={item.icon}
-              active={activeTab === item.tab}
-              view={item.tab}
-              onClick={() => setActiveTab(item.tab)}
-            />
-          ))}
-
-          <div className="w-px h-6 bg-border-primary/50" />
-
-          <button
-            type="button"
-            onClick={openAddMedia}
-            aria-label="Adicionar mídia"
-            className="group flex min-w-10 flex-col items-center justify-center gap-1 p-2 rounded-lg bg-accent-gold hover:bg-accent-gold/90 text-bg-base transition-all duration-250 ease-out hover:scale-110"
-            title="Adicionar"
-          >
-            <Plus className="w-5 h-5" />
-            <span className="text-[9px] font-bold leading-none lg:hidden">Adicionar</span>
+      <nav className="mobile-dock-shell lg:hidden fixed inset-x-0 bottom-0 z-40 flex justify-center px-[max(0.55rem,env(safe-area-inset-left))] py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]" aria-label="Navegação principal">
+        <div className="velocity-dock tab-bar-mobile mobile-navigation relative grid w-full max-w-[34rem] grid-cols-5 items-center rounded-2xl border border-border-primary px-1.5 py-1.5">
+          <MobileNavButton label="Início" icon={Home} tab="inicio" active={activeTab === 'inicio'} onClick={() => setActiveTab('inicio')} />
+          <MobileNavButton label="Jornada" icon={Brain} tab="studium" active={activeTab === 'studium'} onClick={() => setActiveTab('studium')} />
+          <button type="button" onClick={openCreate} className="mobile-nav-create" aria-label="Criar ou adicionar obra" title="Criar">
+            <Plus className="h-5 w-5" />
+            <span>Criar</span>
           </button>
-
-          <div className="w-px h-6 bg-border-primary/50" />
-
-          {lifestyleItems.slice(0, 2).map((item) => (
-            <DockItem
-              key={item.tab}
-              label={item.label}
-              icon={item.icon}
-              active={activeTab === item.tab}
-              view={item.tab}
-              onClick={() => setActiveTab(item.tab)}
-            />
-          ))}
+          <MobileNavButton label="Trilhas" icon={Map} tab="trilhas" active={activeTab === 'trilhas'} onClick={() => setActiveTab('trilhas')} />
+          <button type="button" onClick={() => setIsLeftDrawerOpen(true)} className="mobile-nav-item" aria-label="Mais opções" title="Mais">
+            <Menu className="h-[1.15rem] w-[1.15rem]" />
+            <span>Mais</span>
+          </button>
         </div>
       </nav>
 
-      {/* Desktop Dock - Bottom Center */}
-      <nav className="velocity-dock tab-bar-desktop hidden lg:flex fixed bottom-6 left-1/2 z-40 -translate-x-1/2 items-center gap-2 px-4 py-3 rounded-2xl shadow-lg-elevation">
-        {desktopLeftItems.map((item) => (
-          <DockItem
-            key={item.tab}
-            label={item.label}
-            icon={item.icon}
-            active={activeTab === item.tab}
-            view={item.tab}
-            onClick={() => setActiveTab(item.tab)}
-          />
-        ))}
-
-        <div className="w-px h-8 bg-border-primary/50" />
-
-        <button
-          type="button"
-          onClick={openAddMedia}
-          aria-label="Adicionar mídia"
-          className="group flex items-center justify-center gap-1 p-2.5 rounded-lg bg-gradient-to-b from-accent-gold to-amber-700 hover:shadow-md-elevation text-bg-base font-bold transition-all duration-250 ease-out hover:scale-110 hover:-translate-y-1"
-          title="Adicionar"
-        >
-          <Plus className="w-6 h-6" />
-        </button>
-
-        <div className="w-px h-8 bg-border-primary/50" />
-
-        {desktopRightItems.map((item) => (
-          <DockItem
-            key={item.tab}
-            label={item.label}
-            icon={item.icon}
-            active={activeTab === item.tab}
-            view={item.tab}
-            onClick={() => setActiveTab(item.tab)}
-          />
-        ))}
+      <nav className="nav-rail hidden lg:flex fixed left-4 top-1/2 z-40 -translate-y-1/2 flex-col items-center" aria-label="Navegação principal">
+        <div className="nav-rail__monogram" aria-hidden="true">A</div>
+        <div className="nav-rail__group">
+          {mainNav.map((item) => <RailNavButton key={item.tab} {...item} active={activeTab === item.tab} onClick={() => setActiveTab(item.tab)} />)}
+        </div>
+        <div className="nav-rail__separator" />
+        <button type="button" onClick={openCreate} className="nav-rail__create" aria-label="Criar ou adicionar obra" title="Criar ou adicionar obra"><Plus className="h-5 w-5" /></button>
+        <div className="nav-rail__separator" />
+        <div className="nav-rail__group nav-rail__group--cultivation">
+          {cultivationNav.map((item) => <RailNavButton key={item.tab} {...item} active={activeTab === item.tab} onClick={() => setActiveTab(item.tab)} />)}
+        </div>
+        <div className="nav-rail__separator" />
+        <button type="button" onClick={() => setActiveTab('perfil')} className={`nav-rail__item ${activeTab === 'perfil' ? 'is-active' : ''}`} aria-current={activeTab === 'perfil' ? 'page' : undefined} title="Perfil"><UserRound className="h-[1.1rem] w-[1.1rem]" /><span>Perfil</span></button>
       </nav>
     </>
   )

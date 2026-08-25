@@ -30,12 +30,13 @@ const ViewLoading: React.FC = () => (
   <div className="flex min-h-[45vh] items-center justify-center"><AgoraLoader compact message="Abrindo este espaço" /></div>
 )
 
-const CloudRecovery: React.FC<{ onRetry: () => void }> = ({ onRetry }) => (
+const CloudRecovery: React.FC<{ error: string | null; onRetry: () => void }> = ({ error, onRetry }) => (
   <div className="min-h-screen bg-bg-base text-text-primary flex items-center justify-center p-4 font-sans">
     <section className="w-full max-w-md rounded-2xl border border-red-400/25 bg-bg-surface p-6 text-center shadow-2xl">
       <div className="mx-auto grid h-12 w-12 place-items-center rounded-xl border border-red-400/30 bg-red-950/30 text-red-300"><CloudAlert className="h-6 w-6" /></div>
       <h1 className="mt-4 font-serif text-xl font-bold">Não foi possível recuperar seu acervo</h1>
       <p className="mt-2 text-sm leading-relaxed text-text-secondary">Nenhum cache local será enviado até a nuvem responder. Tente novamente antes de iniciar uma conta vazia.</p>
+      {error ? <p className="mt-3 rounded-xl border border-red-300/15 bg-red-950/25 px-3 py-2 text-xs leading-relaxed text-red-200">{error}</p> : null}
       <button type="button" onClick={onRetry} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-accent-gold px-4 py-2.5 text-xs font-semibold text-bg-base transition-colors hover:bg-accent-gold-bright">
         <RotateCcw className="h-4 w-4" /> Tentar novamente
       </button>
@@ -45,7 +46,7 @@ const CloudRecovery: React.FC<{ onRetry: () => void }> = ({ onRetry }) => (
 
 const MainContent: React.FC = () => {
   const { user, isLoading } = useAuth()
-  const { activeTab, hasCompletedOnboarding, isVisitor, isDataReady, isCloudReady, syncStatus, retryCloudSync } = useAgoraStore()
+  const { activeTab, cloudError, hasCompletedOnboarding, isVisitor, isDataReady, isCloudReady, syncStatus, retryCloudSync } = useAgoraStore()
 
   if (isLoading) {
     return (
@@ -66,7 +67,7 @@ const MainContent: React.FC = () => {
   // Uma conta sem cache não deve cair no onboarding quando a leitura remota
   // falhou: isso pareceria uma conta nova e poderia levar à perda do acervo.
   if (!isVisitor && !hasCompletedOnboarding && !isCloudReady) {
-    if (syncStatus === 'error') return <CloudRecovery onRetry={retryCloudSync} />
+    if (syncStatus === 'error') return <CloudRecovery error={cloudError} onRetry={retryCloudSync} />
     return (
       <div className="min-h-screen bg-bg-base text-text-primary flex items-center justify-center p-4 font-sans"><AgoraLoader message="Conectando ao seu acervo" detail="Confirmando a cópia segura da sua conta…" /></div>
     )

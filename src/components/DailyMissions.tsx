@@ -1,6 +1,6 @@
 import React from 'react'
 import { BookMarked, Check, Link2, PenLine } from 'lucide-react'
-import { DAILY_MISSIONS, missionKey } from '../lib/journeyProgress'
+import { DAILY_MISSIONS, dayKey, missionKey } from '../lib/journeyProgress'
 
 type DailyMissionsProps = {
   completedMissionKeys: string[]
@@ -20,7 +20,7 @@ export const DailyMissions: React.FC<DailyMissionsProps> = ({ completedMissionKe
         <p>Progresso diário</p>
         <h2 id="daily-missions-title">Missões de hoje</h2>
       </div>
-      <span className="journey-section-count">{completedMissionKeys.filter((key) => key.startsWith(`${new Date().toISOString().slice(0, 10)}:`)).length} / {DAILY_MISSIONS.length}</span>
+      <span className="journey-section-count">{completedMissionKeys.filter((key) => key.startsWith(`${dayKey()}:`)).length} / {DAILY_MISSIONS.length}</span>
     </div>
 
     <div className="journey-missions__grid">
