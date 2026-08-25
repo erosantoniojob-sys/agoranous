@@ -144,7 +144,7 @@ export const MediaDetailModal: React.FC = () => {
           <div class="meta-box">
             <div class="meta-row"><span class="meta-label">TÍTULO DA OBRA:</span> ${title}</div>
             <div class="meta-row"><span class="meta-label">AUTOR / CRIADOR:</span> ${author}</div>
-            <div class="meta-row"><span class="meta-label">CATEGORIA / TIPO:</span> ${type} (${year})</div>
+            <div class="meta-row"><span class="meta-label">FORMATO:</span> ${type} (${year})</div>
             <div class="meta-row"><span class="meta-label">DATA DE LANÇAMENTO OFICIAL:</span> ${releaseDate}</div>
             <div class="meta-row"><span class="meta-label">AVALIAÇÃO NO SEGUNDO CÉREBRO:</span> ${rating} / 5.0 estrelas</div>
             <div class="meta-row"><span class="meta-label">PESQUISADOR / ERUDITO:</span> ${researcher}</div>

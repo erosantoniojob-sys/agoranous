@@ -8,10 +8,13 @@ import {
   Film,
   Flame,
   Gamepad2,
+  GraduationCap,
+  Headphones,
   LibraryBig,
   Map as MapIcon,
   PenLine,
   Plus,
+  Smartphone,
   Sparkles,
   Tv,
   X,
@@ -24,31 +27,27 @@ import { KnowledgeOrbit, type KnowledgeRealm } from '../components/KnowledgeOrbi
 import { LevelProgress } from '../components/LevelProgress'
 import { TrailSelectionModal } from '../components/TrailSelectionModal'
 import { calculateJourneyXp, getLevelProgress, getStreak } from '../lib/journeyProgress'
+import {
+  genreFilter,
+  KNOWLEDGE_REALM_DEFINITIONS,
+  knowledgeRealmFilter,
+  MEDIA_FORMAT_DEFINITIONS,
+  mediaMatchesRealm,
+  mediaTypeFilter,
+} from '../lib/knowledgeRealms'
+import type { MediaType } from '../types/agora'
 
 const DailyQuoteCard = lazy(() => import('../components/DailyQuoteCard').then((module) => ({ default: module.DailyQuoteCard })))
 
-const CATEGORY_MODULES = [
-  { id: 'Livros', label: 'Literatura', helper: 'Livros e ensaios', icon: BookOpen, type: 'Livro' },
-  { id: 'Filmes', label: 'Cinema', helper: 'Filmes e documentários', icon: Film, type: 'Filme' },
-  { id: 'Séries', label: 'Séries', helper: 'Narrativas longas', icon: Tv, type: 'Série' },
-  { id: 'Jogos', label: 'Jogos', helper: 'Experiências interativas', icon: Gamepad2, type: 'Jogo' },
-] as const
-
-type RealmDefinition = {
-  id: string
-  name: string
-  accent: string
-  matches: (genres: string[], type: string) => boolean
+const CATEGORY_ICONS: Record<MediaType, React.ElementType> = {
+  Livro: BookOpen,
+  Filme: Film,
+  Série: Tv,
+  Jogo: Gamepad2,
+  App: Smartphone,
+  Podcast: Headphones,
+  Curso: GraduationCap,
 }
-
-const REALM_DEFINITIONS: RealmDefinition[] = [
-  { id: 'filosofia', name: 'Filosofia', accent: '#ddb86b', matches: (genres) => genres.some((genre) => /filosof|ética|cosmovisão/i.test(genre)) },
-  { id: 'literatura', name: 'Literatura', accent: '#d68b65', matches: (genres, type) => type === 'Livro' || genres.some((genre) => /literatura|romance|poesia/i.test(genre)) },
-  { id: 'historia', name: 'História', accent: '#a78bd2', matches: (genres) => genres.some((genre) => /história|política|civilização/i.test(genre)) },
-  { id: 'cinema', name: 'Cinema', accent: '#80b4c9', matches: (_genres, type) => type === 'Filme' || type === 'Série' },
-  { id: 'tecnologia', name: 'Tecnologia', accent: '#76b79d', matches: (genres, type) => type === 'Jogo' || type === 'App' || genres.some((genre) => /tecnologia|ciência|digital/i.test(genre)) },
-  { id: 'espiritualidade', name: 'Espiritualidade', accent: '#d9aa84', matches: (genres) => genres.some((genre) => /teologia|espiritual|devocional|religião/i.test(genre)) },
-]
 
 const greetingForHour = (hour: number) => {
   if (hour < 12) return 'Bom dia'
@@ -107,20 +106,22 @@ export const DashboardView: React.FC = () => {
   )
 
   const realms = useMemo<KnowledgeRealm[]>(() => {
-    const total = Math.max(mediaItems.length, 1)
-    return REALM_DEFINITIONS.map((realm) => {
-      const items = mediaItems.filter((item) => realm.matches(item.generos || [], item.tipo))
-      const finished = items.filter((item) => item.status === 'Concluído').length
-      const progress = Math.round(Math.min(100, (items.length * 14 + finished * 18 + items.reduce((sum, item) => sum + (item.progresso_percentual || 0), 0) / total) * 1.35))
+    return KNOWLEDGE_REALM_DEFINITIONS.map((realm) => {
+      const items = mediaItems.filter((item) => mediaMatchesRealm(item, realm))
+      const progress = items.length
+        ? Math.round(items.reduce((sum, item) => sum + (item.status === 'Concluído' ? 100 : item.progresso_percentual || 0), 0) / items.length)
+        : 0
       return {
         id: realm.id,
         name: realm.name,
         accent: realm.accent,
         progress,
-        level: items.length ? Math.min(9, Math.max(1, Math.ceil((progress || 1) / 15))) : 0,
+        level: items.length ? Math.min(9, Math.max(1, Math.ceil((progress || 1) / (100 / 9)))) : 0,
+        itemCount: items.length,
       }
     })
   }, [mediaItems])
+  const activeRealms = realms.filter((realm) => (realm.itemCount || 0) > 0)
 
   const openExplore = (filter = 'Todos') => {
     setSelectedFilter(filter)
@@ -128,12 +129,7 @@ export const DashboardView: React.FC = () => {
   }
 
   const handleRealmSelect = (realm: KnowledgeRealm) => {
-    const filterByRealm: Record<string, string> = {
-      literatura: 'Livros',
-      cinema: 'Filmes',
-      tecnologia: 'Jogos',
-    }
-    openExplore(filterByRealm[realm.id || ''] || realm.name)
+    openExplore(realm.id ? knowledgeRealmFilter(realm.id) : realm.name)
   }
 
   const greetingName = userProfile.nome?.trim() ? `, ${userProfile.nome.trim().split(' ')[0]}` : ''
@@ -180,9 +176,9 @@ export const DashboardView: React.FC = () => {
 
         <div className="universe-hero__orbit">
           <KnowledgeOrbit
-            realms={realms}
+            realms={activeRealms}
             heading="Mapa do conhecimento"
-            description="Os domínios ganham massa quando suas obras e notas se encontram."
+            description="Os domínios ganham massa conforme as obras do seu acervo avançam."
             onRealmSelect={handleRealmSelect}
           />
         </div>
@@ -228,15 +224,21 @@ export const DashboardView: React.FC = () => {
           <div><p>Acervo vivo</p><h2 id="domains-title">Explore por domínio</h2></div>
           <button type="button" className="journey-link" onClick={() => openExplore()}>Ver acervo <ArrowUpRight className="h-3.5 w-3.5" /></button>
         </div>
-        <div className="realm-grid">
-          {realms.map((realm) => (
-            <button key={realm.id} type="button" className="realm-card" onClick={() => handleRealmSelect(realm)} style={{ '--realm-accent': realm.accent, '--realm-progress': `${realm.progress}%` } as React.CSSProperties}>
-              <span className="realm-card__orb" />
-              <span className="realm-card__body"><small>Nível {realm.level || '—'}</small><strong>{realm.name}</strong><em>{realm.progress}% explorado</em></span>
-              <ArrowUpRight className="h-4 w-4" />
-            </button>
-          ))}
-        </div>
+        {activeRealms.length > 0 ? (
+          <div className="realm-grid">
+            {activeRealms.map((realm) => (
+              <button key={realm.id} type="button" className="realm-card" onClick={() => handleRealmSelect(realm)} style={{ '--realm-accent': realm.accent, '--realm-progress': `${realm.progress}%` } as React.CSSProperties}>
+                <span className="realm-card__orb" />
+                <span className="realm-card__body"><small>Nível {realm.level || '—'}</small><strong>{realm.name}</strong><em>{realm.progress}% explorado</em></span>
+                <ArrowUpRight className="h-4 w-4" />
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p className="mt-4 rounded-2xl border border-dashed border-text-primary/15 bg-bg-surface/40 p-5 text-center text-xs text-text-secondary">
+            Adicione uma obra com gêneros ou temas para formar seus primeiros domínios.
+          </p>
+        )}
       </section>
 
       <div className="journey-home__lower-grid">
@@ -246,11 +248,13 @@ export const DashboardView: React.FC = () => {
             <button type="button" className="journey-link" onClick={() => setIsSearchOpen(true)}><Plus className="h-3.5 w-3.5" /> Obra</button>
           </div>
           <div className="category-grid">
-            {CATEGORY_MODULES.map((category) => {
-              const Icon = category.icon
+            {MEDIA_FORMAT_DEFINITIONS.filter(
+              (category) => category.alwaysVisible || mediaItems.some((item) => item.tipo === category.type),
+            ).map((category) => {
+              const Icon = CATEGORY_ICONS[category.type]
               const count = mediaItems.filter((item) => item.tipo === category.type).length
               return (
-                <button type="button" key={category.id} className="category-module" onClick={() => openExplore(category.id)}>
+                <button type="button" key={category.type} className="category-module" onClick={() => openExplore(mediaTypeFilter(category.type))}>
                   <span><Icon className="h-4 w-4" /></span>
                   <strong>{category.label}</strong>
                   <small>{count} {count === 1 ? 'obra' : 'obras'}</small>
@@ -259,7 +263,7 @@ export const DashboardView: React.FC = () => {
               )
             })}
             {customCategories.slice(0, 2).map((category) => (
-              <button type="button" key={category.id} className="category-module category-module--custom" onClick={() => openExplore(category.label)}>
+              <button type="button" key={category.id} className="category-module category-module--custom" onClick={() => openExplore(genreFilter(category.label))}>
                 <span><Sparkles className="h-4 w-4" /></span>
                 <strong>{category.label}</strong>
                 <small>coleção</small>

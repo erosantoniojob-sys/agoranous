@@ -167,7 +167,7 @@ async function enrichMetadata(
         contents: [{
           role: 'user',
           parts: [{
-            text: `Identifique a obra abaixo e devolva somente JSON válido. Não invente URLs, citações ou informações incertas. A sinopse deve ter 2 a 4 frases em português brasileiro e no máximo 600 caracteres.\n\nTítulo pesquisado: ${query}\nCategoria: ${tipo}\nResultado da fonte pública: ${currentResult ? JSON.stringify({ titulo: currentResult.titulo, criador: currentResult.autor_criador, ano: currentResult.ano }) : 'nenhum'}\n\nFormato: {"titulo":"", "autor_criador":"", "ano":null, "sinopse":""}`,
+            text: `Identifique a obra abaixo e devolva somente JSON válido. Não invente URLs, citações ou informações incertas. A sinopse deve ter 2 a 4 frases em português brasileiro e no máximo 600 caracteres.\n\nTítulo pesquisado: ${query}\nFormato: ${tipo}\nResultado da fonte pública: ${currentResult ? JSON.stringify({ titulo: currentResult.titulo, criador: currentResult.autor_criador, ano: currentResult.ano }) : 'nenhum'}\n\nFormato da resposta: {"titulo":"", "autor_criador":"", "ano":null, "sinopse":""}`,
           }],
         }],
         generationConfig: {
@@ -307,7 +307,7 @@ export async function handleSearchMedia(request: Request): Promise<Response> {
     return Response.json({ error: 'Informe um título com pelo menos 2 caracteres.' }, { status: 400 })
   }
   if (!isMediaType(tipo)) {
-    return Response.json({ error: 'Categoria inválida.' }, { status: 400 })
+    return Response.json({ error: 'Formato inválido.' }, { status: 400 })
   }
 
   try {

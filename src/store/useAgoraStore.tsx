@@ -27,6 +27,7 @@ import {
   type JourneyState,
 } from '../lib/journeyProgress';
 import type { ViewName } from '../lib/viewPreload';
+import { countExploredKnowledgeRealms } from '../lib/knowledgeRealms';
 
 export interface Recommendation {
   id: string;
@@ -1404,7 +1405,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const getEstatisticas = useCallback((): Statistics => {
     const totalItens = mediaItems.length;
     const totalAprendizados = aprendizados.length;
-    const categoriesSet = new Set(mediaItems.map((i) => i.tipo));
+    const categoriasExploradas = countExploredKnowledgeRealms(mediaItems);
 
     const totalLivros = mediaItems.filter((i) => i.tipo === 'Livro').length;
     const totalFilmes = mediaItems.filter((i) => i.tipo === 'Filme').length;
@@ -1421,7 +1422,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return {
       totalItens,
       totalAprendizados,
-      categoriasExploradas: categoriesSet.size,
+      categoriasExploradas,
       totalLivros,
       totalFilmes,
       totalSeries,

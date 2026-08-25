@@ -105,11 +105,12 @@ export const SearchModal: React.FC = () => {
         {/* Form */}
         <form onSubmit={handleSearch} className="space-y-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
+            <label htmlFor="media-search-query" className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
               Título da obra ou mídia
             </label>
             <div className="relative">
               <input
+                id="media-search-query"
                 type="text"
                 data-autofocus
                 value={query}
@@ -120,15 +121,16 @@ export const SearchModal: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
-              Categoria
-            </label>
+          <fieldset className="flex flex-col gap-1.5">
+            <legend className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
+              Formato
+            </legend>
             <div className="grid grid-cols-4 gap-2">
               {(['Livro', 'Filme', 'Série', 'Jogo'] as MediaType[]).map((t) => (
                 <button
                   key={t}
                   type="button"
+                  aria-pressed={tipo === t}
                   onClick={() => setTipo(t)}
                   className={`py-2 px-2 text-xs font-semibold rounded-lg border transition-all ${
                     tipo === t
@@ -140,7 +142,7 @@ export const SearchModal: React.FC = () => {
                 </button>
               ))}
             </div>
-          </div>
+          </fieldset>
 
           <button
             type="submit"

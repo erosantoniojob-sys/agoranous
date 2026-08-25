@@ -77,15 +77,15 @@ O indicador no cabeçalho pode mostrar **Salvo neste navegador**, **Sincronizand
 - quantidade de obras e itens em andamento;
 - citação de abertura;
 - trilhas em andamento;
-- filtros por livros, filmes, séries, jogos e categorias personalizadas;
-- catálogo do acervo;
-- recomendações baseadas no perfil e no histórico do acervo.
+- mapa dos domínios presentes no acervo;
+- atalhos por formato e por coleção;
+- progresso, trilhas e marcos recentes.
 
-Clique em uma capa para abrir a ficha detalhada. A categoria selecionada filtra o catálogo exibido. Categorias personalizadas criadas nessa tela são temporárias na versão atual e podem desaparecer ao recarregar o aplicativo.
+Ao selecionar um domínio ou formato, o aplicativo abre **Explorar** com o filtro correspondente já aplicado.
 
 ### Explorar
 
-Esta área pesquisa **somente o acervo já cadastrado**. A busca considera título, autor ou criador e texto da sinopse. Também é possível filtrar por avaliação mínima.
+Esta área pesquisa **somente o acervo já cadastrado**. A busca considera título, autor ou criador, sinopse e gêneros. Também é possível filtrar por domínio, formato e avaliação mínima.
 
 Use **Consultar Oráculo Externo** quando quiser procurar uma obra ainda não catalogada. A busca local de Explorar e a consulta externa são operações diferentes.
 
@@ -250,7 +250,7 @@ A consulta de ficha técnica passa por uma Function da Vercel e pode usar:
 - iTunes Search para filmes, séries e jogos;
 - Gemini, quando configurado, apenas para complementar identificação ou sinopse quando as fontes públicas não bastam.
 
-O título e a categoria pesquisados são enviados ao servidor e às fontes necessárias. A busca retorna um resultado provável, não uma lista exaustiva.
+O título e o formato pesquisados são enviados ao servidor e às fontes necessárias. A busca retorna um resultado provável, não uma lista exaustiva.
 
 ### Recomendações
 
@@ -347,7 +347,7 @@ Não registre senhas, dados bancários, documentos pessoais ou outras informaç�
 
 ### A busca não encontra a obra
 
-- Confira a categoria escolhida.
+- Confira o formato escolhido.
 - Tente o título original ou uma forma mais curta e específica.
 - Verifique a conexão com a internet.
 - Aguarde e tente novamente se uma fonte externa estiver indisponível.

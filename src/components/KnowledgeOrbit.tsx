@@ -8,6 +8,8 @@ export interface KnowledgeRealm {
   level: number
   progress: number
   accent: string
+  /** Number of catalogue works currently associated with this domain. */
+  itemCount?: number
 }
 
 export interface KnowledgeOrbitProps {
@@ -88,6 +90,7 @@ export const KnowledgeOrbit = ({
 }: KnowledgeOrbitProps) => {
   const orbitId = useId().replace(/:/g, '')
   const visualRealms = realms.map((realm, index) => toOrbitRealm(realm, index, realms.length))
+  const exploredRealmCount = visualRealms.filter((realm) => (realm.itemCount ?? (realm.levelValue > 0 ? 1 : 0)) > 0).length
   const [selectedKey, setSelectedKey] = useState<string | null>(() => visualRealms[0]?.key ?? null)
   const selectedRealm = visualRealms.find((realm) => realm.key === selectedKey) ?? visualRealms[0]
   const headingId = `${orbitId}-heading`
@@ -114,9 +117,9 @@ export const KnowledgeOrbit = ({
             {description}
           </p>
         </div>
-        <p className="knowledge-orbit__count" aria-label={`${visualRealms.length} domínios mapeados`}>
+        <p className="knowledge-orbit__count" aria-label={`${exploredRealmCount} domínios explorados`}>
           <span aria-hidden="true">✦</span>
-          {visualRealms.length} {visualRealms.length === 1 ? 'domínio' : 'domínios'}
+          {exploredRealmCount} {exploredRealmCount === 1 ? 'domínio' : 'domínios'}
         </p>
       </header>
 
