@@ -14,7 +14,7 @@ import {
   DeletedMediaItem,
 } from '../types/agora';
 import { supabase, useAuth } from '../context/AuthContext';
-import { readBrowserValue, writeBrowserValue } from '../lib/browserStorage';
+import { readBrowserValue, removeBrowserValue, writeBrowserValue } from '../lib/browserStorage';
 import {
   DAILY_MISSIONS,
   calculateLegacyCatalogXp,
@@ -101,6 +101,13 @@ function readStoredObject<T>(key: string): T | null {
   return readBrowserValue<T | null>(key, null)
 }
 
+// Versões anteriores usavam chaves globais, sem o UUID da conta. Elas não
+// podem ser importadas silenciosamente porque o mesmo navegador pode ter sido
+// usado por mais de uma pessoa, mas continuam sendo uma fonte recuperável.
+const LEGACY_MEDIA_STORAGE_KEY = 'agora_media_items_v3'
+const LEGACY_ACCOUNT_STORAGE_PREFIX = 'agora_user_v5_'
+const LEGACY_ACCOUNT_COLLECTIONS = ['media', 'learnings', 'chat', 'profile', 'trails', 'has_completed_onboarding'] as const
+
 function hasCloudCollection(data: Record<string, unknown>, collection: string) {
   return Object.prototype.hasOwnProperty.call(data, collection)
 }
@@ -122,6 +129,23 @@ function mergeUniqueById<T extends { id: string }>(...collections: T[][]): T[] {
     seen.add(item.id)
     return true
   }))
+}
+
+export type LocalRecoverySummary = {
+  mediaCount: number
+  learningCount: number
+  trailCount: number
+  sourceLabel: string
+}
+
+type PendingLocalRecovery = LocalRecoverySummary & {
+  userId: string
+  mediaItems: MediaItem[]
+  aprendizados: Aprendizado[]
+  chatMessages: ChatMessage[]
+  userProfile: UserProfile
+  customTrails: CustomTrail[]
+  hasCompletedOnboarding: boolean
 }
 
 const SEED_MEDIA: MediaItem[] = [
@@ -396,6 +420,9 @@ interface AgoraStoreContextType {
   isDataReady: boolean;
   isCloudReady: boolean;
   cloudError: string | null;
+  localRecovery: LocalRecoverySummary | null;
+  recoverLocalData: () => void;
+  discardLocalRecovery: () => void;
   hasCompletedOnboarding: boolean;
   completeOnboarding: (profileData?: Partial<UserProfile>) => void;
   resetOnboarding: () => void;
@@ -426,6 +453,9 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [syncStatus, setSyncStatus] = useState<'local' | 'syncing' | 'synced' | 'error'>(isVisitor ? 'local' : 'synced');
   const [cloudError, setCloudError] = useState<string | null>(null);
   const [cloudReloadRevision, setCloudReloadRevision] = useState(0);
+  const [pendingLocalRecovery, setPendingLocalRecovery] = useState<PendingLocalRecovery | null>(null);
+  const activeLocalRecovery = pendingLocalRecovery?.userId === user?.id ? pendingLocalRecovery : null;
+  const canPersistData = isDataReady && activeLocalRecovery === null;
 
   // Os dados do visitante também pertencem ao navegador atual. Eles não são
   // enviados à nuvem, mas precisam sobreviver a recargas e reabertura do app.
@@ -460,6 +490,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setHydratedUserId(null);
       setCloudHydratedUserId(null);
       setCloudError(null)
+      setPendingLocalRecovery(null)
       if (!isVisitor && user?.id) {
         setSyncStatus('syncing');
         try {
@@ -496,6 +527,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
             const localTrails = readStoredArray<CustomTrail>(keyPrefix + 'trails');
             const cloudTrails = Array.isArray(cloudData.trails) ? cloudData.trails as CustomTrail[] : [];
+            const recoveredTrails = hasCloudCollection(cloudData, 'trails') ? cloudTrails : localTrails;
 
             const localJourney = normalizeJourneyState(readStoredObject<unknown>(keyPrefix + 'journey'));
             const cloudJourney = normalizeJourneyState(cloudData.journey);
@@ -503,6 +535,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
             const localChat = readStoredArray<ChatMessage>(keyPrefix + 'chat');
             const cloudChat = Array.isArray(cloudData.chat) ? cloudData.chat as ChatMessage[] : [];
+            const recoveredChat = hasCloudCollection(cloudData, 'chat') ? cloudChat : firstNonEmptyArray(localChat, SEED_CHAT);
 
             const localProfile = readStoredObject<UserProfile>(keyPrefix + 'profile');
             const cloudProfile = isRecord(cloudData.profile)
@@ -514,18 +547,75 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 ? localProfile!
                 : EMPTY_PROFILE;
 
+            const legacyAccountMedia = readStoredArray<MediaItem>(LEGACY_ACCOUNT_STORAGE_PREFIX + 'media');
+            const legacyGlobalMedia = readStoredArray<MediaItem>(LEGACY_MEDIA_STORAGE_KEY);
+            const browserMedia = mergeUniqueById(localMedia, legacyAccountMedia, legacyGlobalMedia);
+            const recoveredMediaIdSet = new Set(recoveredMedia.map((item) => item.id));
+            const missingMedia = browserMedia.filter((item) => !recoveredMediaIdSet.has(item.id));
+
+            const legacyLearnings = readStoredArray<Aprendizado>(LEGACY_ACCOUNT_STORAGE_PREFIX + 'learnings');
+            const browserLearnings = mergeUniqueById(localLearnings, legacyLearnings);
+            const recoveredLearningIds = new Set(recoveredLearnings.map((item) => item.id));
+            const missingLearnings = browserLearnings.filter((item) => !recoveredLearningIds.has(item.id));
+
+            const legacyTrails = readStoredArray<CustomTrail>(LEGACY_ACCOUNT_STORAGE_PREFIX + 'trails');
+            const browserTrails = mergeUniqueById(localTrails, legacyTrails);
+            const recoveredTrailIds = new Set(recoveredTrails.map((item) => item.id));
+            const missingTrails = browserTrails.filter((item) => !recoveredTrailIds.has(item.id));
+
+            const hasRecoverableDifference = missingMedia.length > 0 || missingLearnings.length > 0 || missingTrails.length > 0;
+            const currentCacheHasDifference = localMedia.some((item) => !recoveredMediaIdSet.has(item.id))
+              || localLearnings.some((item) => !recoveredLearningIds.has(item.id))
+              || localTrails.some((item) => !recoveredTrailIds.has(item.id));
+
             setMediaItems(recoveredMedia);
             setAprendizados(recoveredLearnings);
             setUserProfile(recoveredProfile);
-            setCustomTrails(hasCloudCollection(cloudData, 'trails') ? cloudTrails : localTrails);
+            setCustomTrails(recoveredTrails);
             setJourney(recoveredJourney);
-            setChatMessages(hasCloudCollection(cloudData, 'chat') ? cloudChat : firstNonEmptyArray(localChat, SEED_CHAT));
+            setChatMessages(recoveredChat);
             setDeletedMediaItems(readStoredArray<DeletedMediaItem>(keyPrefix + 'media_trash'))
-            setHasCompletedOnboarding(Boolean(
+            const recoveredOnboarding = Boolean(
               Boolean(cloudData.onboarding)
-                || hasExistingUserData({ media: recoveredMedia, learnings: recoveredLearnings, trails: hasCloudCollection(cloudData, 'trails') ? cloudTrails : localTrails, profile: recoveredProfile })
-                || isLegacyDefaultProfile(recoveredProfile),
-            ));
+                || hasExistingUserData({ media: recoveredMedia, learnings: recoveredLearnings, trails: recoveredTrails, profile: recoveredProfile })
+                || isLegacyDefaultProfile(recoveredProfile)
+            );
+            setHasCompletedOnboarding(recoveredOnboarding);
+
+            if (hasRecoverableDifference) {
+              const recoveryMedia = mergeUniqueById(recoveredMedia, browserMedia);
+              const recoveryMediaIds = new Set(recoveryMedia.map((item) => item.id));
+              const legacyChat = readStoredArray<ChatMessage>(LEGACY_ACCOUNT_STORAGE_PREFIX + 'chat');
+              const legacyProfile = readStoredObject<UserProfile>(LEGACY_ACCOUNT_STORAGE_PREFIX + 'profile');
+              const legacyOnboarding = readStoredObject<boolean>(LEGACY_ACCOUNT_STORAGE_PREFIX + 'has_completed_onboarding');
+
+              setPendingLocalRecovery({
+                userId: user.id,
+                mediaCount: missingMedia.length,
+                learningCount: missingLearnings.length,
+                trailCount: missingTrails.length,
+                sourceLabel: currentCacheHasDifference
+                  ? 'uma cópia desta conta salva neste navegador'
+                  : 'uma cópia salva por uma versão anterior da Ágora',
+                mediaItems: recoveryMedia,
+                aprendizados: mergeUniqueById(recoveredLearnings, browserLearnings)
+                  .filter((item) => recoveryMediaIds.has(item.mediaId)),
+                chatMessages: mergeUniqueById(recoveredChat, localChat, legacyChat),
+                userProfile: hasExistingUserData({ profile: recoveredProfile })
+                  ? recoveredProfile
+                  : legacyProfile || EMPTY_PROFILE,
+                customTrails: mergeUniqueById(recoveredTrails, browserTrails),
+                hasCompletedOnboarding: Boolean(
+                  recoveredOnboarding
+                    || legacyOnboarding
+                    || hasExistingUserData({ media: recoveryMedia, learnings: browserLearnings, trails: browserTrails, profile: legacyProfile || undefined })
+                ),
+              });
+              setSyncStatus('synced');
+              setHydratedUserId(user.id);
+              return;
+            }
+
             setCloudHydratedUserId(user.id);
             setHydratedUserId(user.id);
             return; 
@@ -621,6 +711,36 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
     }
   }, [user?.id])
+
+  const recoverLocalData = useCallback(() => {
+    const recovery = activeLocalRecovery
+    if (!recovery || recovery.userId !== user?.id) return
+
+    setMediaItems(recovery.mediaItems)
+    setAprendizados(recovery.aprendizados)
+    setChatMessages(recovery.chatMessages)
+    setUserProfile(recovery.userProfile)
+    setCustomTrails(recovery.customTrails)
+    setHasCompletedOnboarding(recovery.hasCompletedOnboarding)
+    setPendingLocalRecovery(null)
+    setCloudHydratedUserId(recovery.userId)
+    setCloudError(null)
+    setSyncStatus('syncing')
+  }, [activeLocalRecovery, user?.id])
+
+  const discardLocalRecovery = useCallback(() => {
+    const recovery = activeLocalRecovery
+    if (!recovery || recovery.userId !== user?.id) return
+
+    for (const collection of LEGACY_ACCOUNT_COLLECTIONS) {
+      removeBrowserValue(LEGACY_ACCOUNT_STORAGE_PREFIX + collection)
+    }
+    removeBrowserValue(LEGACY_MEDIA_STORAGE_KEY)
+    setPendingLocalRecovery(null)
+    setCloudHydratedUserId(recovery.userId)
+    setCloudError(null)
+    setSyncStatus('synced')
+  }, [activeLocalRecovery, user?.id])
 
   // FUNÇÃO UTILITÁRIA PARA SALVAR NA NUVEM (Usando API da Vercel)
   const syncToCloud = useCallback((collection: string, data: unknown) => {
