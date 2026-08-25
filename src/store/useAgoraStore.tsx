@@ -781,8 +781,14 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               });
 
               if (!response.ok) {
-                const error = await response.json().catch(() => ({}));
-                throw new Error(error.error || `Falha ao sincronizar (${response.status}).`);
+                const responseError = await response.json().catch(() => null) as unknown;
+                const message = isRecord(responseError) && typeof responseError.error === 'string'
+                  ? responseError.error
+                  : `Falha ao sincronizar (${response.status}).`;
+                const detail = isRecord(responseError) && typeof responseError.detail === 'string'
+                  ? responseError.detail
+                  : null;
+                throw new Error(detail ? `${message} Detalhe: ${detail}` : message);
               }
             } catch (error) {
               // Se surgiu um snapshot mais novo enquanto este falhava, tenta
@@ -792,6 +798,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               const failures = syncFailures.current.get(expectedUserId) || new Set<string>()
               failures.add(collection)
               syncFailures.current.set(expectedUserId, failures)
+              setCloudError(error instanceof Error ? error.message : 'Não foi possível sincronizar seus dados.')
               console.error(`Erro ao sincronizar ${collection}:`, error)
               break
             }

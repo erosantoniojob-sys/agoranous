@@ -26,6 +26,11 @@ export async function handleSyncUserData(request: Request) {
   )
 
   if (error) {
+    console.error('[sync-user-data] Supabase upsert failed', {
+      collection: body.collection,
+      code: error.code,
+      message: error.message,
+    })
     return Response.json(
       { error: 'Não foi possível sincronizar seus dados.', detail: error.message },
       { status: 500 },
