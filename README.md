@@ -40,7 +40,7 @@ Ao conectar o repositório à Vercel, essas opções são aplicadas automaticame
 
 ### Contas e dados em vários dispositivos
 
-Os dados são associados à conta Supabase autenticada e persistidos no Postgres do Supabase com RLS. Execute uma vez [supabase/user_data.sql](supabase/user_data.sql) no SQL Editor do Supabase e configure no ambiente da Vercel:
+Os dados são associados à conta Supabase autenticada e persistidos no Postgres do Supabase com RLS. Execute — ou reexecute após atualizar uma instalação antiga — [supabase/user_data.sql](supabase/user_data.sql) no SQL Editor do Supabase e configure no ambiente da Vercel:
 
 - `VITE_SUPABASE_URL`: URL do projeto Supabase;
 - `VITE_SUPABASE_PUBLISHABLE_KEY`: chave pública do Supabase;

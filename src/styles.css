@@ -342,14 +342,16 @@
 /* Área de conteúdo única para todas as páginas e o cabeçalho. */
 .app-page-shell {
   width: 100%;
-  max-width: none;
+  max-width: 90rem;
+  margin-inline: auto;
   padding-inline: 1rem;
 }
 
 .app-header-shell {
   display: flex;
   width: 100%;
-  max-width: none;
+  max-width: 90rem;
+  margin-inline: auto;
   padding-inline: 1rem;
 }
 
@@ -358,6 +360,10 @@
   border-bottom: 1px solid rgba(212, 175, 55, 0.16);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
   backdrop-filter: blur(18px) saturate(1.08);
+}
+
+@media (min-width: 768px) {
+  .app-header { padding-block: .55rem; }
 }
 
 .journey-hero {
@@ -592,12 +598,11 @@
 
 @media (min-width: 1024px) {
   .app-frame {
-    padding-left: 5.55rem;
+    padding-left: 5rem;
   }
 
   .app-page-shell {
-    max-width: none;
-    padding-inline: clamp(1.5rem, 3vw, 3.5rem);
+    padding-inline: 1.5rem;
   }
 
   .app-header-shell {
@@ -694,9 +699,23 @@
   transform-style: preserve-3d;
 }
 
-.ambient-sound__mobile-toggle {
-  display: none;
+.ambient-sound {
+  width: auto;
+  padding: .5rem;
+  border-radius: 1rem;
 }
+
+.ambient-sound__desktop-icon,
+.ambient-sound__panel { display: none; }
+
+.ambient-sound__mobile-toggle { display: grid; }
+
+.ambient-sound--expanded {
+  width: min(88vw, 12rem);
+  padding: .65rem;
+}
+
+.ambient-sound--expanded .ambient-sound__panel { display: block; }
 
 @media (max-width: 1023px) {
   .ambient-sound {
@@ -852,10 +871,10 @@
 }
 
 .nav-rail {
-  width: 4.05rem;
+  width: 3.75rem;
   max-height: calc(100vh - 2rem);
   overflow: auto;
-  padding: .62rem .45rem;
+  padding: .55rem .35rem;
   border: 1px solid rgba(231, 217, 172, .16);
   border-radius: 1.25rem;
   background: linear-gradient(180deg, rgba(18, 33, 46, .94), rgba(8, 18, 29, .92));
@@ -867,7 +886,7 @@
 .nav-rail::-webkit-scrollbar { display: none; }
 .nav-rail__monogram { display: grid; width: 2.5rem; height: 2.5rem; place-items: center; margin-bottom: .5rem; border: 1px solid rgba(229, 194, 99, .36); border-radius: .82rem; color: #efce75; background: radial-gradient(circle at 35% 28%, rgba(255, 246, 207, .19), transparent 32%), #152635; font-family: var(--font-serif); font-size: 1.15rem; font-weight: 750; box-shadow: 0 0 18px rgba(222, 180, 71, .12); }
 .nav-rail__group { display: grid; gap: .22rem; width: 100%; }
-.nav-rail__separator { width: 1.55rem; height: 1px; margin: .48rem 0; background: rgba(235, 228, 203, .13); }
+.nav-rail__separator { width: 1.55rem; height: 1px; margin: .34rem 0; background: rgba(235, 228, 203, .13); }
 
 .nav-rail__item,
 .nav-rail__create {
@@ -1016,10 +1035,10 @@ html:has([aria-modal='true']:not([aria-hidden='true'])) [data-ambient-control] {
 
 /* Minha Jornada — universo intelectual, progresso e campanhas. */
 .journey-home {
-  width: min(100%, 96rem);
+  width: min(100%, 84rem);
   margin: 0 auto;
   display: grid;
-  gap: clamp(1.15rem, 2.4vw, 2rem);
+  gap: clamp(1rem, 1.8vw, 1.5rem);
   padding-bottom: 1.5rem;
 }
 
@@ -1027,11 +1046,11 @@ html:has([aria-modal='true']:not([aria-hidden='true'])) [data-ambient-control] {
   position: relative;
   isolation: isolate;
   display: grid;
-  grid-template-columns: minmax(19rem, .78fr) minmax(30rem, 1.22fr);
-  gap: clamp(1.3rem, 3vw, 3.4rem);
+  grid-template-columns: minmax(18rem, .76fr) minmax(28rem, 1.24fr);
+  gap: clamp(1.2rem, 2vw, 2rem);
   overflow: hidden;
-  min-height: 31rem;
-  padding: clamp(1.25rem, 3vw, 2.6rem);
+  min-height: 27rem;
+  padding: clamp(1.15rem, 2vw, 1.8rem);
   border: 1px solid rgba(224, 188, 102, .29);
   border-radius: clamp(1.45rem, 2.8vw, 2rem);
   background:
@@ -1094,7 +1113,7 @@ html:has([aria-modal='true']:not([aria-hidden='true'])) [data-ambient-control] {
   margin: .8rem 0 0;
   color: var(--color-text-primary);
   font-family: var(--font-serif);
-  font-size: clamp(2.25rem, 4.3vw, 4.5rem);
+  font-size: clamp(2.25rem, 3.5vw, 3.6rem);
   font-weight: 650;
   letter-spacing: -.045em;
   line-height: .98;
@@ -1102,15 +1121,15 @@ html:has([aria-modal='true']:not([aria-hidden='true'])) [data-ambient-control] {
 
 .universe-hero__subtitle {
   max-width: 36rem;
-  margin: 1.05rem 0 0;
+  margin: .8rem 0 0;
   color: #b4bec6;
   font-size: clamp(.89rem, 1.25vw, 1rem);
-  line-height: 1.7;
+  line-height: 1.58;
 }
 
 .level-progress {
-  margin-top: clamp(1.35rem, 2.6vw, 2.2rem);
-  padding: 1rem 1.05rem .95rem;
+  margin-top: clamp(1.05rem, 1.8vw, 1.45rem);
+  padding: .85rem .95rem .8rem;
   border: 1px solid rgba(233, 215, 164, .17);
   border-radius: 1rem;
   background: linear-gradient(122deg, rgba(255, 247, 224, .055), rgba(7, 16, 26, .26));
@@ -1186,7 +1205,7 @@ html:has([aria-modal='true']:not([aria-hidden='true'])) [data-ambient-control] {
 
 .journey-signals svg { color: var(--color-accent-gold); }
 
-.journey-create { position: relative; z-index: 3; margin-top: 1.4rem; }
+.journey-create { position: relative; z-index: 3; margin-top: 1rem; }
 
 .journey-create__trigger,
 .journey-campaign__empty button,
@@ -1244,6 +1263,35 @@ html:has([aria-modal='true']:not([aria-hidden='true'])) [data-ambient-control] {
   z-index: 1;
   align-self: stretch;
   min-width: 0;
+}
+
+@media (min-width: 961px) {
+  .universe-hero .knowledge-orbit {
+    padding: 1rem;
+    border-radius: 1.2rem;
+  }
+
+  .universe-hero .knowledge-orbit__viewport {
+    height: clamp(22rem, 25vw, 26rem);
+    min-height: 0;
+    margin-top: 0;
+    aspect-ratio: auto;
+  }
+
+  .universe-hero .knowledge-orbit h2 {
+    font-size: clamp(1.2rem, 1.7vw, 1.5rem);
+  }
+
+  .universe-hero .knowledge-orbit__description { font-size: .76rem; }
+
+  .universe-hero .knowledge-orbit__center {
+    width: clamp(5.4rem, 10vw, 6.8rem);
+  }
+
+  .universe-hero .knowledge-orbit__insight {
+    min-height: 3.15rem;
+    padding: .52rem .65rem;
+  }
 }
 
 .journey-panel {
@@ -1434,6 +1482,27 @@ html:has([aria-modal='true']:not([aria-hidden='true'])) [data-ambient-control] {
 .journey-quote-slot { min-width: 0; }
 .journey-quote-slot > * { height: 100%; }
 .journey-quote-slot__loading { display: grid; min-height: 100%; place-items: center; color: #96a3ad; font-size: .78rem; }
+
+/* O acervo usa densidade editorial: mais capas por linha e somente os
+   metadados essenciais. A ficha completa continua disponível no modal. */
+@media (min-width: 1280px) {
+  .explore-media-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1536px) {
+  .explore-media-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}
+
+.explore-media-grid > article {
+  gap: .55rem;
+  padding: .55rem;
+}
+
+.explore-media-grid > article > div:last-child { gap: .15rem; }
+.explore-media-grid > article h3 { font-size: .875rem; }
+.explore-media-grid > article > div:last-child > div,
+.explore-media-grid > article > div:last-child > p { font-size: .6875rem; }
+.explore-media-grid > article > div:last-child > p:last-child { display: none; }
 
 @media (hover: hover) and (pointer: fine) {
   .journey-create__trigger:hover,

@@ -21,22 +21,22 @@ export const ExploreView: React.FC = () => {
   });
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="explore-view space-y-4 pb-10">
       {/* Header */}
-      <div className="modern-surface bg-bg-card border border-text-primary/10 rounded-2xl p-5 sm:p-6 space-y-4">
+      <div className="explore-filter-panel modern-surface space-y-3 rounded-2xl border border-text-primary/10 bg-bg-card p-4 sm:p-5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-2">
             <Compass className="w-5 h-5 text-accent-gold" />
-            <h2 className="font-serif font-bold text-2xl text-text-primary">Explorar Acervo</h2>
+            <h2 className="font-serif text-xl font-bold text-text-primary">Explorar Acervo</h2>
           </div>
-          <PhilosopherPortrait philosopher="socrates" className="h-16 w-16 shrink-0 rounded-2xl sm:h-20 sm:w-20" />
+          <PhilosopherPortrait philosopher="socrates" className="h-12 w-12 shrink-0 rounded-xl sm:h-14 sm:w-14" />
         </div>
         <p className="text-xs text-text-secondary">
           Pesquise por títulos, autores, palavras-chave da sinopse ou filtre por avaliações mínimas.
         </p>
 
         {/* Local Search Input & Rating Filter */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+        <div className="grid grid-cols-1 gap-2 pt-1 sm:grid-cols-3">
           <div className="sm:col-span-2 relative">
             <input
               type="text"
@@ -52,6 +52,7 @@ export const ExploreView: React.FC = () => {
             <Star className="w-4 h-4 text-accent-gold fill-accent-gold" />
             <span className="text-xs font-medium text-text-secondary whitespace-nowrap">Nota mín.:</span>
             <select
+              aria-label="Avaliação mínima"
               value={minRating}
               onChange={(e) => setMinRating(parseFloat(e.target.value))}
               className="bg-transparent text-text-primary text-xs font-semibold focus:outline-none w-full cursor-pointer"
@@ -66,7 +67,7 @@ export const ExploreView: React.FC = () => {
       </div>
 
       {/* Results */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
             Resultados Encontrados ({filteredItems.length})
@@ -99,7 +100,7 @@ export const ExploreView: React.FC = () => {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+          <div className="explore-media-grid grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {filteredItems.map((item) => (
               <MediaCard key={item.id} item={item} onClick={() => setSelectedMedia(item)} />
             ))}
