@@ -4,6 +4,7 @@ import { useAgoraStore } from '../store/useAgoraStore'
 import { preloadView, type ViewName } from '../lib/viewPreload'
 import { useModalAccessibility } from '../lib/useModalAccessibility'
 import { ExperienceSettings } from './ExperienceSettings'
+import { AGORA_WELCOME_EVENT } from '../lib/entranceVoice'
 
 // 1. Definição do tipo exato que o seu app espera
 interface NavItem {
@@ -25,6 +26,11 @@ export const LeftDrawer: React.FC = () => {
     document.body.appendChild(downloadAnchor)
     downloadAnchor.click()
     downloadAnchor.remove()
+  }
+
+  const replayWelcome = () => {
+    setIsLeftDrawerOpen(false)
+    window.setTimeout(() => window.dispatchEvent(new Event(AGORA_WELCOME_EVENT)), 320)
   }
 
   // 2. Array devidamente tipado para não inferir `tab` como 'string'
@@ -157,7 +163,7 @@ export const LeftDrawer: React.FC = () => {
 
           {/* Settings */}
           <div className="border-t border-text-primary/15 pt-4 space-y-2">
-            <ExperienceSettings />
+            <ExperienceSettings onReplayWelcome={replayWelcome} />
             <button
               type="button"
               onClick={() => handleNavClick('perfil')}

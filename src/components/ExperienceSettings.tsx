@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { BookOpenText, Palette, Sparkles } from 'lucide-react'
+import { BookOpenText, Palette, Sparkles, Volume2 } from 'lucide-react'
 import { readBrowserValue, writeBrowserValue } from '../lib/browserStorage'
+import { AGORA_WELCOME_EVENT } from '../lib/entranceVoice'
 
 const themes = [['academia','Dark Academia'],['alexandria','Alexandria'],['roman','Estoicismo romano'],['monastery','Mosteiro medieval'],['renaissance','Renascimento'],['enlightenment','Iluminismo'],['modernism','Modernismo']] as const
 const effectsModes = [['full', 'Completo'], ['subtle', 'Sutil'], ['off', 'Desativado']] as const
@@ -21,7 +22,7 @@ if (typeof document !== 'undefined') {
   document.documentElement.classList.toggle('reading-mode', initialReading)
 }
 
-export const ExperienceSettings: React.FC = () => {
+export const ExperienceSettings: React.FC<{ onReplayWelcome?: () => void }> = ({ onReplayWelcome }) => {
   const [theme, setTheme] = useState(() => readBrowserValue('agora.theme', initialTheme))
   const [reading, setReading] = useState(() => readBrowserValue('agora.reading-mode', initialReading))
   const [effects, setEffects] = useState<EffectsMode>(readEffectsMode)
@@ -54,6 +55,15 @@ export const ExperienceSettings: React.FC = () => {
       <button type="button" onClick={() => setReading((value) => !value)} aria-pressed={reading} className={`flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-[10px] font-semibold ${reading ? 'bg-accent-gold text-bg-base' : 'text-text-secondary hover:bg-bg-elevated'}`}>
         <BookOpenText className="h-3.5 w-3.5" />
         Modo de leitura {reading ? 'ativo' : 'inativo'}
+      </button>
+
+      <button
+        type="button"
+        onClick={onReplayWelcome ?? (() => window.dispatchEvent(new Event(AGORA_WELCOME_EVENT)))}
+        className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-text-secondary hover:bg-bg-elevated hover:text-text-primary"
+      >
+        <Volume2 className="h-3.5 w-3.5" />
+        Repetir abertura narrada
       </button>
     </div>
   )

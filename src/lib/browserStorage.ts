@@ -37,6 +37,24 @@ export function removeBrowserValue(key: string): void {
   }
 }
 
+export function readSessionValue<T>(key: string, fallback: T): T {
+  try {
+    const raw = sessionStorage.getItem(key)
+    return raw ? JSON.parse(raw) as T : fallback
+  } catch {
+    return fallback
+  }
+}
+
+export function writeSessionValue<T>(key: string, value: T): boolean {
+  try {
+    sessionStorage.setItem(key, JSON.stringify(value))
+    return true
+  } catch {
+    return false
+  }
+}
+
 export function getErrorMessage(error: unknown, fallback: string): string {
   return error instanceof Error && error.message ? error.message : fallback
 }

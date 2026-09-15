@@ -1,6 +1,7 @@
-const CACHE = 'agora-shell-v2'
-const APP_SHELL = ['/', '/manifest.webmanifest', '/favicon.svg']
-const STATIC_DESTINATIONS = new Set(['font', 'image', 'manifest', 'script', 'style'])
+const CACHE_PREFIX = 'agora-shell-'
+const CACHE = `${CACHE_PREFIX}v4`
+const APP_SHELL = ['/', '/manifest.webmanifest', '/favicon.svg', '/audio/agora-welcome.pt-BR.v2.wav']
+const STATIC_DESTINATIONS = new Set(['audio', 'font', 'image', 'manifest', 'script', 'style'])
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(APP_SHELL)))
@@ -9,7 +10,7 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key))))
+      .then(keys => Promise.all(keys.filter(key => key.startsWith(CACHE_PREFIX) && key !== CACHE).map(key => caches.delete(key))))
       .then(() => self.clients.claim()),
   )
 })
@@ -25,7 +26,8 @@ self.addEventListener('fetch', event => {
     return
   }
 
-  if (!STATIC_DESTINATIONS.has(request.destination)) return
+  const isStaticAsset = STATIC_DESTINATIONS.has(request.destination) || url.pathname.startsWith('/audio/')
+  if (!isStaticAsset) return
 
   event.respondWith(
     caches.match(request).then(async cached => {

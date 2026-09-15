@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from 'react'
+import React, { lazy, Suspense, useEffect, useState } from 'react'
 import { ArchiveRestore, CloudAlert, RotateCcw } from 'lucide-react'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { AgoraProvider, useAgoraStore } from './store/useAgoraStore'
@@ -15,6 +15,7 @@ import { AmbientDepth } from './components/AmbientDepth'
 import { SurfaceDepth } from './components/SurfaceDepth'
 import { AgoraLoader } from './components/AgoraLoader'
 import { CommandPalette } from './components/CommandPalette'
+import { CosmicWelcome } from './components/CosmicWelcome'
 
 const DashboardView = lazy(() => import('./views/DashboardView').then((module) => ({ default: module.DashboardView })))
 const ExploreView = lazy(() => import('./views/ExploreView').then((module) => ({ default: module.ExploreView })))
@@ -99,6 +100,11 @@ const MainContent: React.FC = () => {
     retryCloudSync,
     syncStatus,
   } = useAgoraStore()
+  const [hasMountedSchole, setHasMountedSchole] = useState(activeTab === 'schole')
+
+  useEffect(() => {
+    if (activeTab === 'schole') setHasMountedSchole(true)
+  }, [activeTab])
 
   if (isLoading) {
     return (
@@ -180,7 +186,19 @@ const MainContent: React.FC = () => {
 
           {/* Page Content */}
           <main className="app-page-shell flex-1 pt-4 pb-[calc(8.5rem+env(safe-area-inset-bottom))] sm:pt-6 lg:pb-28">
-            <Suspense fallback={<ViewLoading />}>{renderActiveView()}</Suspense>
+            <Suspense fallback={<ViewLoading />}>
+              {(hasMountedSchole || activeTab === 'schole') ? (
+                <div
+                  hidden={activeTab !== 'schole'}
+                  inert={activeTab !== 'schole'}
+                  aria-hidden={activeTab !== 'schole'}
+                  className={activeTab === 'schole' ? 'agora-view-transition' : ''}
+                >
+                  <ScholeView />
+                </div>
+              ) : null}
+              {activeTab !== 'schole' ? <div key={activeTab} className="agora-view-transition">{renderActiveView()}</div> : null}
+            </Suspense>
           </main>
         </div>
 
@@ -203,6 +221,7 @@ export function App() {
   return (
     <AuthProvider>
       <AgoraProvider>
+        <CosmicWelcome />
         <MainContent />
       </AgoraProvider>
     </AuthProvider>
