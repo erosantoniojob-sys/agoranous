@@ -1,5 +1,5 @@
 import React from 'react'
-import { X, Sliders, Database, Home, Compass, Map, BookOpen, Bookmark, Hourglass, Dumbbell, UserRound, Feather } from 'lucide-react'
+import { Film, X, Sliders, Database, Home, Compass, Map, BookOpen, Bookmark, Hourglass, Dumbbell, UserRound, Feather } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
 import { preloadView, type ViewName } from '../lib/viewPreload'
 import { useModalAccessibility } from '../lib/useModalAccessibility'
@@ -37,6 +37,7 @@ export const LeftDrawer: React.FC = () => {
   const navigationItems: NavItem[] = [
     { label: 'Início', icon: Home, tab: 'inicio' },
     { label: 'Explorar', icon: Compass, tab: 'explorar' },
+    { label: 'Cinema', icon: Film, tab: 'cinema' },
     { label: 'Trilhas', icon: Map, tab: 'trilhas' },
     { label: 'Acervo', icon: BookOpen, tab: 'inicio' },
     { label: 'Memória', icon: Bookmark, tab: 'memoria' },

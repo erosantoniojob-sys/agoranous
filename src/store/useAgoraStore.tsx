@@ -1102,7 +1102,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const addMedia = useCallback((item: Omit<MediaItem, 'id' | 'criadoEm'>): MediaItem => {
     const normalizedTitle = item.titulo.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR').replace(/[^a-z0-9]/g, '')
-    const duplicate = mediaItems.find(existing => existing.titulo.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR').replace(/[^a-z0-9]/g, '') === normalizedTitle)
+    const duplicate = mediaItems.find(existing => existing.tipo === item.tipo && (item.tipo !== 'Filme' || !existing.ano || !item.ano || existing.ano === item.ano) && existing.titulo.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR').replace(/[^a-z0-9]/g, '') === normalizedTitle)
     if (duplicate) return duplicate
     const newMediaItem: MediaItem = {
       ...item,

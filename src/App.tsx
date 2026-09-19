@@ -27,6 +27,8 @@ const RoutineView = lazy(() => import('./views/RoutineView').then((module) => ({
 const PoiesisView = lazy(() => import('./views/PoiesisView').then((module) => ({ default: module.PoiesisView })))
 const StudiumView = lazy(() => import('./views/StudiumView').then((module) => ({ default: module.StudiumView })))
 
+const CinemaView = lazy(() => import('./views/CinemaView').then((module) => ({ default: module.CinemaView })))
+
 const ViewLoading: React.FC = () => (
   <div className="flex min-h-[45vh] items-center justify-center"><AgoraLoader compact message="Abrindo este espaço" /></div>
 )
@@ -167,6 +169,8 @@ const MainContent: React.FC = () => {
         return <RoutineView />
       case 'poiesis':
         return <PoiesisView />
+      case 'cinema':
+        return <CinemaView />
       case 'studium':
         return <StudiumView />
       default:
