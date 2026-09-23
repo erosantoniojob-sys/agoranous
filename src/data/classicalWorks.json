@@ -8,7 +8,8 @@
     "wiki": "The_Four_Seasons_(Vivaldi)",
     "era": "Barroco",
     "context": "Quatro concertos para violino exploram imagens e contrastes das estações.",
-    "activity": "Escute A Primavera e identifique como instrumentos sugerem pássaros e tempestade."
+    "activity": "Escute A Primavera e identifique como instrumentos sugerem pássaros e tempestade.",
+    "cover": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/27/Antonio_Vivaldi_2.jpg/1280px-Antonio_Vivaldi_2.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail"
   },
   {
     "id": "musica-02",
@@ -19,7 +20,8 @@
     "wiki": "Brandenburg_Concertos",
     "era": "Barroco",
     "context": "Seis concertos apresentam diferentes combinações de instrumentos e vozes.",
-    "activity": "Compare os concertos 2 e 5: que instrumento assume o protagonismo em cada trecho?"
+    "activity": "Compare os concertos 2 e 5: que instrumento assume o protagonismo em cada trecho?",
+    "cover": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b0/Title_page_of_Brandenburg_Concertos.png/1280px-Title_page_of_Brandenburg_Concertos.png?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail"
   },
   {
     "id": "musica-03",
@@ -30,7 +32,8 @@
     "wiki": "Messiah_(Handel)",
     "era": "Barroco",
     "context": "Um oratório articula solistas, coro e orquestra em uma narrativa religiosa.",
-    "activity": "Ouça uma ária e um coro; descreva como muda a relação entre indivíduo e conjunto."
+    "activity": "Ouça uma ária e um coro; descreva como muda a relação entre indivíduo e conjunto.",
+    "cover": "https://upload.wikimedia.org/wikipedia/commons/7/71/Messiah-titlepage.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled"
   },
   {
     "id": "musica-04",
@@ -41,7 +44,8 @@
     "wiki": "Symphony_No._40_(Mozart)",
     "era": "Classicismo",
     "context": "Uma sinfonia em sol menor trabalha tensão e equilíbrio formal.",
-    "activity": "Siga o motivo inicial e registre quando ele reaparece transformado."
+    "activity": "Siga o motivo inicial e registre quando ele reaparece transformado.",
+    "cover": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/ff/Mozart_%28unfinished%29_by_Lange_1782.jpg/960px-Mozart_%28unfinished%29_by_Lange_1782.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail"
   },
   {
     "id": "musica-05",
@@ -52,7 +56,8 @@
     "wiki": "Symphony_No._9_(Beethoven)",
     "era": "Transição ao romantismo",
     "context": "A entrada de vozes no movimento final amplia a linguagem da sinfonia.",
-    "activity": "Escute o último movimento e observe como o tema da alegria é preparado."
+    "activity": "Escute o último movimento e observe como o tema da alegria é preparado.",
+    "cover": "https://upload.wikimedia.org/wikipedia/commons/6/6e/The_Premiere_of_Symphony_No._9.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled"
   },
   {
     "id": "musica-06",
@@ -63,7 +68,8 @@
     "wiki": "Nocturnes,_Op._9_(Chopin)",
     "era": "Romantismo",
     "context": "Três peças para piano fazem da melodia e da ornamentação uma experiência íntima.",
-    "activity": "Compare duas interpretações do segundo noturno e anote diferenças de tempo e fraseado."
+    "activity": "Compare duas interpretações do segundo noturno e anote diferenças de tempo e fraseado.",
+    "cover": "https://upload.wikimedia.org/wikipedia/commons/9/91/Chopin_nocturne_op9_1a.png?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled"
   },
   {
     "id": "musica-07",
@@ -74,7 +80,8 @@
     "wiki": "Symphony_No._9_(Dvořák)",
     "era": "Romantismo",
     "context": "Temas recorrentes unem os movimentos de uma sinfonia composta nos Estados Unidos.",
-    "activity": "Reconheça o tema do Largo e procure seus contrastes com os demais movimentos."
+    "activity": "Reconheça o tema do Largo e procure seus contrastes com os demais movimentos.",
+    "cover": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/ff/The_title_page_of_the_autograph_score_of_Dvo%C5%99%C3%A1k%27s_ninth_symphony.jpg/1280px-The_title_page_of_the_autograph_score_of_Dvo%C5%99%C3%A1k%27s_ninth_symphony.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail"
   },
   {
     "id": "musica-08",
@@ -85,7 +92,8 @@
     "wiki": "Prélude_à_l'après-midi_d'un_faune",
     "era": "Modernidade",
     "context": "A cor instrumental e a fluidez das frases abrem novas possibilidades de escuta.",
-    "activity": "Acompanhe a flauta inicial e descreva as mudanças de atmosfera sem contar uma história."
+    "activity": "Acompanhe a flauta inicial e descreva as mudanças de atmosfera sem contar uma história.",
+    "cover": "https://upload.wikimedia.org/wikipedia/commons/7/72/Debussy_nadar_1905.jpeg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled"
   },
   {
     "id": "musica-09",
@@ -96,7 +104,8 @@
     "wiki": "The_Rite_of_Spring",
     "era": "Modernidade",
     "context": "Ritmos irregulares e blocos sonoros renovam a linguagem do balé.",
-    "activity": "Marque a pulsação de um trecho e perceba onde os acentos contrariam sua expectativa."
+    "activity": "Marque a pulsação de um trecho e perceba onde os acentos contrariam sua expectativa.",
+    "cover": "https://upload.wikimedia.org/wikipedia/commons/6/62/Roerich_Rite_of_Spring.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled"
   },
   {
     "id": "musica-10",
@@ -107,7 +116,8 @@
     "wiki": "Bachianas_Brasileiras",
     "era": "Brasil",
     "context": "Soprano e violoncelos aproximam referências de Bach e da música brasileira.",
-    "activity": "Ouça a Ária e descreva o diálogo entre a voz e os violoncelos."
+    "activity": "Ouça a Ária e descreva o diálogo entre a voz e os violoncelos.",
+    "cover": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ed/Heitor_Villa-lobos_TA.jpg/1280px-Heitor_Villa-lobos_TA.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail"
   },
   {
     "id": "musica-11",
@@ -118,7 +128,8 @@
     "wiki": "Kind_of_Blue",
     "era": "Jazz",
     "context": "Um álbum de jazz modal dá espaço à improvisação sobre estruturas econômicas.",
-    "activity": "Em So What, compare como dois solistas desenvolvem ideias sobre a mesma base."
+    "activity": "Em So What, compare como dois solistas desenvolvem ideias sobre a mesma base.",
+    "cover": "https://upload.wikimedia.org/wikipedia/en/1/10/Miles_Davis_-_Kind_of_Blue_album_cover.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled"
   },
   {
     "id": "musica-12",
@@ -129,7 +140,8 @@
     "wiki": "Chega_de_Saudade_(album)",
     "era": "Brasil",
     "context": "Voz e violão consolidam uma maneira marcante de organizar a canção brasileira.",
-    "activity": "Ouça a faixa-título e observe os desencontros expressivos entre voz e acompanhamento."
+    "activity": "Ouça a faixa-título e observe os desencontros expressivos entre voz e acompanhamento.",
+    "cover": "https://upload.wikimedia.org/wikipedia/en/e/ed/Joao_Gilberto_-_Chega_de_Saudade.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled"
   },
   {
     "id": "artes-01",
@@ -273,7 +285,8 @@
     "wiki": "Antigone_(Sophocles_play)",
     "era": "Tragédia grega",
     "context": "Uma mulher desafia a ordem do governante em nome do dever de sepultar o irmão.",
-    "activity": "Leia o confronto entre Antígona e Creonte em voz alta e formule o argumento de cada um."
+    "activity": "Leia o confronto entre Antígona e Creonte em voz alta e formule o argumento de cada um.",
+    "cover": "https://upload.wikimedia.org/wikipedia/commons/8/8c/Lytras_nikiforos_antigone_polynices.jpeg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled"
   },
   {
     "id": "teatro-02",
@@ -284,7 +297,8 @@
     "wiki": "Oedipus_Rex",
     "era": "Tragédia grega",
     "context": "A investigação de uma calamidade leva um rei a descobrir sua própria história.",
-    "activity": "Registre o que o público sabe antes do protagonista e como isso produz tensão."
+    "activity": "Registre o que o público sabe antes do protagonista e como isso produz tensão.",
+    "cover": "https://upload.wikimedia.org/wikipedia/commons/6/69/Oedipus.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled"
   },
   {
     "id": "teatro-03",
@@ -295,7 +309,8 @@
     "wiki": "Lysistrata",
     "era": "Comédia grega",
     "context": "Mulheres articulam uma ação coletiva contra a guerra em uma comédia de linguagem adulta.",
-    "activity": "Identifique os exageros cômicos e discuta como eles se relacionam ao conflito político."
+    "activity": "Identifique os exageros cômicos e discuta como eles se relacionam ao conflito político.",
+    "cover": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/43/Lysistrata.jpg/960px-Lysistrata.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail"
   },
   {
     "id": "teatro-04",
@@ -306,7 +321,8 @@
     "wiki": "Hamlet",
     "era": "Teatro elisabetano",
     "context": "Um príncipe tenta responder à morte do pai entre dúvida, representação e vingança.",
-    "activity": "Compare um solilóquio com uma cena pública: o que muda entre pensamento e ação?"
+    "activity": "Compare um solilóquio com uma cena pública: o que muda entre pensamento e ação?",
+    "cover": "https://upload.wikimedia.org/wikipedia/commons/6/6a/Edwin_Booth_Hamlet_1870.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled"
   },
   {
     "id": "teatro-05",
@@ -317,7 +333,8 @@
     "wiki": "Macbeth",
     "era": "Teatro elisabetano",
     "context": "Uma profecia alimenta ambição e violência em uma disputa pelo poder.",
-    "activity": "Acompanhe as imagens de sangue e noite e explique como elas mudam ao longo da peça."
+    "activity": "Acompanhe as imagens de sangue e noite e explique como elas mudam ao longo da peça.",
+    "cover": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/40/First-page-first-folio-macbeth.jpg/960px-First-page-first-folio-macbeth.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail"
   },
   {
     "id": "teatro-06",
@@ -328,7 +345,8 @@
     "wiki": "Life_Is_a_Dream",
     "era": "Barroco espanhol",
     "context": "Um príncipe criado em cativeiro precisa distinguir destino, aparência e escolha.",
-    "activity": "Debata se conhecer uma profecia torna os personagens mais livres ou mais presos a ela."
+    "activity": "Debata se conhecer uma profecia torna os personagens mais livres ou mais presos a ela.",
+    "cover": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/33/Monumento_a_Calder%C3%B3n_de_la_Barca_%28Madrid%29_03.jpg/1280px-Monumento_a_Calder%C3%B3n_de_la_Barca_%28Madrid%29_03.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail"
   },
   {
     "id": "teatro-07",
@@ -339,7 +357,8 @@
     "wiki": "The_Miser",
     "era": "Comédia clássica",
     "context": "O apego de um pai ao dinheiro entra em choque com desejos e alianças familiares.",
-    "activity": "Leia uma cena em dois ritmos diferentes e observe como o tempo altera o efeito cômico."
+    "activity": "Leia uma cena em dois ritmos diferentes e observe como o tempo altera o efeito cômico.",
+    "cover": "https://upload.wikimedia.org/wikipedia/commons/0/07/Harpagon_Pouget.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled"
   },
   {
     "id": "teatro-08",
@@ -350,7 +369,8 @@
     "wiki": "A_Doll's_House",
     "era": "Drama moderno",
     "context": "Um segredo financeiro abala as convenções de um casamento.",
-    "activity": "Anote o que Nora pode dizer no início e no final da peça; como seu vocabulário muda?"
+    "activity": "Anote o que Nora pode dizer no início e no final da peça; como seu vocabulário muda?",
+    "cover": "https://upload.wikimedia.org/wikipedia/commons/f/fd/A_Doll%27s_House.jpeg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled"
   },
   {
     "id": "teatro-09",
@@ -361,7 +381,8 @@
     "wiki": "The_Cherry_Orchard",
     "era": "Drama moderno",
     "context": "A venda de uma propriedade revela personagens incapazes de acompanhar a mudança social.",
-    "activity": "Observe o contraste entre o que as personagens dizem e o que deixam de fazer."
+    "activity": "Observe o contraste entre o que as personagens dizem e o que deixam de fazer.",
+    "cover": "https://upload.wikimedia.org/wikipedia/commons/3/35/The_Cherry_Orchard_MAT.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled"
   },
   {
     "id": "teatro-10",
@@ -372,7 +393,8 @@
     "wiki": "Mother_Courage_and_Her_Children",
     "era": "Teatro épico",
     "context": "Uma comerciante atravessa a guerra tentando sobreviver de seus negócios.",
-    "activity": "Examine como canções e interrupções convidam a julgar as ações em vez de apenas se identificar."
+    "activity": "Examine como canções e interrupções convidam a julgar as ações em vez de apenas se identificar.",
+    "cover": "https://upload.wikimedia.org/wikipedia/commons/2/2c/Bundesarchiv_Bild_183-T0927-019%2C_Berliner_Ensemble%2C_Probe_Mutter_Courage.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled"
   },
   {
     "id": "teatro-11",
@@ -383,7 +405,8 @@
     "wiki": "Waiting_for_Godot",
     "era": "Teatro do absurdo",
     "context": "Dois personagens esperam alguém enquanto repetem gestos, conversas e expectativas.",
-    "activity": "Compare os dois atos e liste pequenas diferenças dentro das repetições."
+    "activity": "Compare os dois atos e liste pequenas diferenças dentro das repetições.",
+    "cover": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d6/En_attendant_Godot%2C_Festival_d%27Avignon%2C_1978.jpeg/1280px-En_attendant_Godot%2C_Festival_d%27Avignon%2C_1978.jpeg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail"
   },
   {
     "id": "teatro-12",
@@ -394,7 +417,8 @@
     "wiki": "Auto_da_Compadecida",
     "era": "Teatro brasileiro",
     "context": "Astúcia popular, injustiça e misericórdia se encontram em um auto ambientado no Nordeste.",
-    "activity": "Leia a cena do julgamento e compare as noções de justiça e misericórdia."
+    "activity": "Leia a cena do julgamento e compare as noções de justiça e misericórdia.",
+    "cover": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a3/Painel_sobre_lan%C3%A7amento_de_O_Auto_da_Compadecida_2%2C_CCXP_2024%2C_S%C3%A3o_Paulo%2C_dezembro_de_2024_%2824%29.jpg/1280px-Painel_sobre_lan%C3%A7amento_de_O_Auto_da_Compadecida_2%2C_CCXP_2024%2C_S%C3%A3o_Paulo%2C_dezembro_de_2024_%2824%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail"
   },
   {
     "id": "literatura-01",
@@ -405,7 +429,8 @@
     "wiki": "Odyssey",
     "era": "Épica",
     "context": "O retorno de Odisseu articula aventura, hospitalidade e reconhecimento.",
-    "activity": "Observe quem narra cada episódio e como o herói constrói sua própria imagem."
+    "activity": "Observe quem narra cada episódio e como o herói constrói sua própria imagem.",
+    "cover": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ea/Fragment_Odyssee_2245_2.jpg/960px-Fragment_Odyssee_2245_2.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail"
   },
   {
     "id": "literatura-02",
@@ -416,7 +441,8 @@
     "wiki": "Divine_Comedy",
     "era": "Poesia medieval",
     "context": "Uma viagem por três reinos transforma experiência pessoal em visão moral do mundo.",
-    "activity": "Comece pelo canto I do Inferno e identifique o papel das imagens de caminho e desvio."
+    "activity": "Comece pelo canto I do Inferno e identifique o papel das imagens de caminho e desvio.",
+    "cover": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7b/Dante_Domenico_di_Michelino.jpg/1280px-Dante_Domenico_di_Michelino.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail"
   },
   {
     "id": "literatura-03",
@@ -427,7 +453,8 @@
     "wiki": "Don_Quixote",
     "era": "Romance",
     "context": "Um leitor de cavalarias tenta viver segundo os modelos de seus livros.",
-    "activity": "Compare uma aventura pela perspectiva de Dom Quixote e pela de Sancho."
+    "activity": "Compare uma aventura pela perspectiva de Dom Quixote e pela de Sancho.",
+    "cover": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/ba/Title_page_first_edition_Don_Quijote.jpg/960px-Title_page_first_edition_Don_Quijote.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail"
   },
   {
     "id": "literatura-04",
@@ -438,7 +465,8 @@
     "wiki": "Pride_and_Prejudice",
     "era": "Romance",
     "context": "Escolhas afetivas são atravessadas por renda, reputação e julgamentos precipitados.",
-    "activity": "Marque um momento em que Elizabeth revê uma opinião e identifique o que tornou isso possível."
+    "activity": "Marque um momento em que Elizabeth revê uma opinião e identifique o que tornou isso possível.",
+    "cover": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/17/PrideAndPrejudiceTitlePage.jpg/960px-PrideAndPrejudiceTitlePage.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail"
   },
   {
     "id": "literatura-05",
@@ -449,7 +477,8 @@
     "wiki": "Frankenstein",
     "era": "Romance gótico",
     "context": "Um criador abandona a criatura a quem deu vida e enfrenta as consequências.",
-    "activity": "Compare as vozes de Victor e da criatura e discuta responsabilidade pelo outro."
+    "activity": "Compare as vozes de Victor e da criatura e discuta responsabilidade pelo outro.",
+    "cover": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/53/Christie%27s_auction_scan_of_Frankenstein_1818.jpg/960px-Christie%27s_auction_scan_of_Frankenstein_1818.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail"
   },
   {
     "id": "literatura-06",
@@ -460,7 +489,8 @@
     "wiki": "The_Posthumous_Memoirs_of_Brás_Cubas",
     "era": "Literatura brasileira",
     "context": "Um narrador morto recompõe sua vida com ironia e interrupções dirigidas ao leitor.",
-    "activity": "Escolha uma digressão e explique como ela altera sua confiança no narrador."
+    "activity": "Escolha uma digressão e explique como ela altera sua confiança no narrador.",
+    "cover": "https://upload.wikimedia.org/wikipedia/commons/5/5b/Memorias_Posthumas_de_Braz_Cubas.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled"
   },
   {
     "id": "literatura-07",
@@ -471,7 +501,8 @@
     "wiki": "The_Brothers_Karamazov",
     "era": "Romance russo",
     "context": "Uma família em conflito reúne debates sobre fé, liberdade e responsabilidade.",
-    "activity": "Compare duas posições morais sem reduzir seus defensores a porta-vozes de uma tese."
+    "activity": "Compare duas posições morais sem reduzir seus defensores a porta-vozes de uma tese.",
+    "cover": "https://upload.wikimedia.org/wikipedia/commons/2/2d/Dostoevsky-Brothers_Karamazov.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled"
   },
   {
     "id": "literatura-08",
@@ -482,7 +513,8 @@
     "wiki": "The_Metamorphosis",
     "era": "Modernismo",
     "context": "Uma transformação inexplicável põe à prova os vínculos de uma família.",
-    "activity": "Observe como o trabalho e o dinheiro organizam as reações à transformação de Gregor."
+    "activity": "Observe como o trabalho e o dinheiro organizam as reações à transformação de Gregor.",
+    "cover": "https://upload.wikimedia.org/wikipedia/commons/a/a5/Franz_Kafka_Die_Verwandlung_1916_Orig.-Pappband.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled"
   },
   {
     "id": "literatura-09",
@@ -493,7 +525,8 @@
     "wiki": "Mrs_Dalloway",
     "era": "Modernismo",
     "context": "Um dia londrino conecta memórias e percepções de pessoas diferentes.",
-    "activity": "Acompanhe uma mudança de ponto de vista e identifique o detalhe que liga duas consciências."
+    "activity": "Acompanhe uma mudança de ponto de vista e identifique o detalhe que liga duas consciências.",
+    "cover": "https://thumb.wikimedia.org/wikipedia/en/thumb/6/67/Mrs._Dalloway_cover.jpg/960px-Mrs._Dalloway_cover.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail"
   },
   {
     "id": "literatura-10",
@@ -504,7 +537,8 @@
     "wiki": "Vidas_Secas",
     "era": "Literatura brasileira",
     "context": "Uma família sertaneja enfrenta escassez, deslocamento e dificuldade de expressão.",
-    "activity": "Compare um capítulo centrado em Fabiano com um centrado em Baleia."
+    "activity": "Compare um capítulo centrado em Fabiano com um centrado em Baleia.",
+    "cover": "https://upload.wikimedia.org/wikipedia/commons/7/74/Vidas_Secas_de_Graciliano_Ramos_-_Capa_da_1%C2%AA_edi%C3%A7%C3%A3o_pela_Jos%C3%A9_Olympio_%281938%29.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled"
   },
   {
     "id": "literatura-11",
@@ -515,7 +549,8 @@
     "wiki": "Things_Fall_Apart",
     "era": "Literatura africana",
     "context": "Uma comunidade igbo enfrenta tensões internas e a chegada do poder colonial.",
-    "activity": "Diferencie conflitos já presentes na comunidade das transformações trazidas pela colonização."
+    "activity": "Diferencie conflitos já presentes na comunidade das transformações trazidas pela colonização.",
+    "cover": "https://upload.wikimedia.org/wikipedia/en/6/65/ThingsFallApart.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled"
   },
   {
     "id": "literatura-12",
@@ -526,6 +561,7 @@
     "wiki": "One_Hundred_Years_of_Solitude",
     "era": "Literatura latino-americana",
     "context": "A história de uma família e de uma cidade aproxima memória, repetição e imaginação.",
-    "activity": "Monte uma pequena árvore familiar e observe como os nomes repetidos dialogam com os destinos."
+    "activity": "Monte uma pequena árvore familiar e observe como os nomes repetidos dialogam com os destinos.",
+    "cover": "https://upload.wikimedia.org/wikipedia/en/a/a0/Cien_a%C3%B1os_de_soledad_%28book_cover%2C_1967%29.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled"
   }
 ]

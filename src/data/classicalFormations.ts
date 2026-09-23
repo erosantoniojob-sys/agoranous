@@ -4,6 +4,7 @@ import type { MediaItem, MediaType } from '../types/agora'
 export type FormationArea = 'musica' | 'artes' | 'teatro' | 'literatura'
 export interface ClassicalWork {
   source?: string;
+  cover?: string;
   id: string; area: string; title: string; author: string; period: string; wiki: string; era: string; context: string; activity: string
 }
 export const classicalWorks: ClassicalWork[] = works
@@ -20,5 +21,19 @@ export function findClassicalMedia(work: ClassicalWork, items: MediaItem[]) {
   return items.find(item => item.fonte === `agora:classical:${work.id}` || (item.tipo === type && normalize(item.titulo) === normalize(work.title) && (!item.autor_criador || normalize(item.autor_criador) === normalize(work.author))))
 }
 export function classicalMediaInput(work: ClassicalWork): Omit<MediaItem, 'id' | 'criadoEm'> {
-  return { titulo: work.title, tipo: classicalFormations.find(area => area.id === work.area)!.type, autor_criador: work.author, sinopse: `${work.context}\n\nÉpoca: ${work.period}.\n\nAtividade: ${work.activity}`, status: 'Pendente', avaliacao_numerica: 0, progresso_percentual: 0, generos: [work.era, 'Clássicos'], fonte: `agora:classical:${work.id}`, motivo_leitura: work.activity }
+  return {
+    titulo: work.title,
+    tipo: classicalFormations.find(area => area.id === work.area)!.type,
+    autor_criador: work.author,
+    url_capa: work.cover || '',
+    capa_oficial: work.cover || '',
+    url_capa_oficial: work.cover || '',
+    sinopse: `${work.context}\n\nÉpoca: ${work.period}.\n\nAtividade: ${work.activity}`,
+    status: 'Pendente',
+    avaliacao_numerica: 0,
+    progresso_percentual: 0,
+    generos: [work.era, 'Clássicos'],
+    fonte: `agora:classical:${work.id}`,
+    motivo_leitura: work.activity,
+  }
 }
