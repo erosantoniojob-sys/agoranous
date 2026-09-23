@@ -43,7 +43,7 @@ export function parseImportedMedia(content: string, filename: string): Array<Omi
     const lines = content.split(/\r?\n/).filter(Boolean); const headers = lines.shift()?.split(',').map(value => value.replaceAll('"', '').trim().toLowerCase()) || []
     const index = (...names: string[]) => headers.findIndex(header => names.includes(header))
     const titleAt = index('title','titulo','name'); const authorAt = index('author','autor','autor_criador'); const yearAt = index('year','ano'); const typeAt = index('type','tipo')
-    return lines.map(line => { const values = line.match(/("(?:[^"]|"")*"|[^,]+)/g)?.map(value => value.replace(/^"|"$/g, '').replaceAll('""', '"')) || []; const rawType = values[typeAt] as MediaType; return make(values[titleAt] || '', values[authorAt] || '', Number(values[yearAt]) || undefined, ['Livro','Filme','Série','Jogo','App','Podcast','Curso'].includes(rawType) ? rawType : 'Livro') }).filter(item => item.titulo)
+    return lines.map(line => { const values = line.match(/("(?:[^"]|"")*"|[^,]+)/g)?.map(value => value.replace(/^"|"$/g, '').replaceAll('""', '"')) || []; const rawType = values[typeAt] as MediaType; return make(values[titleAt] || '', values[authorAt] || '', Number(values[yearAt]) || undefined, ['Livro','Filme','Série','Jogo','App','Podcast','Curso','Música','Arte','Teatro'].includes(rawType) ? rawType : 'Livro') }).filter(item => item.titulo)
   }
   return []
 }

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Film, Bookmark, Brain, Compass, Dumbbell, Feather, Home, Hourglass, Map, Menu, Plus, UserRound } from 'lucide-react'
+import { GraduationCap, Film, Bookmark, Brain, Compass, Dumbbell, Feather, Home, Hourglass, Map, Menu, Plus, UserRound } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
 import { preloadView, type ViewName } from '../lib/viewPreload'
 
@@ -47,6 +47,7 @@ const mainNav: NavEntry[] = [
   { label: 'Minha jornada', icon: Home, tab: 'inicio' },
   { label: 'Explorar', icon: Compass, tab: 'explorar' },
   { label: 'Cinema', icon: Film, tab: 'cinema' },
+  { label: 'Formações', icon: GraduationCap, tab: 'formacoes' },
   { label: 'Trilhas', icon: Map, tab: 'trilhas' },
   { label: 'Memória', icon: Bookmark, tab: 'memoria' },
 ]

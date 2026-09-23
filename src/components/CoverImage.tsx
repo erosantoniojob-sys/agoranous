@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Film, Tv, Gamepad2, Sparkles } from 'lucide-react';
+import { Music, Palette, Theater, BookOpen, Film, Tv, Gamepad2, Sparkles } from 'lucide-react';
 import { MediaType } from '../types/agora';
 
 interface CoverImageProps {
@@ -14,6 +14,9 @@ export const CoverImage: React.FC<CoverImageProps> = ({ url, title, tipo, classN
 
   const getMediaIcon = () => {
     switch (tipo) {
+      case 'Música': return <Music className="w-8 h-8 text-accent-gold" />;
+      case 'Arte': return <Palette className="w-8 h-8 text-accent-gold" />;
+      case 'Teatro': return <Theater className="w-8 h-8 text-accent-gold" />;
       case 'Livro':
         return <BookOpen className="w-8 h-8 text-text-secondary stroke-[1.5]" />;
       case 'Filme':

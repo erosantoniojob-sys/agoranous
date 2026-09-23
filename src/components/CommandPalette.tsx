@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Film, BookOpen, Brain, Compass, Feather, Hourglass, Map, Plus, Search, X } from 'lucide-react'
+import { GraduationCap, Film, BookOpen, Brain, Compass, Feather, Hourglass, Map, Plus, Search, X } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
 import { useModalAccessibility } from '../lib/useModalAccessibility'
 import type { ViewName } from '../lib/viewPreload'
@@ -20,6 +20,7 @@ export const CommandPalette: React.FC = () => {
     { label: 'Abrir início', icon: Compass, run: () => navigate('inicio') },
     { label: 'Abrir Studium', icon: Brain, run: () => navigate('studium') },
     { label: 'Abrir Cinema — 100 filmes e 50 clássicos', icon: Film, run: () => navigate('cinema') },
+    { label: 'Abrir Formações clássicas — música, arte e teatro', icon: GraduationCap, run: () => navigate('formacoes') },
     { label: 'Abrir trilhas', icon: Map, run: () => navigate('trilhas') },
     { label: 'Iniciar foco', icon: Hourglass, run: () => navigate('schole') },
     { label: 'Abrir Poíesis', icon: Feather, run: () => navigate('poiesis') },

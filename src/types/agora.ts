@@ -1,4 +1,4 @@
-export type MediaType = 'Livro' | 'Filme' | 'Série' | 'Jogo' | 'App' | 'Podcast' | 'Curso';
+export type MediaType = 'Livro' | 'Filme' | 'Série' | 'Jogo' | 'App' | 'Podcast' | 'Curso' | 'Música' | 'Arte' | 'Teatro';
 
 export type MediaStatus = 'Lendo' | 'Assistindo' | 'Jogando' | 'Concluído' | 'Pendente';
 

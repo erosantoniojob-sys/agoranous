@@ -75,7 +75,7 @@ export const Trilhas: React.FC = () => {
       titulo: trail.nome,
       conteudosCount: mediaCount,
       notasCount: notesCount,
-      progressoPercentual: trail.progresso_percentual || 0,
+      progressoPercentual: trail.categoria?.startsWith('Formação clássica · ') ? Math.round(mediaItems.filter(item => trail.mediaIds.includes(item.id) && item.status === 'Concluído').length / Math.max(1, trail.mediaIds.length) * 100) : trail.progresso_percentual || 0,
       categoria: trail.categoria || 'Geral',
       icon: icon,
       colorTheme: theme,

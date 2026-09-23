@@ -55,7 +55,7 @@ export const Onboarding: React.FC = () => {
   const FORMATS: MediaType[] = ['Livro', 'Filme', 'Série', 'Jogo'];
   const suggestedTags = useMemo(() => {
     const goalTags = GOALS.find((item) => item.label === objetivo)?.tags || [];
-    const formatTags = formatos.flatMap((format) => ({ Livro: ['Literatura'], Filme: ['Cinema'], Série: ['Séries'], Jogo: ['Jogos'], App: [], Podcast: [], Curso: [] }[format]));
+    const formatTags = formatos.flatMap((format) => ({ Livro: ['Literatura'], Filme: ['Cinema'], Série: ['Séries'], Jogo: ['Jogos'], App: [], Podcast: [], Curso: [], Música: ['Música'], Arte: ['Arte'], Teatro: ['Teatro'] }[format]));
     return [...new Set([...goalTags, ...formatTags, 'Filosofia', 'História', 'Teologia', 'Arte'])];
   }, [formatos, objetivo]);
 

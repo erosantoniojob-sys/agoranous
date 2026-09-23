@@ -35,7 +35,7 @@ function FilmDetails({ film, onClose }: { film: CinemaFilm; onClose: () => void 
 }
 
 export function CinemaView() {
-  const { mediaItems, customTrails, addMedia, updateMedia, addCustomTrail, updateCustomTrail, isVisitor, syncStatus, retryCloudSync } = useAgoraStore()
+  const { mediaItems, customTrails, addMedia, updateMedia, addCustomTrail, updateCustomTrail, isVisitor, syncStatus, retryCloudSync, setActiveTab } = useAgoraStore()
   const [section, setSection] = useState<'catalog' | 'formation'>('catalog')
   const [query, setQuery] = useState('')
   const [genre, setGenre] = useState('all')
@@ -109,6 +109,7 @@ export function CinemaView() {
     </header>
 
     <div className="cinema-intro">
+      <button type="button" className="cinema-secondary" onClick={() => setActiveTab('formacoes')}>Outras formações: música, arte, teatro e literatura →</button>
       <p>Uma seleção editorial de grandes filmes de todos os tempos, sem pornografia. A numeração organiza o acervo; não é um ranking universal.</p>
       <details><summary>Critérios e conteúdo da seleção</summary><p>Relevância histórica, linguagem cinematográfica e diversidade de épocas e países orientam esta curadoria. O <a href="https://www.bfi.org.uk/sight-and-sound/greatest-films-all-time" target="_blank" rel="noreferrer">levantamento Sight and Sound / BFI</a> é uma referência crítica, não a lista reproduzida aqui. A formação inicial reúne 50 obras, de 1921 a 2001, e pode ser personalizada. Não incluímos pornografia; alguns filmes apresentam nudez não pornográfica, violência e temas adultos. Consulte a classificação da versão antes de assistir.</p></details>
     </div>

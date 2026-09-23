@@ -1,5 +1,6 @@
 import React, { lazy, Suspense, useMemo, useState } from 'react'
 import {
+  Music, Palette, Theater,
   ArrowUpRight,
   BookOpen,
   Check,
@@ -47,6 +48,9 @@ const CATEGORY_ICONS: Record<MediaType, React.ElementType> = {
   App: Smartphone,
   Podcast: Headphones,
   Curso: GraduationCap,
+  Música: Music,
+  Arte: Palette,
+  Teatro: Theater,
 }
 
 const greetingForHour = (hour: number) => {
