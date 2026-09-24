@@ -69,6 +69,13 @@ export const ExploreView: React.FC = () => {
     setSelectedFilter('Todos');
   };
 
+  const handleRandomPick = () => {
+    const pool = filteredItems.length > 0 ? filteredItems : mediaItems;
+    if (pool.length === 0) return;
+    const chosen = pool[Math.floor(Math.random() * pool.length)];
+    setSelectedMedia(chosen);
+  };
+
   return (
     <div className="explore-view space-y-4 pb-10">
       {/* Header */}
@@ -164,14 +171,25 @@ export const ExploreView: React.FC = () => {
             )}
           </div>
 
-          <button
-            type="button"
-            onClick={() => setIsSearchOpen(true)}
-            className="text-xs text-accent-gold hover:underline flex items-center gap-1 font-semibold"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            Consultar Oráculo Externo
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleRandomPick}
+              disabled={mediaItems.length === 0}
+              className="flex items-center gap-1 text-xs font-semibold text-accent-gold hover:underline disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              Sortear obra
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsSearchOpen(true)}
+              className="text-xs text-accent-gold hover:underline flex items-center gap-1 font-semibold"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              Consultar Oráculo Externo
+            </button>
+          </div>
         </div>
 
         {filteredItems.length === 0 ? (
