@@ -65,3 +65,15 @@ npm run check
 ```
 
 `validate:deploy` confere a versão do Node e do TypeScript, os exports HTTP e colisões entre Functions. `typecheck` valida o frontend e as Functions. `check` executa todas essas verificações e produz o build de produção.
+
+### Descoberta de obras e capas
+
+A aba **Explorar** pesquisa fontes públicas pelo endpoint existente `POST /api/searchMedia`, com `{ "mode": "catalog", "query": "Matrix", "tipo": "Filme" }`. A busca retorna até 24 opções, dependendo da fonte. Filmes usam referências e cartazes da Wikipedia em inglês; séries usam TVmaze; música e podcasts usam Apple/iTunes Brasil; livros e textos teatrais usam Open Library. Cada cartão identifica e liga à fonte. Resultados não garantem disponibilidade em serviços de streaming. A pesquisa Amazon abre o site brasileiro; não importa nem espelha o catálogo Amazon e não utiliza credenciais de afiliado.
+
+- [Amazon Creators API e requisitos de acesso](https://affiliate-program.amazon.com/creatorsapi/docs/)
+- [Apple Search API](https://developer.apple.com/library/archive/documentation/AudioVideo/Conceptual/iTuneSearchAPI/Searching.html)
+- [Open Library Search API](https://openlibrary.org/dev/docs/api/search)
+- [TVmaze API e atribuição CC BY-SA](https://www.tvmaze.com/api)
+- [MediaWiki PageImages](https://www.mediawiki.org/wiki/Extension:PageImages)
+
+No desenvolvimento, o Vite encaminha somente `/api/searchMedia` ao handler local. Em produção, a Function existente atende a mesma rota. Execute `node --test tests/catalog-search.test.mjs` para validar os adaptadores sem depender das fontes externas.

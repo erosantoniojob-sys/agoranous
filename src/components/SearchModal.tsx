@@ -58,6 +58,9 @@ export const SearchModal: React.FC = () => {
   };
 
   const handleStartManualEntry = () => {
+    request.current?.abort();
+    setLoading(false);
+    setCandidates([]);
     const currentYear = new Date().getFullYear();
     setPreviewResult({
       titulo: query.trim(),

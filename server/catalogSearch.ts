@@ -27,7 +27,7 @@ export async function searchCatalog(body: Record<string, unknown>): Promise<Resp
       const data = await response.json() as { error?: unknown; query?: { pages?: Array<{ pageid: number; title: string; index: number; extract?: string; thumbnail?: { source: string } }> } }
       if (data.error) throw new Error('upstream')
       source = 'Wikipedia · referências em inglês'
-      const kind = /\bis (?:an? |the )[^.]{0,180}\bfilm\b/i
+      const kind = /\bis an? (?:18|19|20)\d{2}\b[^.]{0,180}\bfilm\b/i
       items = (data.query?.pages || []).filter(item => !/^(List of|Making of)|\(franchise\)/i.test(item.title) && kind.test(item.extract || '')).sort((a, b) => a.index - b.index).map(item => ({
         catalogId: `wikipedia:${item.pageid}`, titulo: item.title, tipo,
         ano: Number((item.extract || '').match(/\bis (?:an? |the )((?:18|19|20)\d{2})\b/)?.[1]) || null,
