@@ -57,7 +57,7 @@ export const Header: React.FC = () => {
 
             <div className="min-w-0">
               <h1 className="font-serif font-bold text-xl text-text-primary tracking-wide leading-tight">
-                Àgora
+                Ágora
               </h1>
               <p data-greeting className="hidden max-w-[min(42vw,260px)] truncate font-sans text-xs font-medium text-accent-gold sm:block">
                 {getDynamicGreeting()}
@@ -110,7 +110,7 @@ export const Header: React.FC = () => {
               onClick={() => setIsSearchOpen(true)}
               className="w-full py-2.5 px-4 pl-10 bg-bg-surface border border-text-primary/15 hover:border-accent-gold/50 rounded-full text-left text-xs sm:text-sm text-text-secondary hover:text-text-primary transition-all flex items-center justify-between shadow-inner"
             >
-              <span>Buscar mídias ou notas no acervo...</span>
+              <span>Buscar ou adicionar uma obra…</span>
               <Search className="w-4 h-4 text-accent-gold" />
             </button>
           </div>

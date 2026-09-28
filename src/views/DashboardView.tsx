@@ -1,322 +1,66 @@
-import React, { lazy, Suspense, useMemo, useState } from 'react'
-import {
-  Music, Palette, Theater,
-  ArrowUpRight,
-  BookOpen,
-  Check,
-  Clock3,
-  Compass,
-  Film,
-  Flame,
-  Gamepad2,
-  GraduationCap,
-  Headphones,
-  LibraryBig,
-  Map as MapIcon,
-  PenLine,
-  Plus,
-  Smartphone,
-  Sparkles,
-  Tv,
-  X,
-} from 'lucide-react'
+import React, { useState } from 'react'
+import { ArrowUpRight, Check, Film, Play, Plus, Shuffle, Sparkles, Bookmark, PenLine } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
 import { CoverImage } from '../components/CoverImage'
-import { DailyMissions } from '../components/DailyMissions'
-import { JourneyCampaign } from '../components/JourneyCampaign'
-import { KnowledgeOrbit, type KnowledgeRealm } from '../components/KnowledgeOrbit'
-import { LevelProgress } from '../components/LevelProgress'
-import { TrailSelectionModal } from '../components/TrailSelectionModal'
-import { calculateJourneyXp, getLevelProgress, getStreak } from '../lib/journeyProgress'
-import {
-  genreFilter,
-  KNOWLEDGE_REALM_DEFINITIONS,
-  knowledgeRealmFilter,
-  MEDIA_FORMAT_DEFINITIONS,
-  mediaMatchesRealm,
-  mediaTypeFilter,
-} from '../lib/knowledgeRealms'
-import type { MediaType } from '../types/agora'
-
-const DailyQuoteCard = lazy(() => import('../components/DailyQuoteCard').then((module) => ({ default: module.DailyQuoteCard })))
-
-const CATEGORY_ICONS: Record<MediaType, React.ElementType> = {
-  Livro: BookOpen,
-  Filme: Film,
-  Série: Tv,
-  Jogo: Gamepad2,
-  App: Smartphone,
-  Podcast: Headphones,
-  Curso: GraduationCap,
-  Música: Music,
-  Arte: Palette,
-  Teatro: Theater,
-}
-
-const greetingForHour = (hour: number) => {
-  if (hour < 12) return 'Bom dia'
-  if (hour < 18) return 'Boa tarde'
-  return 'Boa noite'
-}
-
-const getMediaTypeLabel = (type: string) => ({
-  Livro: 'Leitura em curso',
-  Filme: 'Filme em curso',
-  Série: 'Série em curso',
-  Jogo: 'Jogo em curso',
-  App: 'Aplicativo em curso',
-  Podcast: 'Podcast em curso',
-  Curso: 'Curso em curso',
-}[type] || 'Em curso')
-
-const formatEventDate = (createdAt: string) => {
-  const date = new Date(createdAt)
-  if (Number.isNaN(date.getTime())) return 'data indisponível'
-  return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(date)
-}
+import type { MediaItem } from '../types/agora'
 
 export const DashboardView: React.FC = () => {
-  const {
-    aprendizados,
-    completeDailyMission,
-    customCategories,
-    customTrails,
-    getEstatisticas,
-    journey,
-    mediaItems,
-    setActiveTab,
-    setIsSearchOpen,
-    setSelectedFilter,
-    setSelectedMedia,
-    userProfile,
-  } = useAgoraStore()
-  const [isTrailModalOpen, setIsTrailModalOpen] = useState(false)
-  const [isCreateMenuOpen, setIsCreateMenuOpen] = useState(false)
-
-  const stats = useMemo(() => getEstatisticas(), [getEstatisticas])
-  const totalXp = useMemo(() => calculateJourneyXp(journey.events), [journey.events])
-  const levelProgress = useMemo(() => getLevelProgress(totalXp), [totalXp])
-  const streak = useMemo(() => getStreak(journey.events), [journey.events])
-  const mediaById = useMemo(() => new Map(mediaItems.map((item) => [item.id, item])), [mediaItems])
-
-  const currentMedia = useMemo(() => {
-    const active = mediaItems.filter((item) => ['Lendo', 'Assistindo', 'Jogando'].includes(item.status))
-    return [...active].sort((first, second) => (second.progresso_percentual || 0) - (first.progresso_percentual || 0))[0] || null
-  }, [mediaItems])
-
-  const currentTrail = useMemo(
-    () => [...customTrails].sort((first, second) => (second.progresso_percentual || 0) - (first.progresso_percentual || 0))[0] || null,
-    [customTrails],
-  )
-
-  const realms = useMemo<KnowledgeRealm[]>(() => {
-    return KNOWLEDGE_REALM_DEFINITIONS.map((realm) => {
-      const items = mediaItems.filter((item) => mediaMatchesRealm(item, realm))
-      const progress = items.length
-        ? Math.round(items.reduce((sum, item) => sum + (item.status === 'Concluído' ? 100 : item.progresso_percentual || 0), 0) / items.length)
-        : 0
-      return {
-        id: realm.id,
-        name: realm.name,
-        accent: realm.accent,
-        progress,
-        level: items.length ? Math.min(9, Math.max(1, Math.ceil((progress || 1) / (100 / 9)))) : 0,
-        itemCount: items.length,
-      }
-    })
-  }, [mediaItems])
-  const activeRealms = realms.filter((realm) => (realm.itemCount || 0) > 0)
-
-  const openExplore = (filter = 'Todos') => {
-    setSelectedFilter(filter)
-    setActiveTab('explorar')
+  const { mediaItems, userProfile, setIsSearchOpen, setSelectedMedia, setActiveTab, updateMediaStatusAndRating, addAprendizado } = useAgoraStore()
+  const [filter, setFilter] = useState('Todos')
+  const [note, setNote] = useState('')
+  const [noteId, setNoteId] = useState('')
+  const [feedback, setFeedback] = useState('')
+  const [pickedId, setPickedId] = useState('')
+  const matches = (item: MediaItem) => filter === 'Todos' || item.tipo === filter
+  const watching = mediaItems.filter(item => ['Assistindo', 'Lendo', 'Jogando'].includes(item.status) && matches(item))
+  const queue = mediaItems.filter(item => item.status === 'Pendente' && matches(item))
+  const featured = watching[0] || queue.find(item => item.id === pickedId) || queue[0]
+  const name = userProfile.nome?.trim().split(' ')[0]
+  const noteMedia = mediaItems.find(item => item.id === noteId) || featured || mediaItems[0]
+  const begin = (item: MediaItem) => {
+    updateMediaStatusAndRating(item.id, item.tipo === 'Livro' ? 'Lendo' : item.tipo === 'Jogo' ? 'Jogando' : 'Assistindo', item.avaliacao_numerica, item.progresso_percentual || 0)
+    setFeedback(`${item.titulo} está em andamento.`)
+  }
+  const saveNote = (event: React.FormEvent) => {
+    event.preventDefault()
+    if (!note.trim() || !noteMedia) return
+    addAprendizado(noteMedia.id, note.trim())
+    setNote('')
+    setFeedback('Impressão salva nas suas notas.')
   }
 
-  const handleRealmSelect = (realm: KnowledgeRealm) => {
-    openExplore(realm.id ? knowledgeRealmFilter(realm.id) : realm.name)
-  }
-
-  const greetingName = userProfile.nome?.trim() ? `, ${userProfile.nome.trim().split(' ')[0]}` : ''
-  const greeting = `${greetingForHour(new Date().getHours())}${greetingName}.`
-  const activeItems = mediaItems.filter((item) => ['Lendo', 'Assistindo', 'Jogando'].includes(item.status)).length
-  const recentEvents = journey.events.slice(0, 3)
-
-  return (
-    <div className="journey-home animate-fadeIn">
-      <section className="universe-hero" aria-labelledby="journey-home-title">
-        <div className="universe-hero__copy">
-          <p className="journey-eyebrow"><Sparkles className="h-3.5 w-3.5" /> Seu universo intelectual</p>
-          <h1 id="journey-home-title">{greeting}</h1>
-          <p className="universe-hero__subtitle">Você não está apenas consumindo conteúdo. Está construindo repertório, conexões e critérios para pensar melhor.</p>
-
-          <LevelProgress {...levelProgress} />
-
-          <div className="journey-signals" aria-label="Resumo da sua jornada">
-            <span><Sparkles className="h-3.5 w-3.5" /> {totalXp.toLocaleString('pt-BR')} XP</span>
-            <span><Flame className="h-3.5 w-3.5" /> {streak.current} {streak.current === 1 ? 'dia em sequência' : 'dias em sequência'}</span>
-            <span><PenLine className="h-3.5 w-3.5" /> {aprendizados.length} {aprendizados.length === 1 ? 'nota' : 'notas'}</span>
-          </div>
-
-          <div className="journey-create">
-            <button
-              type="button"
-              className="journey-create__trigger"
-              aria-expanded={isCreateMenuOpen}
-              aria-controls="journey-create-menu"
-              onClick={() => setIsCreateMenuOpen((open) => !open)}
-            >
-              <Plus className="h-4 w-4" /> Criar
-            </button>
-            {isCreateMenuOpen ? (
-              <div id="journey-create-menu" className="journey-create__menu" role="menu">
-                <button type="button" role="menuitem" onClick={() => { setIsSearchOpen(true); setIsCreateMenuOpen(false) }}><LibraryBig className="h-4 w-4" /> Adicionar obra</button>
-                <button type="button" role="menuitem" onClick={() => { setActiveTab('memoria'); setIsCreateMenuOpen(false) }}><PenLine className="h-4 w-4" /> Registrar nota</button>
-                <button type="button" role="menuitem" onClick={() => { setIsTrailModalOpen(true); setIsCreateMenuOpen(false) }}><Compass className="h-4 w-4" /> Criar trilha</button>
-                <button type="button" role="menuitem" onClick={() => { setActiveTab('studium'); setIsCreateMenuOpen(false) }}><Clock3 className="h-4 w-4" /> Abrir Studium</button>
-              </div>
-            ) : null}
-          </div>
-        </div>
-
-        <div className="universe-hero__orbit">
-          <KnowledgeOrbit
-            realms={activeRealms}
-            heading="Mapa do conhecimento"
-            description="Os domínios ganham massa conforme as obras do seu acervo avançam."
-            onRealmSelect={handleRealmSelect}
-          />
-        </div>
-      </section>
-
-      <DailyMissions completedMissionKeys={journey.completedMissionKeys} onComplete={completeDailyMission} />
-
-      <div className="journey-home__middle-grid">
-        <JourneyCampaign
-          trail={currentTrail}
-          mediaById={mediaById}
-          onOpen={() => setActiveTab('trilhas')}
-          onCreate={() => setIsTrailModalOpen(true)}
-        />
-
-        <section className="journey-panel journey-continue" aria-labelledby="continue-title">
-          <div className="journey-section-heading">
-            <div><p>Ritmo de agora</p><h2 id="continue-title">Continue de onde parou</h2></div>
-            {currentMedia ? <button type="button" onClick={() => setSelectedMedia(currentMedia)} className="journey-link">Abrir <ArrowUpRight className="h-3.5 w-3.5" /></button> : null}
-          </div>
-          {currentMedia ? (
-            <button type="button" className="journey-continue__card" onClick={() => setSelectedMedia(currentMedia)}>
-              <CoverImage url={currentMedia.url_capa || currentMedia.capa_oficial} title={currentMedia.titulo} tipo={currentMedia.tipo} className="journey-continue__cover" />
-              <span className="journey-continue__body">
-                <span className="journey-continue__kind">{getMediaTypeLabel(currentMedia.tipo)}</span>
-                <strong>{currentMedia.titulo}</strong>
-                <small>{currentMedia.autor_criador || 'Obra do seu acervo'}</small>
-                <span className="journey-continue__progress"><i style={{ width: `${currentMedia.progresso_percentual || 0}%` }} /><b>{currentMedia.progresso_percentual || 0}%</b></span>
-              </span>
-            </button>
-          ) : (
-            <div className="journey-continue__empty">
-              <span><BookOpen className="h-5 w-5" /></span>
-              <p>Escolha a primeira obra para dar forma ao seu percurso.</p>
-              <button type="button" onClick={() => setIsSearchOpen(true)}>Adicionar obra <ArrowUpRight className="h-4 w-4" /></button>
-            </div>
-          )}
-        </section>
-      </div>
-
-      <section className="journey-domains" aria-labelledby="domains-title">
-        <div className="journey-section-heading">
-          <div><p>Acervo vivo</p><h2 id="domains-title">Explore por domínio</h2></div>
-          <button type="button" className="journey-link" onClick={() => openExplore()}>Ver acervo <ArrowUpRight className="h-3.5 w-3.5" /></button>
-        </div>
-        {activeRealms.length > 0 ? (
-          <div className="realm-grid">
-            {activeRealms.map((realm) => (
-              <button key={realm.id} type="button" className="realm-card" onClick={() => handleRealmSelect(realm)} style={{ '--realm-accent': realm.accent, '--realm-progress': `${realm.progress}%` } as React.CSSProperties}>
-                <span className="realm-card__orb" />
-                <span className="realm-card__body"><small>Nível {realm.level || '—'}</small><strong>{realm.name}</strong><em>{realm.progress}% explorado</em></span>
-                <ArrowUpRight className="h-4 w-4" />
-              </button>
-            ))}
-          </div>
-        ) : (
-          <p className="mt-4 rounded-2xl border border-dashed border-text-primary/15 bg-bg-surface/40 p-5 text-center text-xs text-text-secondary">
-            Adicione uma obra com gêneros ou temas para formar seus primeiros domínios.
-          </p>
-        )}
-      </section>
-
-      <div className="journey-home__lower-grid">
-        <section className="journey-panel journey-categories" aria-labelledby="categories-title">
-          <div className="journey-section-heading">
-            <div><p>Biblioteca organizada</p><h2 id="categories-title">Formatos e coleções</h2></div>
-            <button type="button" className="journey-link" onClick={() => setIsSearchOpen(true)}><Plus className="h-3.5 w-3.5" /> Obra</button>
-          </div>
-          <div className="category-grid">
-            {MEDIA_FORMAT_DEFINITIONS.filter(
-              (category) => category.alwaysVisible || mediaItems.some((item) => item.tipo === category.type),
-            ).map((category) => {
-              const Icon = CATEGORY_ICONS[category.type]
-              const count = mediaItems.filter((item) => item.tipo === category.type).length
-              return (
-                <button type="button" key={category.type} className="category-module" onClick={() => openExplore(mediaTypeFilter(category.type))}>
-                  <span><Icon className="h-4 w-4" /></span>
-                  <strong>{category.label}</strong>
-                  <small>{count} {count === 1 ? 'obra' : 'obras'}</small>
-                  <em>{category.helper}</em>
-                </button>
-              )
-            })}
-            {customCategories.slice(0, 2).map((category) => (
-              <button type="button" key={category.id} className="category-module category-module--custom" onClick={() => openExplore(genreFilter(category.label))}>
-                <span><Sparkles className="h-4 w-4" /></span>
-                <strong>{category.label}</strong>
-                <small>coleção</small>
-                <em>Seu próprio domínio</em>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section className="journey-panel journey-milestones" aria-labelledby="milestones-title">
-          <div className="journey-section-heading">
-            <div><p>Seu rastro</p><h2 id="milestones-title">Marcos recentes</h2></div>
-            <span className="journey-section-count">{journey.events.length}</span>
-          </div>
-          {recentEvents.length ? (
-            <ol className="milestone-list">
-              {recentEvents.map((event) => (
-                <li key={event.id}>
-                  <span><Sparkles className="h-3.5 w-3.5" /></span>
-                  <div><strong>{event.label}</strong><small>{formatEventDate(event.createdAt)}</small></div>
-                  <b>+{event.xp} XP</b>
-                </li>
-              ))}
-            </ol>
-          ) : (
-            <div className="journey-milestones__empty"><MapIcon className="h-5 w-5" /><p>Os próximos passos que você registrar aparecerão aqui.</p></div>
-          )}
-        </section>
-      </div>
-
-      <div className="journey-home__closing-grid">
-        <section className="journey-panel journey-statistics" aria-labelledby="statistics-title">
-          <div className="journey-section-heading"><div><p>Panorama</p><h2 id="statistics-title">Sua biblioteca em números</h2></div></div>
-          <dl className="statistics-grid">
-            <div><dt>Obras</dt><dd>{stats.totalItens}</dd><small>{activeItems} em andamento</small></div>
-            <div><dt>Notas</dt><dd>{stats.totalAprendizados}</dd><small>ideias preservadas</small></div>
-            <div><dt>Domínios</dt><dd>{stats.categoriasExploradas}</dd><small>campos explorados</small></div>
-            <div><dt>Sequência</dt><dd>{streak.longest}</dd><small>melhor marca</small></div>
-          </dl>
-        </section>
-
-        <div className="journey-quote-slot">
-          <Suspense fallback={<div className="journey-panel journey-quote-slot__loading">Preparando a abertura do dia…</div>}>
-            <DailyQuoteCard />
-          </Suspense>
-        </div>
-      </div>
-
-      <TrailSelectionModal isOpen={isTrailModalOpen} onClose={() => setIsTrailModalOpen(false)} />
+  return <div className="session-home">
+    <div className="session-heading">
+      <div><p className="session-eyebrow">SEU TEMPO, BEM VIVIDO</p><h1>O que vamos descobrir hoje{name ? `, ${name}` : ''}?</h1><p>Uma boa história. Uma ideia que fica. Um momento seu.</p></div>
+      <button className="session-secondary" onClick={() => setIsSearchOpen(true)}><Plus size={17} /> Adicionar obra</button>
     </div>
-  )
+
+    <div className="session-filters" aria-label="Filtrar obras por formato">{['Todos', 'Filme', 'Série', 'Livro', 'Curso', 'Podcast'].map(type => <button key={type} aria-pressed={filter === type} onClick={() => { setFilter(type); setPickedId('') }}>{({ Todos: 'Tudo', Filme: 'Filmes', Série: 'Séries', Livro: 'Livros', Curso: 'Cursos', Podcast: 'Podcasts' } as Record<string, string>)[type]}</button>)}</div>
+
+    <section className="session-feature" aria-labelledby="session-title">
+      <div className="session-feature__art" aria-hidden="true"><div className="session-orbit" /><span>Á</span><p>ARS LONGA · VITA BREVIS</p></div>
+      <div className="session-feature__copy">
+        <p className="session-eyebrow"><span className="session-live" /> {watching.length ? 'CONTINUE A SUA HISTÓRIA' : featured ? 'NA SUA LISTA' : 'SUA PRÓXIMA DESCOBERTA'}</p>
+        <h2 id="session-title">{featured?.titulo || 'Dê espaço para uma boa história.'}</h2>
+        <p>{featured ? [featured.tipo, featured.autor_criador, featured.ano].filter(Boolean).join(' · ') : 'Guarde o que quer assistir ou ler. Quando voltar, sua próxima escolha estará aqui.'}</p>
+        {featured?.sinopse ? <p className="session-synopsis">{featured.sinopse}</p> : null}
+        {featured && watching.length ? <div className="session-progress"><progress aria-label={`Progresso de ${featured.titulo}`} max={100} value={featured.progresso_percentual || 0} /><span>{featured.progresso_detalhado ? `${featured.progresso_detalhado.atual} ${featured.progresso_detalhado.unidade}` : `${featured.progresso_percentual || 0}% registrado`}</span></div> : null}
+        <div className="session-actions"><button className="session-primary" onClick={() => featured ? watching.length ? setSelectedMedia(featured) : begin(featured) : setIsSearchOpen(true)}><Play size={16} />{featured ? watching.length ? 'Retomar obra' : 'Começar agora' : 'Escolher minha primeira obra'}</button><button className="session-text-button" onClick={() => setActiveTab('cinema')}>Descobrir filmes <ArrowUpRight size={16} /></button></div>
+        <small className="session-feature__hint">Seu ponto de encontro antes e depois de assistir.</small>
+      </div>
+    </section>
+
+    <div className="session-columns"><div>
+      <section className="session-section" aria-labelledby="watching-title"><div className="session-section-title"><h2 id="watching-title">Em andamento <span>{watching.length}</span></h2><span>Um passo de cada vez</span></div>
+        {watching.length ? <div className="session-current-list">{watching.map(item => <article className="session-current" key={item.id}><button className="session-current__open" onClick={() => setSelectedMedia(item)}><CoverImage url={item.url_capa || item.capa_oficial} title={item.titulo} tipo={item.tipo} /><span><small>{item.tipo}</small><strong>{item.titulo}</strong><span>{item.progresso_detalhado ? `${item.progresso_detalhado.atual} ${item.progresso_detalhado.unidade}` : `${item.progresso_percentual || 0}% concluído`}</span></span><ArrowUpRight size={17} /></button><button className="session-finish" aria-label={`Concluir ${item.titulo}`} onClick={() => { updateMediaStatusAndRating(item.id, 'Concluído', item.avaliacao_numerica, 100); setFeedback(`${item.titulo} concluído. Que tal guardar uma impressão?`); setNoteId(item.id) }}><Check size={15} /> Concluir</button></article>)}</div> : <div className="session-empty"><Play size={22} /><p>Nenhuma obra em andamento.</p><span>Comece uma obra da sua lista e encontre-a aqui na próxima visita.</span></div>}
+      </section>
+      <section className="session-section" aria-labelledby="queue-title"><div className="session-section-title"><h2 id="queue-title">Para depois <span>{queue.length}</span></h2><button className="session-text-button" disabled={!queue.length} onClick={() => { const item = queue[Math.floor(Math.random() * queue.length)]; if (item) { setPickedId(item.id); setSelectedMedia(item) } }}><Shuffle size={15} /> Escolha por mim</button></div>
+        {queue.length ? <div className="session-shelf">{queue.map(item => <button key={item.id} onClick={() => setSelectedMedia(item)}><CoverImage url={item.url_capa || item.capa_oficial} title={item.titulo} tipo={item.tipo} /><strong>{item.titulo}</strong><small>{item.tipo}</small></button>)}</div> : <button className="session-add-empty" onClick={() => setIsSearchOpen(true)}><Plus size={22} /><span>Viu algo interessante?<small>Guarde aqui para não esquecer.</small></span><ArrowUpRight size={18} /></button>}
+      </section>
+    </div><aside className="session-aside">
+      <section className="session-note"><p className="session-eyebrow"><PenLine size={15} /> DEPOIS DOS CRÉDITOS</p><h2>O que ficou com você?</h2><p>Uma frase, uma sensação ou uma ideia. Não precisa ser uma resenha.</p><form onSubmit={saveNote}><label htmlFor="session-note-work">Sobre qual obra?</label><select id="session-note-work" value={noteMedia?.id || ''} disabled={!mediaItems.length} onChange={event => setNoteId(event.target.value)}>{!mediaItems.length ? <option value="">Adicione uma obra primeiro</option> : mediaItems.map(item => <option key={item.id} value={item.id}>{item.titulo}</option>)}</select><label className="sr-only" htmlFor="session-note-text">Sua impressão</label><textarea id="session-note-text" placeholder="Ainda estou pensando naquela cena…" value={note} onChange={event => setNote(event.target.value)} rows={5} maxLength={10000} /><button className="session-primary" disabled={!note.trim() || !noteMedia}><Bookmark size={15} /> Guardar impressão</button></form><button className="session-text-button" onClick={() => setActiveTab('memoria')}>Revisitar minhas notas <ArrowUpRight size={14} /></button></section>
+      <button className="session-discovery" onClick={() => setActiveTab('cinema')}><Film size={25} /><span><small>FORA DO ÓBVIO</small><strong>Seu próximo filme favorito pode estar aqui.</strong><em>Explorar a seleção <ArrowUpRight size={15} /></em></span><Sparkles size={18} /></button>
+    </aside></div>
+    <p className="session-feedback" role="status">{feedback}</p>
+  </div>
 }

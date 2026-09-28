@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { GraduationCap, Film, Bookmark, Brain, Compass, Dumbbell, Feather, Home, Hourglass, Map, Menu, Plus, UserRound } from 'lucide-react'
+import { Film, Bookmark, Feather, Home, Menu, Plus, UserRound } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
 import { preloadView, type ViewName } from '../lib/viewPreload'
 
@@ -44,19 +44,10 @@ const RailNavButton: React.FC<NavButtonProps> = ({ label, icon: Icon, tab, activ
 )
 
 const mainNav: NavEntry[] = [
-  { label: 'Minha jornada', icon: Home, tab: 'inicio' },
-  { label: 'Explorar', icon: Compass, tab: 'explorar' },
-  { label: 'Cinema', icon: Film, tab: 'cinema' },
-  { label: 'Formações', icon: GraduationCap, tab: 'formacoes' },
-  { label: 'Trilhas', icon: Map, tab: 'trilhas' },
-  { label: 'Memória', icon: Bookmark, tab: 'memoria' },
-]
-
-const cultivationNav: NavEntry[] = [
-  { label: 'Studium', icon: Brain, tab: 'studium' },
-  { label: 'Scholé', icon: Hourglass, tab: 'schole' },
-  { label: 'Rotina', icon: Dumbbell, tab: 'rotina' },
-  { label: 'Poíesis', icon: Feather, tab: 'poiesis' },
+  { label: 'Hoje', icon: Home, tab: 'inicio' },
+  { label: 'Biblioteca', icon: Bookmark, tab: 'explorar' },
+  { label: 'Descobrir', icon: Film, tab: 'cinema' },
+  { label: 'Notas', icon: Feather, tab: 'memoria' },
 ]
 
 export const TabBar: React.FC = () => {
@@ -116,13 +107,13 @@ export const TabBar: React.FC = () => {
     <>
       <nav className="mobile-dock-shell lg:hidden fixed inset-x-0 bottom-0 z-40 flex justify-center px-[max(0.55rem,env(safe-area-inset-left))] py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]" aria-label="Navegação principal">
         <div className="velocity-dock tab-bar-mobile mobile-navigation relative grid w-full max-w-[34rem] grid-cols-5 items-center rounded-2xl border border-border-primary px-1.5 py-1.5">
-          <MobileNavButton label="Início" icon={Home} tab="inicio" active={activeTab === 'inicio'} onClick={() => setActiveTab('inicio')} />
-          <MobileNavButton label="Jornada" icon={Brain} tab="studium" active={activeTab === 'studium'} onClick={() => setActiveTab('studium')} />
+          <MobileNavButton label="Hoje" icon={Home} tab="inicio" active={activeTab === 'inicio'} onClick={() => setActiveTab('inicio')} />
+          <MobileNavButton label="Biblioteca" icon={Bookmark} tab="explorar" active={activeTab === 'explorar'} onClick={() => setActiveTab('explorar')} />
           <button type="button" onClick={openCreate} className="mobile-nav-create" aria-label="Criar ou adicionar obra" title="Criar">
             <Plus className="h-5 w-5" />
-            <span>Criar</span>
+            <span>Adicionar</span>
           </button>
-          <MobileNavButton label="Trilhas" icon={Map} tab="trilhas" active={activeTab === 'trilhas'} onClick={() => setActiveTab('trilhas')} />
+          <MobileNavButton label="Descobrir" icon={Film} tab="cinema" active={activeTab === 'cinema'} onClick={() => setActiveTab('cinema')} />
           <button type="button" onClick={() => setIsLeftDrawerOpen(true)} className="mobile-nav-item" aria-label="Mais opções" title="Mais">
             <Menu className="h-[1.15rem] w-[1.15rem]" />
             <span>Mais</span>
@@ -137,10 +128,6 @@ export const TabBar: React.FC = () => {
         </div>
         <div className="nav-rail__separator" />
         <button type="button" onClick={openCreate} className="nav-rail__create" aria-label="Criar ou adicionar obra" title="Criar ou adicionar obra"><Plus className="h-5 w-5" /></button>
-        <div className="nav-rail__separator" />
-        <div className="nav-rail__group nav-rail__group--cultivation">
-          {cultivationNav.map((item) => <RailNavButton key={item.tab} {...item} active={activeTab === item.tab} onClick={() => setActiveTab(item.tab)} />)}
-        </div>
         <div className="nav-rail__separator" />
         <button type="button" onClick={() => setActiveTab('perfil')} className={`nav-rail__item ${activeTab === 'perfil' ? 'is-active' : ''}`} aria-current={activeTab === 'perfil' ? 'page' : undefined} title="Perfil"><UserRound className="h-[1.1rem] w-[1.1rem]" /><span>Perfil</span></button>
       </nav>

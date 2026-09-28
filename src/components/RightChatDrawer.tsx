@@ -124,11 +124,11 @@ export const RightChatDrawer: React.FC = () => {
           actionLabel: 'Criar trilha',
         },
     {
-      title: 'Cuide da constância',
+      title: 'Escolha sua próxima história',
       description: `${stats.totalItens} ${stats.totalItens === 1 ? 'obra catalogada' : 'obras catalogadas'} — organize uma prática pequena para hoje.`,
       icon: Target,
-      action: () => setActiveTab('rotina'),
-      actionLabel: 'Ver virtudes',
+      action: () => setActiveTab('inicio'),
+      actionLabel: 'Ir para hoje',
     },
   ]
 

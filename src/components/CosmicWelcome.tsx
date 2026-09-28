@@ -7,7 +7,7 @@ import {
   prepareEntranceVoice,
   stopEntranceVoice,
 } from '../lib/entranceVoice'
-import { readSessionValue, writeSessionValue } from '../lib/browserStorage'
+import { writeSessionValue } from '../lib/browserStorage'
 import { useModalAccessibility } from '../lib/useModalAccessibility'
 import { ClassicArchLogoIcon } from './ClassicArchLogo'
 
@@ -18,7 +18,7 @@ type WelcomePhase = 'waiting' | 'departing'
 const departureDelay = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1350
 
 export function CosmicWelcome() {
-  const [isOpen, setIsOpen] = useState(() => !readSessionValue(WELCOME_SESSION_KEY, false))
+  const [isOpen, setIsOpen] = useState(false)
   const [phase, setPhase] = useState<WelcomePhase>('waiting')
   const [narrationState, setNarrationState] = useState<EntranceNarrationState>('idle')
   const departureTimer = useRef(0)

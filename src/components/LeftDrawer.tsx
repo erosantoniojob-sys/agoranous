@@ -1,5 +1,5 @@
 import React from 'react'
-import { GraduationCap, Film, X, Sliders, Database, Home, Compass, Map, BookOpen, Bookmark, Hourglass, Dumbbell, UserRound, Feather } from 'lucide-react'
+import { GraduationCap, Film, X, Sliders, Database, Home, Compass, Map, Bookmark, UserRound } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
 import { preloadView, type ViewName } from '../lib/viewPreload'
 import { useModalAccessibility } from '../lib/useModalAccessibility'
@@ -35,14 +35,14 @@ export const LeftDrawer: React.FC = () => {
 
   // 2. Array devidamente tipado para não inferir `tab` como 'string'
   const navigationItems: NavItem[] = [
-    { label: 'Início', icon: Home, tab: 'inicio' },
-    { label: 'Explorar', icon: Compass, tab: 'explorar' },
+    { label: 'Hoje', icon: Home, tab: 'inicio' },
+    { label: 'Biblioteca', icon: Compass, tab: 'explorar' },
     { label: 'Cinema', icon: Film, tab: 'cinema' },
     { label: 'Formações', icon: GraduationCap, tab: 'formacoes' },
     { label: 'Trilhas', icon: Map, tab: 'trilhas' },
-    { label: 'Acervo', icon: BookOpen, tab: 'inicio' },
-    { label: 'Memória', icon: Bookmark, tab: 'memoria' },
-    { label: 'Studium', icon: Feather, tab: 'studium' },
+
+    { label: 'Notas', icon: Bookmark, tab: 'memoria' },
+
     { label: 'Perfil', icon: UserRound, tab: 'perfil' },
   ]
 
@@ -112,56 +112,6 @@ export const LeftDrawer: React.FC = () => {
               )
             })}
           </nav>
-
-          {/* Lifestyle Spaces */}
-          <div className="border-t border-text-primary/15 pt-4">
-            <p className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider px-2 mb-3">
-              Espaços de Cultivo
-            </p>
-            <div className="space-y-2">
-              <button
-                onPointerEnter={() => preloadView('schole')}
-                onFocus={() => preloadView('schole')}
-                onClick={() => handleNavClick('schole')}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold rounded-xl transition-all ${
-                  activeTab === 'schole'
-                    ? 'bg-accent-gold/15 text-accent-gold border border-accent-gold/40'
-                    : 'text-text-primary hover:text-accent-gold hover:bg-bg-elevated/50'
-                }`}
-              >
-                <Hourglass className="w-4 h-4" />
-                <span>Scholé</span>
-              </button>
-
-              <button
-                onPointerEnter={() => preloadView('rotina')}
-                onFocus={() => preloadView('rotina')}
-                onClick={() => handleNavClick('rotina')}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold rounded-xl transition-all ${
-                  activeTab === 'rotina'
-                    ? 'bg-accent-gold/15 text-accent-gold border border-accent-gold/40'
-                    : 'text-text-primary hover:text-accent-gold hover:bg-bg-elevated/50'
-                }`}
-              >
-                <Dumbbell className="w-4 h-4" />
-                <span>Rotina</span>
-              </button>
-
-              <button
-                onPointerEnter={() => preloadView('poiesis')}
-                onFocus={() => preloadView('poiesis')}
-                onClick={() => handleNavClick('poiesis')}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold rounded-xl transition-all ${
-                  activeTab === 'poiesis'
-                    ? 'bg-accent-gold/15 text-accent-gold border border-accent-gold/40'
-                    : 'text-text-primary hover:text-accent-gold hover:bg-bg-elevated/50'
-                }`}
-              >
-                <Feather className="w-4 h-4" />
-                <span>Poíesis</span>
-              </button>
-            </div>
-          </div>
 
           {/* Settings */}
           <div className="border-t border-text-primary/15 pt-4 space-y-2">
