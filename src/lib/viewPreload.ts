@@ -1,8 +1,9 @@
-export type ViewName = 'inicio' | 'explorar' | 'trilhas' | 'memoria' | 'perfil' | 'schole' | 'rotina' | 'poiesis' | 'studium' | 'cinema' | 'formacoes'
+export type ViewName = 'descobrir' | 'inicio' | 'explorar' | 'trilhas' | 'memoria' | 'perfil' | 'schole' | 'rotina' | 'poiesis' | 'studium' | 'cinema' | 'formacoes'
 
 /** Loads a view before it is selected, so navigation can feel instantaneous. */
 export function preloadView(view: ViewName) {
   switch (view) {
+    case 'descobrir': return import('../views/DiscoverView')
     case 'inicio': return import('../views/DashboardView')
     case 'explorar': return import('../views/ExploreView')
     case 'trilhas': return import('../components/Trilhas')

@@ -1,3 +1,4 @@
+import { CoverImage } from '../components/CoverImage'
 import React, { useState } from 'react'
 import { BookOpen, Check, ChevronRight, Film, GraduationCap, Music, Palette, Search, Theater, X } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
@@ -26,6 +27,7 @@ function WorkDialog({ work, onClose }: { work: ClassicalWork; onClose: () => voi
     <section ref={ref} className="cinema-modal formation-dialog" role="dialog" aria-modal="true" aria-labelledby="classical-work-title" onClick={event => event.stopPropagation()}>
       <button type="button" className="cinema-close" onClick={onClose} aria-label="Fechar obra"><X size={22} /></button>
       <p className="cinema-eyebrow"><Icon size={18} /> {work.era} · {work.period}</p>
+      <CoverImage url={work.cover} title={work.title} tipo={classicalFormations.find(area => area.id === work.area)?.type} className="formation-dialog-cover" />
       <h2 id="classical-work-title">{work.title}</h2><p className="cinema-muted">{work.author}</p>
       <p className="cinema-synopsis">{work.context}</p>
       <section className="cinema-study"><h3>Uma proposta de estudo</h3><p>{work.activity}</p></section>
@@ -104,6 +106,7 @@ export function ClassicalFormationsView() {
       return works.length ? <section key={title} className="formation-module" aria-labelledby={`formation-module-${index}`}><div className="formation-module-heading"><span>0{index + 1}</span><h2 id={`formation-module-${index}`}>{title}</h2></div><div className="formation-works">{works.map(work => {
         const done = findClassicalMedia(work, mediaItems)?.status === 'Concluído'
         return <article key={work.id} className={`formation-work ${done ? 'is-complete' : ''}`}>
+          <CoverImage url={work.cover} title={work.title} tipo={area.type} className="formation-work-cover" />
           <div className="formation-work-top"><span>{work.id.split('-')[1]} / 12</span><Icon size={25} /><span>{work.period}</span></div>
           <p className="cinema-eyebrow">{work.era}</p><h3>{work.title}</h3><p className="formation-author">{work.author}</p><p>{work.context}</p>
           <div className="formation-work-actions"><button type="button" onClick={() => setSelected(work)} aria-label={`Estudar ${work.title}`}>{area.verb} e refletir <ChevronRight size={15} /></button><button type="button" aria-pressed={done} aria-label={`${done ? 'Reabrir' : 'Concluir'} ${work.title}`} onClick={() => toggle(work)}><Check size={15} /> {done ? 'Concluída' : 'Concluir etapa'}</button></div>

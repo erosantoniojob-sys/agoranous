@@ -10,7 +10,7 @@ interface CoverImageProps {
 }
 
 export const CoverImage: React.FC<CoverImageProps> = ({ url, title, tipo, className = '' }) => {
-  const [error, setError] = useState(false);
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
 
   const getMediaIcon = () => {
     switch (tipo) {
@@ -30,7 +30,7 @@ export const CoverImage: React.FC<CoverImageProps> = ({ url, title, tipo, classN
     }
   };
 
-  const showFallback = !url || error;
+  const showFallback = !url || failedUrl === url;
 
   return (
     <div
@@ -41,7 +41,7 @@ export const CoverImage: React.FC<CoverImageProps> = ({ url, title, tipo, classN
           src={url}
           alt={`Capa de ${title}`}
           loading="lazy"
-          onError={() => setError(true)}
+          onError={() => setFailedUrl(url || null)}
           className="w-full h-full object-cover rounded-xl transition-transform duration-500 hover:scale-105"
         />
       ) : (

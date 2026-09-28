@@ -17,6 +17,8 @@ import { AgoraLoader } from './components/AgoraLoader'
 import { CommandPalette } from './components/CommandPalette'
 import { CosmicWelcome } from './components/CosmicWelcome'
 
+const DiscoverView = lazy(() => import('./views/DiscoverView').then(module => ({ default: module.DiscoverView })))
+
 const DashboardView = lazy(() => import('./views/DashboardView').then((module) => ({ default: module.DashboardView })))
 const ExploreView = lazy(() => import('./views/ExploreView').then((module) => ({ default: module.ExploreView })))
 const TimelineView = lazy(() => import('./views/TimelineView').then((module) => ({ default: module.TimelineView })))
@@ -155,6 +157,8 @@ const MainContent: React.FC = () => {
 
   const renderActiveView = () => {
     switch (activeTab) {
+      case 'descobrir':
+        return <DiscoverView />
       case 'inicio':
         return <DashboardView />
       case 'explorar':

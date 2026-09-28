@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { searchCatalog } from '../lib/catalogSearch';
+import type { CatalogItem } from '../types/catalog';
 import { X, Search, Loader2, Check, Sparkles, Edit3, Plus } from 'lucide-react';
 import { useAgoraStore } from '../store/useAgoraStore';
 import { CoverImage } from './CoverImage';
@@ -6,11 +8,13 @@ import { MediaType, MediaItem, MediaStatus } from '../types/agora';
 import { useModalAccessibility } from '../lib/useModalAccessibility';
 
 export const SearchModal: React.FC = () => {
-  const { isSearchOpen, setIsSearchOpen, fetchInteligente, addMedia, setSelectedMedia, mediaItems } =
+  const { isSearchOpen, setIsSearchOpen, addMedia, setSelectedMedia, mediaItems } =
     useAgoraStore();
 
   const [query, setQuery] = useState('');
-  const [tipo, setTipo] = useState<MediaType>('Livro');
+  const [tipo, setTipo] = useState<MediaType>('Filme');
+  const [candidates, setCandidates] = useState<CatalogItem[]>([]);
+  const request = useRef<AbortController | null>(null);
   const [loading, setLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [isManualEntry, setIsManualEntry] = useState(false);
@@ -18,28 +22,38 @@ export const SearchModal: React.FC = () => {
     MediaItem,
     'id' | 'criadoEm' | 'status' | 'avaliacao_numerica'
   > | null>(null);
-  const [statusInicial, setStatusInicial] = useState<MediaStatus>('Concluído');
-  const [avaliacaoInicial, setAvaliacaoInicial] = useState<number>(5);
+  const [statusInicial, setStatusInicial] = useState<MediaStatus>('Pendente');
+  const [avaliacaoInicial, setAvaliacaoInicial] = useState<number>(0);
   const modalRef = useModalAccessibility<HTMLDivElement>(isSearchOpen, () => setIsSearchOpen(false));
+  useEffect(() => {
+    if (!isSearchOpen) { request.current?.abort(); setLoading(false); }
+    return () => request.current?.abort();
+  }, [isSearchOpen]);
 
   if (!isSearchOpen) return null;
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
+    request.current?.abort();
+    const controller = new AbortController();
+    request.current = controller;
+    setCandidates([]);
     setLoading(true);
     setPreviewResult(null);
     setSearchError(null);
     setIsManualEntry(false);
 
     try {
-      const result = await fetchInteligente(query, tipo);
-      setPreviewResult(result);
+      const result = await searchCatalog(query, tipo, controller.signal);
+      if (controller.signal.aborted) return;
+      setCandidates(result.items);
+      if (!result.items.length) setSearchError('Nenhuma obra encontrada. Tente outro título ou adicione manualmente.');
     } catch (err) {
-      console.error('Erro ao buscar obra', err);
+      if (controller.signal.aborted) return;
       setSearchError(err instanceof Error ? err.message : 'Não foi possível pesquisar a obra agora.');
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     }
   };
 
@@ -63,7 +77,7 @@ export const SearchModal: React.FC = () => {
   };
 
   const handleConfirmAdd = () => {
-    if (!previewResult) return;
+    if (!previewResult?.titulo.trim()) return;
 
     const newItem = addMedia({
       ...previewResult,
@@ -73,6 +87,7 @@ export const SearchModal: React.FC = () => {
 
     setIsSearchOpen(false);
     setQuery('');
+    setCandidates([]);
     setPreviewResult(null);
     setIsManualEntry(false);
     setSelectedMedia(newItem);
@@ -86,10 +101,10 @@ export const SearchModal: React.FC = () => {
           <div>
             <span className="text-[10px] font-semibold text-accent-gold uppercase tracking-widest flex items-center gap-1">
               <Sparkles className="w-3 h-3" />
-              Oráculo Bibliográfico
+              Encontre sua próxima obra
             </span>
             <h2 id="search-modal-title" className="font-serif font-bold text-xl text-text-primary">
-              Busca Inteligente de Mídias
+              Buscar obras e capas
             </h2>
           </div>
           <button
@@ -126,12 +141,12 @@ export const SearchModal: React.FC = () => {
               Formato
             </legend>
             <div className="grid grid-cols-4 gap-2">
-              {(['Livro', 'Filme', 'Série', 'Jogo'] as MediaType[]).map((t) => (
+              {(['Filme', 'Série', 'Música', 'Teatro', 'Livro', 'Podcast', 'Jogo'] as MediaType[]).map((t) => (
                 <button
                   key={t}
                   type="button"
                   aria-pressed={tipo === t}
-                  onClick={() => setTipo(t)}
+                  onClick={() => { request.current?.abort(); setLoading(false); setTipo(t); setCandidates([]); setPreviewResult(null); setSearchError(null); }}
                   className={`py-2 px-2 text-xs font-semibold rounded-lg border transition-all ${
                     tipo === t
                       ? 'bg-accent-gold/20 text-accent-gold border-accent-gold'
@@ -152,16 +167,19 @@ export const SearchModal: React.FC = () => {
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Consultando Oráculo...</span>
+                <span>Buscando obras…</span>
               </>
             ) : (
               <>
                 <Search className="w-4 h-4" />
-                <span>Consultar Ficha Técnica</span>
+                <span>Buscar opções e capas</span>
               </>
             )}
           </button>
         </form>
+
+        <button type="button" onClick={handleStartManualEntry} className="session-text-button">Adicionar manualmente</button>
+        {candidates.length > 0 ? <section aria-label="Escolha a obra e a capa" className="catalog-candidates"><p>Escolha a obra e a edição pela capa, título e ano.</p><div>{candidates.map(item => <button key={item.catalogId} type="button" aria-pressed={previewResult?.url_capa === item.url_capa && previewResult?.titulo === item.titulo} onClick={() => { const { catalogId, sourceUrl, ...media } = item; setPreviewResult(media); setIsManualEntry(false); }}><CoverImage url={item.url_capa} title={item.titulo} tipo={item.tipo} /><strong>{item.titulo}</strong><small>{item.autor_criador} · {item.ano || 'Ano não informado'}</small><small>{item.fonte}</small></button>)}</div></section> : null}
 
         {searchError && (
           <div role="alert" className="rounded-lg border border-red-400/30 bg-red-400/10 p-3 text-xs text-red-200 space-y-2.5">
@@ -312,6 +330,7 @@ export const SearchModal: React.FC = () => {
 
             <button
               onClick={handleConfirmAdd}
+              disabled={!previewResult.titulo.trim()}
               className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg cursor-pointer"
             >
               <Check className="w-4 h-4" />

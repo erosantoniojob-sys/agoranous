@@ -37,6 +37,7 @@ export const LeftDrawer: React.FC = () => {
   const navigationItems: NavItem[] = [
     { label: 'Hoje', icon: Home, tab: 'inicio' },
     { label: 'Biblioteca', icon: Compass, tab: 'explorar' },
+    { label: 'Explorar catálogos', icon: Compass, tab: 'descobrir' },
     { label: 'Cinema', icon: Film, tab: 'cinema' },
     { label: 'Formações', icon: GraduationCap, tab: 'formacoes' },
     { label: 'Trilhas', icon: Map, tab: 'trilhas' },

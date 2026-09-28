@@ -1,3 +1,4 @@
+import { searchCatalog } from './catalogSearch.js'
 type MediaType = 'Livro' | 'Filme' | 'Série' | 'Jogo'
 type EntertainmentType = Exclude<MediaType, 'Livro'>
 
@@ -299,7 +300,8 @@ export async function handleSearchMedia(request: Request): Promise<Response> {
     return Response.json({ error: 'Método não permitido.' }, { status: 405 })
   }
 
-  const body = await request.json().catch(() => ({})) as { query?: unknown; tipo?: unknown }
+  const body = await request.json().catch(() => ({})) as { query?: unknown; tipo?: unknown; mode?: unknown }
+  if (body.mode === 'catalog') return searchCatalog(body)
   const query = typeof body.query === 'string' ? body.query.trim() : ''
   const tipo = body.tipo
 

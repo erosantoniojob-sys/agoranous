@@ -46,7 +46,7 @@ const RailNavButton: React.FC<NavButtonProps> = ({ label, icon: Icon, tab, activ
 const mainNav: NavEntry[] = [
   { label: 'Hoje', icon: Home, tab: 'inicio' },
   { label: 'Biblioteca', icon: Bookmark, tab: 'explorar' },
-  { label: 'Descobrir', icon: Film, tab: 'cinema' },
+  { label: 'Explorar', icon: Film, tab: 'descobrir' },
   { label: 'Notas', icon: Feather, tab: 'memoria' },
 ]
 
@@ -113,7 +113,7 @@ export const TabBar: React.FC = () => {
             <Plus className="h-5 w-5" />
             <span>Adicionar</span>
           </button>
-          <MobileNavButton label="Descobrir" icon={Film} tab="cinema" active={activeTab === 'cinema'} onClick={() => setActiveTab('cinema')} />
+          <MobileNavButton label="Explorar" icon={Film} tab="descobrir" active={activeTab === 'descobrir'} onClick={() => setActiveTab('descobrir')} />
           <button type="button" onClick={() => setIsLeftDrawerOpen(true)} className="mobile-nav-item" aria-label="Mais opções" title="Mais">
             <Menu className="h-[1.15rem] w-[1.15rem]" />
             <span>Mais</span>
