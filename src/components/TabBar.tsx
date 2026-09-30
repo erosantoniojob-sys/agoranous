@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react'
-import { Film, Bookmark, Feather, Home, Menu, Plus, UserRound } from 'lucide-react'
+import React from 'react'
+import { Film, Compass, Bookmark, Feather, Home, Menu, Plus, UserRound } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
 import { preloadView, type ViewName } from '../lib/viewPreload'
 
@@ -46,74 +46,24 @@ const RailNavButton: React.FC<NavButtonProps> = ({ label, icon: Icon, tab, activ
 const mainNav: NavEntry[] = [
   { label: 'Hoje', icon: Home, tab: 'inicio' },
   { label: 'Biblioteca', icon: Bookmark, tab: 'explorar' },
-  { label: 'Explorar', icon: Film, tab: 'descobrir' },
+  { label: 'Cinema', icon: Film, tab: 'cinema' },
+  { label: 'Explorar', icon: Compass, tab: 'descobrir' },
   { label: 'Notas', icon: Feather, tab: 'memoria' },
 ]
 
 export const TabBar: React.FC = () => {
   const { activeTab, setActiveTab, setIsLeftDrawerOpen, setIsSearchOpen } = useAgoraStore()
 
-  useEffect(() => {
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
-    if (reducedMotion.matches) return
-
-    const docks = Array.from(document.querySelectorAll<HTMLElement>('.velocity-dock'))
-    let lastY = window.scrollY
-    let lastTime = performance.now()
-    let targetVelocity = 0
-    let currentVelocity = 0
-    let frame = 0
-
-    const render = () => {
-      targetVelocity *= 0.84
-      currentVelocity += (targetVelocity - currentVelocity) * 0.18
-      const value = currentVelocity.toFixed(3)
-      const energy = Math.abs(currentVelocity).toFixed(3)
-      docks.forEach((dock) => {
-        dock.style.setProperty('--scroll-velocity', value)
-        dock.style.setProperty('--scroll-energy', energy)
-      })
-
-      if (Math.abs(currentVelocity) > 0.003 || Math.abs(targetVelocity) > 0.003) frame = window.requestAnimationFrame(render)
-      else {
-        docks.forEach((dock) => {
-          dock.style.setProperty('--scroll-velocity', '0')
-          dock.style.setProperty('--scroll-energy', '0')
-        })
-        frame = 0
-      }
-    }
-
-    const onScroll = () => {
-      const now = performance.now()
-      const elapsed = Math.max(now - lastTime, 16)
-      const distance = window.scrollY - lastY
-      targetVelocity = Math.max(-1, Math.min(1, distance / elapsed / 1.25))
-      lastY = window.scrollY
-      lastTime = now
-      if (!frame) frame = window.requestAnimationFrame(render)
-    }
-
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => {
-      window.removeEventListener('scroll', onScroll)
-      if (frame) window.cancelAnimationFrame(frame)
-    }
-  }, [])
-
   const openCreate = () => setIsSearchOpen(true)
 
   return (
     <>
       <nav className="mobile-dock-shell lg:hidden fixed inset-x-0 bottom-0 z-40 flex justify-center px-[max(0.55rem,env(safe-area-inset-left))] py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]" aria-label="Navegação principal">
-        <div className="velocity-dock tab-bar-mobile mobile-navigation relative grid w-full max-w-[34rem] grid-cols-5 items-center rounded-2xl border border-border-primary px-1.5 py-1.5">
+        <div className="tab-bar-mobile mobile-navigation relative grid w-full max-w-[34rem] grid-cols-5 items-center rounded-2xl border border-border-primary px-1.5 py-1.5">
           <MobileNavButton label="Hoje" icon={Home} tab="inicio" active={activeTab === 'inicio'} onClick={() => setActiveTab('inicio')} />
           <MobileNavButton label="Biblioteca" icon={Bookmark} tab="explorar" active={activeTab === 'explorar'} onClick={() => setActiveTab('explorar')} />
-          <button type="button" onClick={openCreate} className="mobile-nav-create" aria-label="Criar ou adicionar obra" title="Criar">
-            <Plus className="h-5 w-5" />
-            <span>Adicionar</span>
-          </button>
-          <MobileNavButton label="Explorar" icon={Film} tab="descobrir" active={activeTab === 'descobrir'} onClick={() => setActiveTab('descobrir')} />
+          <MobileNavButton label="Cinema" icon={Film} tab="cinema" active={activeTab === 'cinema'} onClick={() => setActiveTab('cinema')} />
+          <MobileNavButton label="Explorar" icon={Compass} tab="descobrir" active={activeTab === 'descobrir'} onClick={() => setActiveTab('descobrir')} />
           <button type="button" onClick={() => setIsLeftDrawerOpen(true)} className="mobile-nav-item" aria-label="Mais opções" title="Mais">
             <Menu className="h-[1.15rem] w-[1.15rem]" />
             <span>Mais</span>

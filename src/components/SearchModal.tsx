@@ -98,7 +98,7 @@ export const SearchModal: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-bg-main/85 backdrop-blur-md animate-fadeIn lg:items-center lg:p-4">
-      <div ref={modalRef} role="dialog" aria-modal="true" aria-labelledby="search-modal-title" className="relative w-full bg-bg-card border border-text-primary/15 rounded-t-2xl lg:max-w-lg lg:rounded-2xl shadow-2xl overflow-hidden flex flex-col p-4 sm:p-6 space-y-5 max-h-[calc(100dvh-5.75rem-env(safe-area-inset-bottom))] lg:max-h-[90vh] overflow-y-auto">
+      <div ref={modalRef} role="dialog" aria-modal="true" aria-labelledby="search-modal-title" className="agora-dialog relative w-full bg-bg-card border border-text-primary/15 rounded-t-2xl lg:max-w-lg lg:rounded-2xl shadow-2xl overflow-hidden flex flex-col p-4 sm:p-6 space-y-5 max-h-[calc(100dvh-5.75rem-env(safe-area-inset-bottom))] lg:max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-text-primary/10 pb-4">
           <div>
@@ -204,7 +204,7 @@ export const SearchModal: React.FC = () => {
             <div className="flex items-center justify-between border-b border-text-primary/10 pb-2">
               <span className="text-xs font-bold uppercase text-accent-gold flex items-center gap-1.5">
                 <Edit3 className="w-3.5 h-3.5" />
-                {isManualEntry ? 'Cadastro manual da obra' : 'Edição Livre da Ficha Técnica'}
+                {isManualEntry ? 'Cadastro manual da obra' : 'Detalhes da obra'}
               </span>
               <span className="text-[10px] text-text-secondary">Preencha os dados que tiver</span>
             </div>
@@ -332,12 +332,13 @@ export const SearchModal: React.FC = () => {
             {mediaItems.length ? <div><p className="mb-1 text-[10px] font-semibold uppercase text-text-secondary">Conhecimentos recomendados antes desta obra</p><div className="max-h-24 space-y-1 overflow-auto rounded-lg border border-text-primary/10 p-2">{mediaItems.map(item => <label key={item.id} className="flex items-center gap-2 text-[10px] text-text-secondary"><input type="checkbox" checked={previewResult.depende_de_ids?.includes(item.id) || false} onChange={() => setPreviewResult({ ...previewResult, depende_de_ids: previewResult.depende_de_ids?.includes(item.id) ? previewResult.depende_de_ids.filter(id => id !== item.id) : [...(previewResult.depende_de_ids || []), item.id] })} />{item.titulo}</label>)}</div></div> : null}
 
             <button
+              type="button"
               onClick={handleConfirmAdd}
               disabled={!previewResult.titulo.trim()}
-              className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg cursor-pointer"
+              className="w-full py-2.5 bg-accent-gold hover:bg-accent-gold-bright text-bg-base font-semibold text-xs rounded-xl uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg cursor-pointer"
             >
               <Check className="w-4 h-4" />
-              {isManualEntry ? 'Adicionar ao Acervo' : 'Confirmar e Catalogar no Acervo'}
+              {isManualEntry ? 'Adicionar ao Acervo' : 'Adicionar à biblioteca'}
             </button>
           </div>
         )}

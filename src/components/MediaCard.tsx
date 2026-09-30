@@ -19,7 +19,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
         return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
       case 'Pendente':
       default:
-        return 'bg-slate-700/50 text-slate-300 border-slate-600/40';
+        return 'bg-bg-base/90 text-text-secondary border-border-primary';
     }
   };
 
@@ -35,7 +35,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
       tabIndex={0}
       role="button"
       aria-label={`Abrir ${item.titulo}`}
-      className="group cursor-pointer bg-bg-card border border-text-primary/10 hover:border-accent-gold/50 rounded-xl p-3 flex flex-col gap-3 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-gold"
+      className="group cursor-pointer bg-bg-card border border-text-primary/10 hover:border-accent-gold/50 rounded-xl p-3 flex flex-col gap-3 transition-all duration-300 hover:bg-bg-elevated focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-gold"
     >
       {/* Cover Image Container */}
       <div className="relative">
@@ -76,7 +76,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
           <p className="text-xs text-text-secondary line-clamp-1">{item.autor_criador}</p>
         )}
 
-        <p className="text-xs text-slate-400/90 line-clamp-2 mt-1 leading-relaxed">
+        <p className="text-xs text-text-secondary line-clamp-2 mt-1 leading-relaxed">
           {item.sinopse}
         </p>
       </div>

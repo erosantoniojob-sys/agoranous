@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { ArrowUpRight, Check, Film, Play, Plus, Shuffle, Sparkles, Bookmark, PenLine } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
 import { CoverImage } from '../components/CoverImage'
@@ -10,6 +10,11 @@ export const DashboardView: React.FC = () => {
   const [note, setNote] = useState('')
   const [noteId, setNoteId] = useState('')
   const [feedback, setFeedback] = useState('')
+  useEffect(() => {
+    if (!feedback) return
+    const timer = window.setTimeout(() => setFeedback(''), 5000)
+    return () => window.clearTimeout(timer)
+  }, [feedback])
   const [pickedId, setPickedId] = useState('')
   const matches = (item: MediaItem) => filter === 'Todos' || item.tipo === filter
   const watching = mediaItems.filter(item => ['Assistindo', 'Lendo', 'Jogando'].includes(item.status) && matches(item))
@@ -38,14 +43,14 @@ export const DashboardView: React.FC = () => {
     <div className="session-filters" aria-label="Filtrar obras por formato">{['Todos', 'Filme', 'Série', 'Livro', 'Curso', 'Podcast'].map(type => <button key={type} aria-pressed={filter === type} onClick={() => { setFilter(type); setPickedId('') }}>{({ Todos: 'Tudo', Filme: 'Filmes', Série: 'Séries', Livro: 'Livros', Curso: 'Cursos', Podcast: 'Podcasts' } as Record<string, string>)[type]}</button>)}</div>
 
     <section className="session-feature" aria-labelledby="session-title">
-      <div className="session-feature__art" aria-hidden="true"><div className="session-orbit" /><span>Á</span><p>ARS LONGA · VITA BREVIS</p></div>
+      <div className="session-feature__art" aria-hidden="true">{featured ? <CoverImage key={featured.id} url={featured.url_capa || featured.capa_oficial} title={featured.titulo} tipo={featured.tipo} /> : <><div className="session-orbit" /><span>Á</span></>}</div>
       <div className="session-feature__copy">
         <p className="session-eyebrow"><span className="session-live" /> {watching.length ? 'CONTINUE A SUA HISTÓRIA' : featured ? 'NA SUA LISTA' : 'SUA PRÓXIMA DESCOBERTA'}</p>
         <h2 id="session-title">{featured?.titulo || 'Dê espaço para uma boa história.'}</h2>
         <p>{featured ? [featured.tipo, featured.autor_criador, featured.ano].filter(Boolean).join(' · ') : 'Guarde o que quer assistir ou ler. Quando voltar, sua próxima escolha estará aqui.'}</p>
         {featured?.sinopse ? <p className="session-synopsis">{featured.sinopse}</p> : null}
         {featured && watching.length ? <div className="session-progress"><progress aria-label={`Progresso de ${featured.titulo}`} max={100} value={featured.progresso_percentual || 0} /><span>{featured.progresso_detalhado ? `${featured.progresso_detalhado.atual} ${featured.progresso_detalhado.unidade}` : `${featured.progresso_percentual || 0}% registrado`}</span></div> : null}
-        <div className="session-actions"><button className="session-primary" onClick={() => featured ? watching.length ? setSelectedMedia(featured) : begin(featured) : setIsSearchOpen(true)}><Play size={16} />{featured ? watching.length ? 'Retomar obra' : 'Começar agora' : 'Escolher minha primeira obra'}</button><button className="session-text-button" onClick={() => setActiveTab('cinema')}>Descobrir filmes <ArrowUpRight size={16} /></button></div>
+        <div className="session-actions"><button className="session-primary" onClick={() => featured ? watching.length ? setSelectedMedia(featured) : begin(featured) : setIsSearchOpen(true)}><Play size={16} />{featured ? watching.length ? 'Retomar obra' : 'Começar agora' : 'Escolher minha primeira obra'}</button><button className="session-text-button" onClick={() => setActiveTab('descobrir')}>Explorar obras <ArrowUpRight size={16} /></button></div>
         <small className="session-feature__hint">Seu ponto de encontro antes e depois de assistir.</small>
       </div>
     </section>
@@ -59,7 +64,7 @@ export const DashboardView: React.FC = () => {
       </section>
     </div><aside className="session-aside">
       <section className="session-note"><p className="session-eyebrow"><PenLine size={15} /> DEPOIS DOS CRÉDITOS</p><h2>O que ficou com você?</h2><p>Uma frase, uma sensação ou uma ideia. Não precisa ser uma resenha.</p><form onSubmit={saveNote}><label htmlFor="session-note-work">Sobre qual obra?</label><select id="session-note-work" value={noteMedia?.id || ''} disabled={!mediaItems.length} onChange={event => setNoteId(event.target.value)}>{!mediaItems.length ? <option value="">Adicione uma obra primeiro</option> : mediaItems.map(item => <option key={item.id} value={item.id}>{item.titulo}</option>)}</select><label className="sr-only" htmlFor="session-note-text">Sua impressão</label><textarea id="session-note-text" placeholder="Ainda estou pensando naquela cena…" value={note} onChange={event => setNote(event.target.value)} rows={5} maxLength={10000} /><button className="session-primary" disabled={!note.trim() || !noteMedia}><Bookmark size={15} /> Guardar impressão</button></form><button className="session-text-button" onClick={() => setActiveTab('memoria')}>Revisitar minhas notas <ArrowUpRight size={14} /></button></section>
-      <button className="session-discovery" onClick={() => setActiveTab('cinema')}><Film size={25} /><span><small>FORA DO ÓBVIO</small><strong>Seu próximo filme favorito pode estar aqui.</strong><em>Explorar a seleção <ArrowUpRight size={15} /></em></span><Sparkles size={18} /></button>
+      <button className="session-discovery" onClick={() => setActiveTab('cinema')}><Film size={25} /><span><small>CINEMA</small><strong>100 clássicos para conhecer.</strong><em>Abrir os 100 filmes <ArrowUpRight size={15} /></em></span><Sparkles size={18} /></button>
     </aside></div>
     <p className="session-feedback" role="status">{feedback}</p>
   </div>

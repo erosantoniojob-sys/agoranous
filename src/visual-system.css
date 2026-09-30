@@ -1,0 +1,142 @@
+/* Shared visual contract for the daily pages and their dialogs.
+   Colors derive from the selected theme; status colors remain semantic. */
+:root {
+  --ui-radius-control: 10px;
+  --ui-radius-panel: 16px;
+  --ui-space-section: 24px;
+  --ui-border: var(--color-border-primary);
+  --ui-accent-soft: color-mix(in srgb, var(--color-accent-gold) 12%, transparent);
+  --ui-accent-border: color-mix(in srgb, var(--color-accent-gold) 40%, transparent);
+  --ui-shadow-dialog: 0 24px 72px #0006;
+}
+
+:is(.session-home, .catalog-page, .notes-page, .explore-view, .cinema-page) {
+  width: 100%;
+  max-width: 1240px;
+  margin-inline: auto;
+  color: var(--color-text-primary);
+}
+.cinema-page { padding-inline: 0; }
+:is(.session-heading h1, .catalog-page h1, .cinema-hero h1, .formations-hero h1) {
+  font-family: var(--font-serif);
+  font-size: clamp(28px, 3.2vw, 40px);
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -.025em;
+}
+:is(.session-eyebrow, .cinema-eyebrow) { font: 600 11px/1.5 var(--font-sans); letter-spacing: .14em; color: var(--color-accent-gold); }
+:is(.session-heading, .catalog-page header) { margin: 16px 0 24px; padding-block: 0; }
+:is(.session-heading, .catalog-page header) > :is(p, div > p:last-child) { color: var(--color-text-secondary); line-height: 1.7; }
+:is(.session-section-title h2, .catalog-result-heading h2, .notes-editor h2, .formation-module-heading h2) { font: 400 24px/1.3 var(--font-serif); }
+
+:is(.session-note, .notes-editor, .notes-card, .catalog-card, .explore-filter-panel, .cinema-card, .formation-work, .cinema-formation, .formation-project) {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-panel);
+  box-shadow: none;
+}
+:is(.cinema-hero, .formations-hero) { border-radius: var(--ui-radius-panel); border-color: var(--ui-border); padding: 28px; min-height: 280px; }
+.cinema-hero-art { transform: none; }
+.cinema-hero-art > div:nth-child(2) { transform: none; }
+.cinema-hero-art > div { box-shadow: none; }
+:is(.catalog-grid, .cinema-grid) { gap: 24px 16px; }
+.cinema-card { overflow: hidden; padding: 12px; }
+.cinema-film-open { border-radius: var(--ui-radius-control); }
+.cinema-card-copy { padding-inline: 0; }
+.cinema-card-copy h3, .catalog-card h3 { font: 500 18px/1.4 var(--font-serif); }
+.cinema-card-copy p, .catalog-card p, .catalog-card small { font-size: 12px; line-height: 1.6; color: var(--color-text-secondary); }
+
+/* Primary and secondary actions share geometry and predictable states. */
+:is(.session-primary, .session-secondary, .cinema-primary, .cinema-secondary),
+.agora-dialog button:is(.bg-accent-gold, .bg-bg-surface) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-control);
+  font: 600 13px/1.4 var(--font-sans);
+  text-transform: none;
+  letter-spacing: normal;
+  box-shadow: none;
+  cursor: pointer;
+  transition: background-color 160ms, border-color 160ms, color 160ms;
+}
+:is(.session-primary, .cinema-primary), .agora-dialog button.bg-accent-gold {
+  color: var(--color-bg-base);
+  background: var(--color-accent-gold);
+  border-color: transparent;
+}
+:is(.session-primary, .cinema-primary):hover:not(:disabled), .agora-dialog button.bg-accent-gold:hover:not(:disabled) {
+  color: var(--color-bg-base);
+  background: var(--color-accent-gold-bright);
+}
+:is(.session-secondary, .cinema-secondary), .agora-dialog button.bg-bg-surface {
+  color: var(--color-text-primary);
+  background: var(--color-bg-surface);
+}
+:is(.session-secondary, .cinema-secondary):hover:not(:disabled), .agora-dialog button.bg-bg-surface:hover:not(:disabled) {
+  border-color: var(--ui-accent-border);
+  background: var(--color-bg-elevated);
+}
+:is(.cinema-watch, .cinema-pick, .formation-work-actions button, .catalog-card button) {
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-control);
+  font: 600 12px/1.4 var(--font-sans);
+  color: var(--color-accent-gold);
+  background: var(--color-bg-base);
+}
+:is(.cinema-watch, .formation-work-actions button, .catalog-card button):hover:not(:disabled) { background: var(--color-bg-elevated); border-color: var(--ui-accent-border); }
+.cinema-watch[aria-pressed=true], .cinema-pick.is-picked { background: var(--ui-accent-soft); border-color: var(--ui-accent-border); }
+:is(.session-home, .catalog-page, .notes-page, .cinema-page, .agora-dialog) button:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
+
+/* Fields share contrast, spacing and a legible mobile type size. */
+:is(.notes-page, .session-note, .catalog-search, .cinema-toolbar, .cinema-formation, .agora-dialog) :is(input:not([type=checkbox]):not([type=range]), select, textarea) {
+  min-height: 44px;
+  border-radius: var(--ui-radius-control);
+  border: 1px solid var(--ui-border);
+  background: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.6;
+}
+:is(.catalog-search, .cinema-search) input { border: 0; background: transparent; }
+:is(.agora-dialog, .notes-page, .session-note) textarea { resize: vertical; }
+:is(.agora-dialog, .notes-page, .session-note) :is(input,textarea)::placeholder { color: var(--color-text-secondary); opacity: .8; }
+:is(.session-filters button, .cinema-tabs button) { min-height: 44px; }
+:is(.session-filters button[aria-pressed=true], .cinema-tabs button[aria-pressed=true]) { color: var(--color-accent-gold); }
+
+/* Modal surfaces and dismiss controls use the same visual treatment. */
+.agora-dialog, .cinema-modal {
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-panel);
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
+  box-shadow: var(--ui-shadow-dialog);
+}
+.agora-dialog h2, .cinema-modal h2 { font-family: var(--font-serif); font-weight: 400; }
+.agora-dialog :is(button[aria-label^='Fechar']), .cinema-close { display: grid; place-items: center; width: 44px; height: 44px; min-width: 44px; border: 1px solid var(--ui-border); border-radius: var(--ui-radius-control); background: var(--color-bg-base); color: var(--color-text-secondary); }
+.agora-dialog :is(button[aria-label^='Fechar']):hover, .cinema-close:hover { color: var(--color-text-primary); background: var(--color-bg-elevated); }
+[data-ambient-control] { z-index: 35; }
+:is(.agora-dialog, .cinema-page, .cinema-modal, .catalog-page, .notes-page, .session-home) :is(button,a,input,textarea,select):focus-visible { outline: 2px solid var(--color-accent-gold); outline-offset: 3px; }
+@media(max-width:640px) {
+  :is(.cinema-hero, .formations-hero) { padding: 20px; }
+  :is(.catalog-grid, .cinema-grid) { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 12px; }
+  :is(.notes-page, .session-note, .catalog-search, .cinema-toolbar, .cinema-formation, .agora-dialog) :is(input:not([type=checkbox]):not([type=range]),select,textarea) { font-size: 16px; }
+  .agora-dialog { max-height: 90dvh; }
+}
+@media(prefers-reduced-motion:reduce) {
+  :is(.session-primary, .session-secondary, .cinema-primary, .cinema-secondary), .agora-dialog button { transition: none; }
+}
+.cinema-watched-badge { background:var(--color-accent-gold); color:var(--color-bg-base); border-radius:6px; }
+.cinema-tabs span { background:var(--ui-accent-soft); }
+.cinema-page :is(.cinema-primary,.cinema-secondary) { font:600 13px/1.4 var(--font-sans); }
+.cinema-page :is(.cinema-watch,.formation-work-actions button) { font:600 12px/1.4 var(--font-sans); }
+.cinema-page .cinema-toolbar .cinema-search input,
+.catalog-page .catalog-search input { border:0; background:transparent; border-radius:0; }
+.agora-dialog fieldset button { min-height:44px; }

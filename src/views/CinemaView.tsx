@@ -98,7 +98,7 @@ export function CinemaView() {
     <header className="cinema-hero">
       <div className="cinema-hero-copy">
         <p className="cinema-eyebrow"><Film size={16} /> A sétima arte · Curadoria Ágora</p>
-        <h1>Grandes filmes.<br /><em>Um olhar em formação.</em></h1>
+        <h1>100 clássicos do cinema.<br /><em>Seu percurso começa aqui.</em></h1>
         <p>100 obras para conhecer o cinema. 50 clássicos para construir seu próprio percurso — uma sessão de cada vez.</p>
         <button className="cinema-primary" type="button" onClick={() => setPage('formation')}><GraduationCap size={18} /> {formation ? 'Continuar minha formação' : 'Criar minha formação'}</button>
       </div>
@@ -115,7 +115,7 @@ export function CinemaView() {
     </div>
 
     <div className="cinema-tabs" role="group" aria-label="Seções de cinema">
-      <button type="button" aria-pressed={section === 'catalog'} onClick={() => setPage('catalog')}>Os 100 filmes <span>{watched}/100 assistidos</span></button>
+      <button type="button" aria-pressed={section === 'catalog'} onClick={() => setPage('catalog')}>100 clássicos <span>{watched}/100 assistidos</span></button>
       <button type="button" aria-pressed={section === 'formation'} onClick={() => setPage('formation')}>Formação de clássicos <span>50 filmes</span></button>
     </div>
 

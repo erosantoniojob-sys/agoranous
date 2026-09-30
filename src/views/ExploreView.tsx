@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Compass, Search, Star, Sparkles, Tags } from 'lucide-react';
 import { useAgoraStore } from '../store/useAgoraStore';
 import { MediaCard } from '../components/MediaCard';
-import { PhilosopherPortrait } from '../components/PhilosopherPortrait';
+
 import {
   genreFilter,
   getMediaFilterLabel,
@@ -79,13 +79,13 @@ export const ExploreView: React.FC = () => {
   return (
     <div className="explore-view space-y-4 pb-10">
       {/* Header */}
-      <div className="explore-filter-panel modern-surface space-y-3 rounded-2xl border border-text-primary/10 bg-bg-card p-4 sm:p-5">
+      <div className="explore-filter-panel space-y-3 rounded-2xl border border-text-primary/10 bg-bg-card p-4 sm:p-5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-2">
             <Compass className="w-5 h-5 text-accent-gold" />
-            <h2 className="font-serif text-xl font-bold text-text-primary">Explorar Acervo</h2>
+            <h2 className="font-serif text-xl font-bold text-text-primary">Sua biblioteca</h2>
           </div>
-          <PhilosopherPortrait philosopher="socrates" className="h-12 w-12 shrink-0 rounded-xl sm:h-14 sm:w-14" />
+
         </div>
         <p className="text-xs text-text-secondary">
           Pesquise por títulos, autores, palavras-chave da sinopse ou filtre por avaliações mínimas.
@@ -99,7 +99,7 @@ export const ExploreView: React.FC = () => {
               aria-label="Buscar no acervo"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Digitar para buscar no acervo local..."
+              placeholder="Buscar título, autor ou ideia…"
               className="w-full pl-10 pr-4 py-2 bg-bg-main text-text-primary rounded-xl border border-text-primary/15 focus:border-accent-gold focus:outline-none text-xs"
             />
             <Search className="w-4 h-4 text-text-secondary absolute left-3 top-2.5" />
@@ -187,7 +187,7 @@ export const ExploreView: React.FC = () => {
               className="text-xs text-accent-gold hover:underline flex items-center gap-1 font-semibold"
             >
               <Sparkles className="w-3.5 h-3.5" />
-              Consultar Oráculo Externo
+              Adicionar obra
             </button>
           </div>
         </div>
@@ -204,7 +204,7 @@ export const ExploreView: React.FC = () => {
             </p>
             {mediaItems.length === 0 ? (
               <button type="button" onClick={() => setIsSearchOpen(true)} className="inline-flex items-center gap-1.5 rounded-xl bg-accent-gold px-4 py-2 text-xs font-bold text-bg-base transition-colors hover:bg-accent-gold-bright focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-gold">
-                <Sparkles className="h-3.5 w-3.5" /> Consultar o Oráculo
+                <Sparkles className="h-3.5 w-3.5" /> Adicionar minha primeira obra
               </button>
             ) : (
               <button type="button" onClick={clearFilters} className="text-xs font-semibold text-accent-gold underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-gold">
@@ -213,7 +213,7 @@ export const ExploreView: React.FC = () => {
             )}
           </div>
         ) : (
-          <div className="explore-media-grid grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          <div className="explore-media-grid grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
             {filteredItems.map((item) => (
               <MediaCard key={item.id} item={item} onClick={() => setSelectedMedia(item)} />
             ))}

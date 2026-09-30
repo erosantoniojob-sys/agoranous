@@ -101,7 +101,7 @@ export const MediaDetailModal: React.FC = () => {
     const rating = escapeHtml(selectedMedia.avaliacao_numerica)
     const researcher = escapeHtml(userProfile.nome || 'Convidado')
     const synopsis = escapeHtml(selectedMedia.sinopse || 'Sem sinopse cadastrada.')
-    const source = escapeHtml(selectedMedia.fonte || 'Edição Acadêmica')
+    const source = escapeHtml(selectedMedia.fonte || 'Fonte não informada')
     const referenceYear = escapeHtml(selectedMedia.ano || exportedAt.getFullYear())
     const exportDate = escapeHtml(exportedAt.toLocaleDateString('pt-BR'))
     const exportTime = escapeHtml(exportedAt.toLocaleTimeString('pt-BR'))
@@ -123,7 +123,7 @@ export const MediaDetailModal: React.FC = () => {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Dossiê ABNT - ${title}</title>
+          <title>Notas da obra - ${title}</title>
           <style>
             @page { size: A4; margin: 25mm 25mm 25mm 25mm; }
             body { font-family: "Times New Roman", Times, serif; color: #111; line-height: 1.5; font-size: 12pt; background: #fff; margin: 0; padding: 20px; }
@@ -134,12 +134,12 @@ export const MediaDetailModal: React.FC = () => {
             .meta-label { font-weight: bold; }
             h2 { font-size: 13pt; text-transform: uppercase; border-bottom: 1px solid #111; padding-bottom: 4px; margin-top: 25px; }
             .abnt-citation { background: #f0f0f0; padding: 12px; font-family: monospace; font-size: 10pt; border-left: 4px solid #111; margin-top: 20px; }
-            .footer { margin-top: 40px; font-size: 9pt; text-align: center; color: #777; border-top: 1px solid #eee; pt: 10px; }
+            .footer { margin-top: 40px; font-size: 9pt; text-align: center; color: #777; border-top: 1px solid #eee; padding-top: 10px; }
           </style>
         </head>
         <body>
           <h1>ÁGORA: SEGUNDO CÉREBRO</h1>
-          <div class="subtitle">DOSSIÊ ACADÊMICO DE CONHECIMENTO & APRENDIZADOS</div>
+          <div class="subtitle">OBRA E NOTAS PESSOAIS</div>
 
           <div class="meta-box">
             <div class="meta-row"><span class="meta-label">TÍTULO DA OBRA:</span> ${title}</div>
@@ -158,13 +158,13 @@ export const MediaDetailModal: React.FC = () => {
           <h2>2. TÓPICOS E APRENDIZADOS CENTRALIZADOS</h2>
           ${learningsHTML}
 
-          <h2>3. REFERÊNCIA BIBLIOGRÁFICA REGULAMENTAR (ABNT)</h2>
+          <h2>3. DADOS DA OBRA</h2>
           <div class="abnt-citation">
-            ${abntAuthor}. <strong>${title}</strong>. ${source}: Ágora Segundo Cérebro, ${referenceYear}.
+            ${abntAuthor}. <strong>${title}</strong>. ${source}, ${year}.
           </div>
 
           <div class="footer">
-            Dossiê gerado automaticamente pelo aplicativo Ágora em ${exportDate} às ${exportTime}.
+            Documento gerado pelo aplicativo Ágora em ${exportDate} às ${exportTime}.
           </div>
 
           <script>
@@ -184,7 +184,7 @@ export const MediaDetailModal: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-bg-base/80 backdrop-blur-md animate-fadeIn">
-      <div ref={modalRef} role="dialog" aria-modal="true" aria-label={`Detalhes de ${selectedMedia.titulo}`} className="relative w-full max-w-2xl max-h-[90vh] bg-bg-surface border border-text-primary/15 rounded-2xl shadow-2xl overflow-hidden flex flex-col my-auto">
+      <div ref={modalRef} role="dialog" aria-modal="true" aria-label={`Detalhes de ${selectedMedia.titulo}`} className="agora-dialog relative w-full max-w-2xl max-h-[90vh] bg-bg-surface border border-text-primary/15 rounded-2xl shadow-2xl overflow-hidden flex flex-col my-auto">
         {/* Close Button */}
         <button
           onClick={() => setSelectedMedia(null)}
@@ -309,7 +309,7 @@ export const MediaDetailModal: React.FC = () => {
               className="py-1.5 px-3 bg-accent-gold hover:bg-accent-gold-bright text-bg-base font-bold text-xs rounded-lg uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-md cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>Dossiê (PDF)</span>
+              <span>Exportar notas</span>
             </button>
           </div>
         </div>
@@ -432,14 +432,14 @@ export const MediaDetailModal: React.FC = () => {
               <form onSubmit={handleSaveAprendizado} className="flex flex-col gap-3">
                 <label className="text-xs font-semibold text-accent-gold uppercase tracking-wider flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5" />
-                  Registrar Nova Reflexão / Aprendizado
+                  Registrar uma nota
                 </label>
 
                 <input
                   type="text"
                   value={novoTopicoText}
                   onChange={(e) => setNovoTopicoText(e.target.value)}
-                  placeholder="Título do Tópico / Capítulo (ex: Análise de Dinâmica de Personagens)"
+                  placeholder="Título da nota (opcional)"
                   className="w-full p-2.5 bg-bg-base text-text-primary placeholder:text-text-secondary/50 rounded-xl border border-text-primary/15 focus:border-accent-gold focus:outline-none text-xs font-sans"
                 />
 
@@ -447,7 +447,7 @@ export const MediaDetailModal: React.FC = () => {
                   rows={3}
                   value={novoAprendizadoText}
                   onChange={(e) => setNovoAprendizadoText(e.target.value)}
-                  placeholder="Escreva aqui suas reflexões e citações com foco em ABNT..."
+                  placeholder="Uma impressão, uma passagem ou uma ideia que vale guardar…"
                   className="w-full p-3 bg-bg-base text-text-primary placeholder:text-text-secondary/60 rounded-xl border border-text-primary/15 focus:border-accent-gold focus:ring-1 focus:ring-accent-gold focus:outline-none transition-all text-sm resize-none font-sans"
                 />
                 <div className="flex justify-end">
@@ -457,7 +457,7 @@ export const MediaDetailModal: React.FC = () => {
                     className="px-4 py-2 bg-accent-gold text-bg-base hover:bg-accent-gold-bright disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-xs rounded-lg uppercase tracking-wider transition-all flex items-center gap-2 shadow-md cursor-pointer"
                   >
                     <Send className="w-3.5 h-3.5" />
-                    Salvar no Dossiê
+                    Salvar nota
                   </button>
                 </div>
               </form>
@@ -465,7 +465,7 @@ export const MediaDetailModal: React.FC = () => {
               {/* List of saved learnings */}
               <div className="space-y-3 pt-2">
                 <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">
-                  Histórico do Dossiê ({itemLearnings.length})
+                  Notas desta obra ({itemLearnings.length})
                 </h3>
                 {itemLearnings.length === 0 ? (
                   <p className="text-xs text-text-secondary italic text-center py-6 bg-bg-base/30 rounded-xl border border-dashed border-text-primary/10">

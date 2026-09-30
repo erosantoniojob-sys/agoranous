@@ -119,7 +119,7 @@ export const Header: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsRightChatOpen(true)}
-            className="hidden items-center gap-2 whitespace-nowrap rounded-full bg-accent-gold px-4 py-2 text-xs font-bold text-bg-base shadow-lg shadow-accent-gold/20 transition-all hover:bg-accent-gold-bright xl:flex"
+            className="hidden items-center gap-2 whitespace-nowrap rounded-full border border-border-primary bg-bg-surface px-4 py-2 text-xs font-semibold text-accent-gold transition-colors hover:bg-bg-elevated xl:flex"
           >
             <Compass className="w-4 h-4" />
             <span>Guia da Ágora</span>

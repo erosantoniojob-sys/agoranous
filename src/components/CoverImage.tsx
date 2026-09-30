@@ -42,7 +42,7 @@ export const CoverImage: React.FC<CoverImageProps> = ({ url, title, tipo, classN
           alt={`Capa de ${title}`}
           loading="lazy"
           onError={() => setFailedUrl(url || null)}
-          className="w-full h-full object-cover rounded-xl transition-transform duration-500 hover:scale-105"
+          className="w-full h-full object-cover rounded-xl"
         />
       ) : (
         <div className="flex flex-col items-center justify-center p-4 text-center gap-2 bg-bg-card w-full h-full">

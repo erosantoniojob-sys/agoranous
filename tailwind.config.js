@@ -7,15 +7,15 @@ export default {
   theme: {
     extend: {
       colors: {
-        'bg-base': '#0B1420',
-        'bg-surface': '#132231',
-        'bg-elevated': '#1D2E3F',
-        'bg-main': '#0B1420',
-        'bg-card': '#132231',
-        'accent-gold': '#D4AF37',
-        'accent-gold-bright': '#E5C158',
-        'text-primary': '#F2F4F7',
-        'text-secondary': '#8A93A3',
+        'bg-base': 'var(--color-bg-base)',
+        'bg-surface': 'var(--color-bg-surface)',
+        'bg-elevated': 'var(--color-bg-elevated)',
+        'bg-main': 'var(--color-bg-main)',
+        'bg-card': 'var(--color-bg-card)',
+        'accent-gold': 'var(--color-accent-gold)',
+        'accent-gold-bright': 'var(--color-accent-gold-bright)',
+        'text-primary': 'var(--color-text-primary)',
+        'text-secondary': 'var(--color-text-secondary)',
         // Dark Academia low-saturation trail icon background variations
         'trilha-blue': '#16283D',
         'trilha-blue-gradient-start': '#1A324B',
