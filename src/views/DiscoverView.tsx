@@ -5,6 +5,7 @@ import { CoverImage } from '../components/CoverImage'
 import { searchCatalog } from '../lib/catalogSearch'
 import type { MediaType } from '../types/agora'
 import type { CatalogItem } from '../types/catalog'
+import { ClassicBooksCatalog } from '../components/ClassicBooksCatalog'
 
 export const DiscoverView: React.FC = () => {
   const { mediaItems, addMedia, setSelectedMedia, setIsSearchOpen } = useAgoraStore()
@@ -40,6 +41,7 @@ export const DiscoverView: React.FC = () => {
   }
   return <div className="catalog-page">
     <header><p className="session-eyebrow">UM MUNDO ALÉM DA SUA BIBLIOTECA</p><h1>Encontre sua próxima descoberta.</h1><p>Filmes, álbuns, livros e textos teatrais. Explore as capas e guarde o que despertar sua curiosidade.</p></header>
+    <ClassicBooksCatalog />
     <form onSubmit={runSearch} className="catalog-search"><label className="sr-only" htmlFor="catalog-query">Pesquisar catálogo</label><Search size={20} /><input id="catalog-query" value={query} maxLength={180} onChange={event => setQuery(event.target.value)} placeholder="Título, artista ou autor…" required minLength={2} /><label className="sr-only" htmlFor="catalog-type">Formato do catálogo</label><select id="catalog-type" value={tipo} onChange={event => { request.current?.abort(); setLoading(false); setTipo(event.target.value as MediaType); setResults(null); setSource(''); setError('') }}>{['Filme', 'Série', 'Música', 'Livro', 'Teatro'].map(type => <option key={type}>{type}</option>)}</select><button className="session-primary" disabled={loading || query.trim().length < 2}>{loading ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />} Buscar</button></form>
     <div className="catalog-amazon"><div><strong>Quer procurar na Amazon?</strong><p>Pesquise no catálogo da Amazon Brasil em uma nova aba. Os resultados abaixo vêm das fontes identificadas em cada obra.</p></div><a target="_blank" rel="noreferrer" href={`https://www.amazon.com.br/s?k=${encodeURIComponent(query.trim() || ({ Música: 'música álbuns', Teatro: 'teatro peças livros', Filme: 'filmes', Série: 'séries', Livro: 'livros' } as Record<string, string>)[tipo])}`}>Pesquisar na Amazon <ExternalLink size={15} /></a></div>
     <div className="catalog-result-heading"><h2>{results ? `Resultados · ${results.length}` : 'Pesquisar novas obras'}</h2><span>{source}</span></div>

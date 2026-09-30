@@ -28,6 +28,7 @@ import {
 } from '../lib/journeyProgress';
 import type { ViewName } from '../lib/viewPreload';
 import { countExploredKnowledgeRealms } from '../lib/knowledgeRealms';
+import { sameMediaIdentity } from '../lib/mediaIdentity';
 
 export interface Recommendation {
   id: string;
@@ -1101,8 +1102,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, []);
 
   const addMedia = useCallback((item: Omit<MediaItem, 'id' | 'criadoEm'>): MediaItem => {
-    const normalizedTitle = item.titulo.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR').replace(/[^a-z0-9]/g, '')
-    const duplicate = mediaItems.find(existing => existing.tipo === item.tipo && (!['Filme', 'Série'].includes(item.tipo) || !existing.ano || !item.ano || existing.ano === item.ano) && existing.titulo.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR').replace(/[^a-z0-9]/g, '') === normalizedTitle)
+    const duplicate = mediaItems.find(existing => sameMediaIdentity(existing, item))
     if (duplicate) return duplicate
     const newMediaItem: MediaItem = {
       ...item,
@@ -1111,7 +1111,7 @@ export const AgoraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       progresso_percentual: item.progresso_percentual ?? (item.status === 'Concluído' ? 100 : 35),
       capa_oficial: item.capa_oficial || item.url_capa_oficial || item.url_capa,
       url_capa_oficial: item.url_capa_oficial || item.capa_oficial || item.url_capa,
-      data_lancamento_oficial: item.data_lancamento_oficial || (item.ano ? `${item.ano}-01-01` : '2024-01-01'),
+      data_lancamento_oficial: item.data_lancamento_oficial || (item.ano ? `${item.ano}-01-01` : undefined),
     };
     setMediaItems((prev) => [newMediaItem, ...prev]);
     awardXp('media_added', `Nova obra: ${newMediaItem.titulo}`, newMediaItem.id)

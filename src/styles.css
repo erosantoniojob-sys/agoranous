@@ -2348,3 +2348,17 @@ html:has([aria-modal='true']:not([aria-hidden='true'])) [data-ambient-control] {
 @media (max-width: 640px) { .courses-grid { grid-template-columns: 1fr; } .series-page .catalog-search { flex-wrap: wrap; } .series-page .catalog-search select { max-width: 100%; } }
 .series-page > .catalog-footnote { padding: 12px 0; }
 .series-page .catalog-result-heading { margin-top: 20px; }
+/* Public classic-book catalog; personal selections still use the shared store. */
+.classic-books-catalog { margin: 2rem 0 3rem; }
+.classic-books-catalog > header { margin-bottom: 1.5rem; }
+.classic-books-catalog h2 { font-family: var(--font-serif); font-size: clamp(1.6rem, 4vw, 2.5rem); }
+.classic-books-catalog > header p { color: var(--color-text-secondary); }
+.classic-books-filters { display: grid; grid-template-columns: minmax(220px, 2fr) repeat(3, minmax(130px, 1fr)); gap: .75rem; }
+.classic-books-filters label { min-width: 0; }
+.classic-books-filters select { width: 100%; min-height: 44px; border: 1px solid var(--color-border, #504637); border-radius: 8px; padding: .6rem; background: var(--color-bg-card); color: var(--color-text-primary); }
+.classic-books-pagination { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 1rem; margin: 1.5rem 0; }
+.classic-books-pagination button { min-height: 44px; padding: .6rem 1rem; border: 1px solid var(--color-border, #504637); border-radius: 8px; }
+.classic-books-pagination button:disabled { opacity: .4; cursor: not-allowed; }
+.classic-books-catalog :is(button, input, select, a, summary):focus-visible { outline: 2px solid var(--color-accent-gold); outline-offset: 3px; }
+@media (max-width: 800px) { .classic-books-filters { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 480px) { .classic-books-filters { grid-template-columns: 1fr; } }
