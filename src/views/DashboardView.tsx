@@ -40,7 +40,9 @@ export const DashboardView: React.FC = () => {
       <button className="session-secondary" onClick={() => setIsSearchOpen(true)}><Plus size={17} /> Adicionar obra</button>
     </div>
 
-    <div className="session-filters" aria-label="Filtrar obras por formato">{['Todos', 'Filme', 'Série', 'Livro', 'Curso', 'Podcast'].map(type => <button key={type} aria-pressed={filter === type} onClick={() => { setFilter(type); setPickedId('') }}>{({ Todos: 'Tudo', Filme: 'Filmes', Série: 'Séries', Livro: 'Livros', Curso: 'Cursos', Podcast: 'Podcasts' } as Record<string, string>)[type]}</button>)}</div>
+    <div className="session-filters" aria-label="Filtrar obras por formato">{['Todos', 'Filme', 'Série', 'Livro', 'Curso'].map(type => <button key={type} aria-pressed={filter === type} onClick={() => { setFilter(type); setPickedId('') }}>{({ Todos: 'Tudo', Filme: 'Filmes', Série: 'Séries', Livro: 'Livros', Curso: 'Cursos' } as Record<string, string>)[type]}</button>)}</div>
+
+    {filter === 'Série' || filter === 'Curso' ? <button className="session-discovery" onClick={() => setActiveTab(filter === 'Série' ? 'series' : 'cursos')}><Sparkles size={24} /><span><strong>{filter === 'Série' ? 'Conheça as 100 séries selecionadas' : 'Método KM Basics e Filosofia do Zero'}</strong><em>{filter === 'Série' ? 'Ver capas e onde assistir' : 'Abrir catálogo de cursos'} <ArrowUpRight size={15} /></em></span></button> : null}
 
     <section className="session-feature" aria-labelledby="session-title">
       <div className="session-feature__art" aria-hidden="true">{featured ? <CoverImage key={featured.id} url={featured.url_capa || featured.capa_oficial} title={featured.titulo} tipo={featured.tipo} /> : <><div className="session-orbit" /><span>Á</span></>}</div>

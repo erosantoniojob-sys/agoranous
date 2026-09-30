@@ -1,5 +1,5 @@
 import React from 'react'
-import { GraduationCap, Film, X, Sliders, Database, Home, Compass, Map, Bookmark, UserRound } from 'lucide-react'
+import { GraduationCap, Tv, Film, X, Sliders, Database, Home, Compass, Map, Bookmark, UserRound } from 'lucide-react'
 import { useAgoraStore } from '../store/useAgoraStore'
 import { preloadView, type ViewName } from '../lib/viewPreload'
 import { useModalAccessibility } from '../lib/useModalAccessibility'
@@ -39,6 +39,8 @@ export const LeftDrawer: React.FC = () => {
     { label: 'Biblioteca', icon: Compass, tab: 'explorar' },
     { label: 'Explorar catálogos', icon: Compass, tab: 'descobrir' },
     { label: 'Cinema · 100 clássicos', icon: Film, tab: 'cinema' },
+    { label: 'Séries · 100 escolhas', icon: Tv, tab: 'series' },
+    { label: 'Cursos', icon: GraduationCap, tab: 'cursos' },
     { label: 'Formações', icon: GraduationCap, tab: 'formacoes' },
     { label: 'Trilhas', icon: Map, tab: 'trilhas' },
 

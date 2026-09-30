@@ -1,4 +1,4 @@
-export type ViewName = 'descobrir' | 'inicio' | 'explorar' | 'trilhas' | 'memoria' | 'perfil' | 'schole' | 'rotina' | 'poiesis' | 'studium' | 'cinema' | 'formacoes'
+export type ViewName = 'descobrir' | 'inicio' | 'explorar' | 'trilhas' | 'memoria' | 'perfil' | 'schole' | 'rotina' | 'poiesis' | 'studium' | 'cinema' | 'formacoes' | 'series' | 'cursos'
 
 /** Loads a view before it is selected, so navigation can feel instantaneous. */
 export function preloadView(view: ViewName) {
@@ -13,6 +13,8 @@ export function preloadView(view: ViewName) {
     case 'rotina': return import('../views/RoutineView')
     case 'poiesis': return import('../views/PoiesisView')
     case 'formacoes': return import('../views/ClassicalFormationsView')
+    case 'series': return import('../views/SeriesView')
+    case 'cursos': return import('../views/CoursesView')
     case 'cinema': return import('../views/CinemaView')
     case 'studium': return import('../views/StudiumView')
   }

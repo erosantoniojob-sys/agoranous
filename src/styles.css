@@ -2326,3 +2326,25 @@ html:has([aria-modal='true']:not([aria-hidden='true'])) [data-ambient-control] {
   .session-shelf { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .catalog-card h3 { min-height:0; }
 }
+
+/* Curated series and courses share the existing catalog visual system. */
+.series-page .session-eyebrow { display: flex; align-items: center; gap: 8px; }
+.series-card-title { font: 20px/1.3 Georgia, serif; margin: 8px 0 12px; }
+.series-synopsis { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 16px; }
+.series-synopsis summary { cursor: pointer; color: var(--color-accent-gold); padding: 8px 0; }
+.series-synopsis p { margin-top: 8px; line-height: 1.7; }
+.catalog-card .series-streaming-title { font: 600 12px/1.5 var(--font-sans, sans-serif); }
+.series-offers { list-style: none; padding: 0; margin: 8px 0 14px; display: grid; gap: 6px; }
+.series-offers a { min-height: 44px; padding: 7px 9px; border: 1px solid color-mix(in srgb, var(--color-accent-gold) 20%, transparent); border-radius: 6px; justify-content: space-between; }
+.series-offers a span { font-size: 12px; color: var(--color-text-primary); }
+.series-offers small { display: block; margin-top: 2px; }
+.series-page a:focus-visible, .series-page button:focus-visible, .series-page summary:focus-visible { outline: 2px solid var(--color-accent-gold); outline-offset: 3px; }
+.courses-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.course-card { border: 1px solid color-mix(in srgb, var(--color-accent-gold) 25%, transparent); border-radius: 14px; padding: 28px; background: var(--color-bg-surface); display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
+.course-card > svg, .course-author { color: var(--color-accent-gold); }
+.course-card h2 { font: 26px/1.3 Georgia, serif; }
+.course-card p { line-height: 1.7; }
+.course-card .session-primary { margin-top: auto; }
+@media (max-width: 640px) { .courses-grid { grid-template-columns: 1fr; } .series-page .catalog-search { flex-wrap: wrap; } .series-page .catalog-search select { max-width: 100%; } }
+.series-page > .catalog-footnote { padding: 12px 0; }
+.series-page .catalog-result-heading { margin-top: 20px; }

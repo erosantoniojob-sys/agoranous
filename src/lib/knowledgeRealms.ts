@@ -22,7 +22,6 @@ export const MEDIA_FORMAT_DEFINITIONS: readonly MediaFormatDefinition[] = [
   { type: 'Série', label: 'Séries', helper: 'Narrativas longas', alwaysVisible: true },
   { type: 'Jogo', label: 'Jogos', helper: 'Experiências interativas', alwaysVisible: true },
   { type: 'App', label: 'Aplicativos', helper: 'Ferramentas digitais' },
-  { type: 'Podcast', label: 'Podcasts', helper: 'Conversas e investigações' },
   { type: 'Música', label: 'Música', helper: 'Escuta e repertório musical' },
   { type: 'Arte', label: 'Artes visuais', helper: 'Imagens e observação' },
   { type: 'Teatro', label: 'Teatro', helper: 'Dramaturgia e encenação' },

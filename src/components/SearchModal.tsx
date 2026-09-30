@@ -144,7 +144,7 @@ export const SearchModal: React.FC = () => {
               Formato
             </legend>
             <div className="grid grid-cols-4 gap-2">
-              {(['Filme', 'Série', 'Música', 'Teatro', 'Livro', 'Podcast', 'Jogo'] as MediaType[]).map((t) => (
+              {(['Filme', 'Série', 'Música', 'Teatro', 'Livro', 'Curso', 'Jogo'] as MediaType[]).map((t) => (
                 <button
                   key={t}
                   type="button"

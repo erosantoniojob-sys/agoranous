@@ -31,6 +31,8 @@ const StudiumView = lazy(() => import('./views/StudiumView').then((module) => ({
 
 const ClassicalFormationsView = lazy(() => import('./views/ClassicalFormationsView').then(module => ({ default: module.ClassicalFormationsView })))
 
+const SeriesView = lazy(() => import('./views/SeriesView').then(module => ({ default: module.SeriesView })))
+const CoursesView = lazy(() => import('./views/CoursesView').then(module => ({ default: module.CoursesView })))
 const CinemaView = lazy(() => import('./views/CinemaView').then((module) => ({ default: module.CinemaView })))
 
 const ViewLoading: React.FC = () => (
@@ -177,6 +179,10 @@ const MainContent: React.FC = () => {
         return <PoiesisView />
       case 'formacoes':
         return <ClassicalFormationsView />
+      case 'series':
+        return <SeriesView />
+      case 'cursos':
+        return <CoursesView />
       case 'cinema':
         return <CinemaView />
       case 'studium':
